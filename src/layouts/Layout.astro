@@ -15,7 +15,7 @@ const { header } = Astro.props;
 	</head>
 	<body>
 		<div class="main">
-			<h1>Latex 4000</h1>
+			<h1><a href="/" class="header">Latex 4000</a></h1>
 			<h2>{header}</h2>
 			<slot />
 		</div>
@@ -28,6 +28,11 @@ const { header } = Astro.props;
 </html>
 
 <style>
+	.header {
+		text-decoration: none;
+		color: inherit;
+	}
+
 	.footer {
 		position: absolute;
 		bottom: 0;
