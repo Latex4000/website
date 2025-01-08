@@ -1,5 +1,6 @@
 ---
 import '../styles/index.css';
+const { header } = Astro.props;
 ---
 
 <!doctype html>
@@ -13,6 +14,23 @@ import '../styles/index.css';
 		<title>Latex4000</title>
 	</head>
 	<body>
-		<slot />
+		<div class="main">
+			<h1>Latex 4000</h1>
+			<h2>{header}</h2>
+			<slot />
+		</div>
+		<div class="footer">
+			<a href="https://github.com/Latex4000" target="_blank">GitHub</a>
+			|
+			<a href="https://owickstrom.github.io/the-monospace-web/" target="_blank">Design implemented from The Monospace Web</a>
+		</div>
 	</body>
 </html>
+
+<style>
+	.footer {
+		position: absolute;
+		bottom: 0;
+		font-size: .75rem;
+	}
+</style>

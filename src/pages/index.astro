@@ -2,9 +2,61 @@
 import Layout from '../layouts/Layout.astro';
 ---
 
-<Layout>
-	<h1>Latex 4000 </h1>
+<Layout header="Yo">
 	<p>
-		Yo
+		We're a group of friends who have just been doing various shit, spanning from visual arts, music, games, computer science, and more 
 	</p>
+	<p>
+		What first started as a skype group between friends playing <a href="https://osu.ppy.sh/">osu!</a> then became a discord server's channel created on <time datetime="2015-09-15">September 13 2015</time><br>We then moved into our own server at some point between <time datetime="2016">March-May 2016</time><br>That server was unfortunately spontaneously deleted, but then recreated on the same day, <time datetime="2017-04-23">April 23 2017</time><br>We've been chillin since then
+	</p>
+	<p>
+		On this site, you can find anyone from the group who has connected their website and socials to the webring, as well as a musical project we created to submit and upload tracks we don't want to upload on our own aliases
+	</p>
+	<p>Enjoy your stay</p>
+	<table id="members" />
+	<script>
+		(async () => {
+			const table = document.getElementById("members");
+			if (!table)
+				return;
+			
+			const members: {
+				discord: string;
+				alias: string;
+				aliasEncoded: string;
+				site: string;
+				addedTingToSite: boolean;
+			}[] = await fetch("https://latex4000proxy.oykxf2.workers.dev").then((r => r.json()));
+	
+			// Headers
+			const thead = document.createElement("thead");
+			const headerRow = document.createElement("tr");
+			const headers = ["Name", "Website"];
+			headers.forEach(header => {
+				const th = document.createElement("th");
+				th.textContent = header;
+				headerRow.appendChild(th);
+			});
+			thead.appendChild(headerRow);
+			table.appendChild(thead);
+
+			// Member Rows
+			const tbody = document.createElement("tbody");
+			members.forEach(member => {
+				const row = document.createElement("tr");
+				const nameCell = document.createElement("td");
+				const websiteCell = document.createElement("td");
+				const websiteLink = document.createElement("a");
+				nameCell.textContent = member.alias;
+				websiteLink.href = member.site;
+				websiteLink.textContent = member.site;
+				websiteCell.appendChild(websiteLink);
+				row.appendChild(nameCell);
+				row.appendChild(websiteCell);
+				tbody.appendChild(row);
+			});
+
+			table.appendChild(tbody);
+		})().catch(console.error);
+	</script>
 </Layout>
