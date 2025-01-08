@@ -25,8 +25,8 @@ import Layout from '../layouts/Layout.astro';
 				alias: string;
 				aliasEncoded: string;
 				site: string;
-				addedTingToSite: boolean;
-			}[] = await fetch("https://latex4000proxy.oykxf2.workers.dev").then((r => r.json()));
+				addedRingToSite: boolean;
+			}[] = await fetch("https://latex4000.neocities.org/members.json").then((r => r.json()));
 	
 			// Headers
 			const thead = document.createElement("thead");
@@ -42,7 +42,7 @@ import Layout from '../layouts/Layout.astro';
 
 			// Member Rows
 			const tbody = document.createElement("tbody");
-			members.forEach(member => {
+			members.filter(member => member.addedRingToSite).forEach(member => {
 				const row = document.createElement("tr");
 				const nameCell = document.createElement("td");
 				const websiteCell = document.createElement("td");
