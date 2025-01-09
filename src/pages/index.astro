@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import MembersTable from '../components/MembersTable.svelte';
 ---
 
 <Layout header="Yo">
@@ -13,62 +14,5 @@ import Layout from '../layouts/Layout.astro';
 		On this site, you can find anyone from the group who has connected their website and socials to the webring, as well as a musical project we created to submit and upload tracks we don't want to upload on our own aliases
 	</p>
 	<p>Enjoy your stay</p>
-	<table id="members" />
-	<script>
-		function shuffle (array: any[]) {
-			let currentIndex = array.length;
-
-			while (currentIndex != 0) {
-				let randomIndex = Math.floor(Math.random() * currentIndex);
-				currentIndex--;
-
-				[array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
-			}
-		}
-
-		(async () => {
-			const table = document.getElementById("members");
-			if (!table)
-				return;
-			
-			const members: {
-				discord: string;
-				alias: string;
-				aliasEncoded: string;
-				site: string;
-				addedRingToSite: boolean;
-			}[] = await fetch("https://latex4000.neocities.org/members.json").then((r => r.json()));
-			shuffle(members);
-
-			// Headers
-			const thead = document.createElement("thead");
-			const headerRow = document.createElement("tr");
-			const headers = ["Name", "Website"];
-			headers.forEach(header => {
-				const th = document.createElement("th");
-				th.textContent = header;
-				headerRow.appendChild(th);
-			});
-			thead.appendChild(headerRow);
-			table.appendChild(thead);
-
-			// Member Rows
-			const tbody = document.createElement("tbody");
-			members.filter(member => member.addedRingToSite).forEach(member => {
-				const row = document.createElement("tr");
-				const nameCell = document.createElement("td");
-				const websiteCell = document.createElement("td");
-				const websiteLink = document.createElement("a");
-				nameCell.textContent = member.alias;
-				websiteLink.href = member.site;
-				websiteLink.textContent = member.site;
-				websiteCell.appendChild(websiteLink);
-				row.appendChild(nameCell);
-				row.appendChild(websiteCell);
-				tbody.appendChild(row);
-			});
-
-			table.appendChild(tbody);
-		})().catch(console.error);
-	</script>
+	<MembersTable client:only="svelte" />
 </Layout>
