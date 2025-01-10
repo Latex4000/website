@@ -345,7 +345,8 @@ function drawLegend (channels: string[]) {
     channels.forEach(ch => {
         const item = document.createElement('a');
         item.onclick = () => {
-            focusedChannel = focusedChannel === ch ? null : ch;
+            focusedChannel = focusedChannel === ch && focusLock ? null : ch;
+            focusLock = !focusLock;
             drawLines(currentChannels);
         };
         item.textContent = ch;
