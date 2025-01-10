@@ -267,20 +267,34 @@ canvas.on('mousemove', (event) => {
     if (!currentChannels.length) return;
     const [mx, my] = d3.pointer(event, canvas.node());
 
-    let closest = null;
+    let closest: rawDataType | null = null;
     let minDist = Infinity;
 
-    for (const series of currentChannels) {
-        for (const d of series) {
-            const dx = xScale(d.date) - mx;
-            const dy = yScale(d.count) - my;
-            const dist = dx * dx + dy * dy;
-            if (dist < minDist) {
-                minDist = dist;
-                closest = d;
+    if (focusedChannel && focusLock) {
+        const focusSeries = currentChannels.find(arr => arr[0]!.channelName === focusedChannel);
+        if (focusSeries) {
+            for (const d of focusSeries) {
+                const dx = xScale(d.date) - mx;
+                const dy = yScale(d.count) - my;
+                const dist = dx * dx + dy * dy;
+                if (dist < minDist) {
+                    minDist = dist;
+                    closest = d;
+                }
             }
         }
-    }
+    } else 
+        for (const series of currentChannels) {
+            for (const d of series) {
+                const dx = xScale(d.date) - mx;
+                const dy = yScale(d.count) - my;
+                const dist = dx * dx + dy * dy;
+                if (dist < minDist) {
+                    minDist = dist;
+                    closest = d;
+                }
+            }
+        }
 
     if (!closest) {
         tooltip.style.visibility = 'hidden';
