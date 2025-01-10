@@ -83,6 +83,7 @@ let xScale: d3.ScaleTime<number, number, never>, yScale: d3.ScaleLinear<number, 
 let xOrig: d3.ScaleTime<number, number, never>, yOrig: d3.ScaleLinear<number, number, never>;
 
 let focusedChannel: string | null = null;
+let focusLock = false;
 
 // array of arrays, each sub-array is one channel's timeseries
 function groupDataByInterval (data: rawDataType[], interval: string) {
@@ -158,6 +159,8 @@ function setupScales (channelsArray: rawDataType[][]) {
     yScale = yOrig.copy();
 }
 
+let colorRange: string[] = [];
+
 function drawLines (channelsArray: rawDataType[][]) {
     context.clearRect(0, 0, width, height);
 
@@ -200,8 +203,12 @@ function drawLines (channelsArray: rawDataType[][]) {
         context.fillText(`${t}`, margin.left - 8, ty);
     });
 
+    // Use interpolateRdYlBu for colours
     const channels = channelsArray.map(arr => arr[0]!.channelName).filter(Boolean);
-    const color = d3.scaleOrdinal(d3.schemeTableau10).domain(channels);
+    colorRange = channels
+        .map((_, i) => d3.interpolatePuBuGn(i / ((channels.length - 1) || 1)))
+        .map(c => d3.color(c)!.brighter(1).toString());
+    const color = d3.scaleOrdinal(colorRange).domain(channels);
 
     // Draw each line
     channelsArray.forEach(series => {
@@ -217,11 +224,10 @@ function drawLines (channelsArray: rawDataType[][]) {
         series.forEach((d, i) => {
             const cx = xScale(d.date);
             const cy = yScale(d.count);
-            if (i === 0) {
+            if (i === 0)
                 context.moveTo(cx, cy);
-            } else {
+            else
                 context.lineTo(cx, cy);
-            }
         });
         context.stroke();
 
@@ -281,6 +287,11 @@ canvas.on('mousemove', (event) => {
         return;
     }
 
+    if (!focusLock) {
+        focusedChannel = closest.channelName;
+        drawLines(currentChannels);
+    }
+
     const tooltipX = xScale(closest.date) + 10;
     const tooltipY = yScale(closest.count) - 10;
     tooltip.style.left = tooltipX + 'px';
@@ -295,6 +306,10 @@ canvas.on('mousemove', (event) => {
 
 canvas.on('mouseleave', () => {
     tooltip.style.visibility = 'hidden';
+    if (!focusLock) {
+        focusedChannel = null;
+        drawLines(currentChannels);
+    }
 });
 
 canvas.on('click', (event) => {
@@ -317,14 +332,15 @@ canvas.on('click', (event) => {
     }
 
     if (closest) {
-        focusedChannel = focusedChannel === closest.channelName ? null : closest.channelName;
+        focusedChannel = focusedChannel === closest.channelName && focusLock ? null : closest.channelName;
+        focusLock = !focusLock;
         drawLines(currentChannels);
     }
 });
 
 function drawLegend (channels: string[]) {
     legendDiv.innerHTML = '';
-    const color = d3.scaleOrdinal(d3.schemeTableau10).domain(channels);
+    const color = d3.scaleOrdinal(colorRange).domain(channels);
 
     channels.forEach(ch => {
         const item = document.createElement('a');
