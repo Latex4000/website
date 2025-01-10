@@ -57,6 +57,10 @@ body {
 	max-width: calc(min(80ch, round(down, 100%, 1ch)));
 	line-height: var(--line-height);
 	overflow-x: hidden;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	gap: var(--line-height);
 }
 
 @media screen and (max-width: 480px) {
@@ -316,7 +320,8 @@ li::marker {
 
 input,
 button,
-textarea {
+textarea,
+select {
 	border: var(--border-thickness) solid var(--text-color);
 	padding:
 		calc(var(--line-height) / 2 - var(--border-thickness)) calc(1ch - var(--border-thickness));
@@ -324,7 +329,6 @@ textarea {
 	font: inherit;
 	font-weight: inherit;
 	height: calc(var(--line-height) * 2);
-	width: auto;
 	overflow: visible;
 	background: var(--background-color);
 	color: var(--text-color);
@@ -355,10 +359,6 @@ button:focus,
 input:focus {
 	--border-thickness: 3px;
 	outline: none;
-}
-
-input {
-	width: calc(round(down, 100%, 1ch));
 }
 
 ::placeholder {

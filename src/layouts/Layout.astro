@@ -33,15 +33,15 @@ const { header } = Astro.props;
 			<h1><a href="/" class="header">Latex 4000 / L4K</a></h1>
 			<h2>{header}</h2>
 			<slot />
-		</div>
-		<div class="latex4000Webring">
-			Webring:
-			<div class="latex4000WebringButtons">
-				<a href="https://latex4000.neocities.org" id="latex4000Prev" title="Previous">←</a>
-				<a href="#" id="latex4000Random" title="Random">Random</a>
-				<a href="https://latex4000.neocities.org" id="latex4000Next" title="Next">→</a>
+			<div class="latex4000Webring">
+				Webring:
+				<div class="latex4000WebringButtons">
+					<a href="https://latex4000.neocities.org" id="latex4000Prev" title="Previous">←</a>
+					<a href="#" id="latex4000Random" title="Random">Random</a>
+					<a href="https://latex4000.neocities.org" id="latex4000Next" title="Next">→</a>
+				</div>
+				<script is:inline id="latex4000Webring" src="https://latex4000.neocities.org/webring.min.js" data-alias="latex4000"></script>
 			</div>
-			<script is:inline id="latex4000Webring" src="https://latex4000.neocities.org/webring.min.js" data-alias="latex4000"></script>
 		</div>
 		<div class="footer">
 			<a href="https://github.com/Latex4000" target="_blank">GitHub</a>
@@ -58,8 +58,6 @@ const { header } = Astro.props;
 	}
 
 	.footer {
-		position: absolute;
-		bottom: 0;
 		font-size: .75rem;
 	}
 </style>
