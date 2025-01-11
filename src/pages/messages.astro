@@ -1,8 +1,52 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import MessageGraph from '../components/MessageGraph.astro';
+import Layout from "../layouts/Layout.astro";
+import MessageGraph from "../components/MessageGraph.svelte";
+import MessageHeatmap from "../components/MessageHeatmap.svelte";
 ---
 
 <Layout header="Graph of Messages">
-    <MessageGraph />
+    <div>
+        <div class="messageOptions">
+            <label for="chartType">Select chart type:</label>
+            <select id="chartType">
+            <option value="graph">Graph</option>
+            <option value="heatmap">Heatmap</option>
+            </select>
+        </div>
+
+        <div id="graphContainer">
+            <MessageGraph client:only="svelte"/>
+            </MessageGraph>
+        </div>
+
+        <div id="heatmapContainer" style="display: none;">
+            <MessageHeatmap client:only="svelte"/>
+        </div>
+    </div>
+
+    <script is:inline>
+        const selectElem = document.getElementById("chartType");
+        const graphContainer = document.getElementById("graphContainer");
+        const heatmapContainer = document.getElementById("heatmapContainer");
+
+        selectElem.addEventListener("change", (event) => {
+            const selected = event.target.value;
+            if (selected === "graph") {
+                graphContainer.style.display = "block";
+                heatmapContainer.style.display = "none";
+            } else {
+                graphContainer.style.display = "none";
+                heatmapContainer.style.display = "block";
+            }
+        });
+    </script>
 </Layout>
+
+<style>
+    .messageOptions {
+        margin-bottom: var(--line-height);
+        display: flex;
+        flex-direction: column;
+        gap: var(--line-height);
+    }
+</style>
