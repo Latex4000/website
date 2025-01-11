@@ -259,7 +259,7 @@ $effect(() => updateHeatmap());
                         onchange={(e) => {
                             const checked = (e.target as HTMLInputElement).checked;
                             if (checked) {
-                                selectedChannels = [...selectedChannels, "all"];
+                                selectedChannels = ["all"];
                             } else {
                                 selectedChannels = selectedChannels.filter(ch => ch !== "all");
                             }
@@ -276,7 +276,7 @@ $effect(() => updateHeatmap());
                             onchange={(e) => {
                                 const checked = (e.target as HTMLInputElement).checked;
                                 if (checked)
-                                    selectedChannels = [...selectedChannels, ch];
+                                    selectedChannels = [...selectedChannels.filter(ch => ch !== "all"), ch];
                                 else
                                     selectedChannels = selectedChannels.filter(c => c !== ch);
                             }}
