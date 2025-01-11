@@ -1,13 +1,7 @@
 <script lang="ts">
-function shuffle (array: any[]) {
-    let currentIndex = array.length;
-
-    while (currentIndex != 0) {
-        let randomIndex = Math.floor(Math.random() * currentIndex);
-        currentIndex--;
-
-        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
-    }
+function rotateArray<T>(array: T[]): T[] {
+    const startIndex = Math.round(Math.random() * array.length);
+    return [...array.slice(startIndex), ...array.slice(0, startIndex)];
 }
 
 interface Member {
@@ -18,12 +12,9 @@ interface Member {
     addedRingToSite: boolean;
 }
 
-const data: Promise<Member[]> = fetch("https://latex4000.neocities.org/members.json")
+const data: Promise<Member[]> = fetch("https://latex4000proxy.oykxf2.workers.dev/")
     .then((r) => r.json())
-    .then((members) => {
-        shuffle(members);
-        return members.filter((member: Member) => member.addedRingToSite);
-    });
+    .then((members: Member[]) => rotateArray(members).filter((member: Member) => member.addedRingToSite));
 </script>
 
 {#await data}
