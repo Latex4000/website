@@ -12,10 +12,15 @@ import data from '../data/messageData.json' assert { type: 'json' };
     <label for="windowSize">Window Size:</label>
     <input id="windowSize" type="number" value="3" min="1" />
 
-    <label for="channelFilter">Isolate channel:</label>
-    <select id="channelFilter">
-        <option value="">All Channels</option>
-    </select>
+    <div class="dropdown">
+        <button type="button" id="channelDropdownBtn">Channels:</button>
+        <div id="channelMenu" class="dropdown-content">
+            <label>
+                <input type="checkbox" value="all" checked />
+                All
+            </label>
+        </div>
+    </div>
 </div>
 
 <div id="chart" data-messages={JSON.stringify(data)}>
@@ -31,12 +36,17 @@ import * as d3 from 'd3';
 const chartDiv = document.getElementById('chart') as HTMLDivElement;
 const intervalSelect = document.querySelector('#interval') as HTMLSelectElement;
 const windowSizeInput = document.querySelector('#windowSize') as HTMLInputElement;
-const channelFilterSelect = document.querySelector('#channelFilter') as HTMLSelectElement;
 const legendDiv = document.getElementById('legend') as HTMLDivElement;
 const tooltip = document.getElementById('tooltip') as HTMLDivElement;
+const channelDropdownBtn = document.getElementById('channelDropdownBtn') as HTMLButtonElement;
+const channelMenu = document.getElementById('channelMenu') as HTMLDivElement;
 
-if (!chartDiv || !intervalSelect || !windowSizeInput || !channelFilterSelect || !legendDiv || !tooltip)
+if (!chartDiv || !intervalSelect || !windowSizeInput || !legendDiv || !tooltip || !channelDropdownBtn || !channelMenu)
     throw new Error('Missing required elements');
+
+channelDropdownBtn.addEventListener('click', () => {
+    channelMenu.style.display = channelMenu.style.display === 'flex' ? 'none' : 'flex';
+});
 
 interface rawDataType {
     channelName: string;
@@ -57,10 +67,17 @@ const latestDate = d3.max(rawData, d => d.date) ?? new Date();
 
 const allChannelNames = Array.from(new Set(rawData.map(d => d.channelName)));
 allChannelNames.forEach(ch => {
-    const opt = document.createElement('option');
-    opt.value = ch;
-    opt.textContent = ch;
-    channelFilterSelect.appendChild(opt);
+    const label = document.createElement('label');
+
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.value = ch;
+    label.appendChild(checkbox);
+
+    const text = document.createTextNode(' ' + ch);
+    label.appendChild(text);
+
+    channelMenu.appendChild(label);
 });
 
 let width = chartDiv.clientWidth;
@@ -372,38 +389,94 @@ function drawLegend (channels: string[]) {
     });
 }
 
+function getAggregateTimeSeries (channelsArray: rawDataType[][]): rawDataType[] {
+    const dateMap = new Map();
+    for (const series of channelsArray) {
+        for (const d of series) {
+            const t = +d.date;
+            dateMap.set(t, (dateMap.get(t) ?? 0) + d.count);
+        }
+    }
+    const merged = [];
+    for (const [time, sum] of dateMap.entries())
+        merged.push({
+            date: new Date(time),
+            count: sum,
+            channelName: 'Total',
+        });
+
+    merged.sort((a, b) => +a.date - +b.date);
+    return merged;
+}
+
+function labelSeries (series: rawDataType[], label: string): rawDataType[] {
+    return series.map(d => ({ ...d, channelName: label }));
+}
+
 // Main Func
 function updateChart() {
     const interval = intervalSelect.value;
     const windowSize = +windowSizeInput.value;
-    const selectedChannel = channelFilterSelect.value;
 
-    let grouped = groupDataByInterval(rawData, interval);
+    const allGrouped = groupDataByInterval(rawData, interval);
+    const allSmoothed = allGrouped.map(s => movingAverage(s, windowSize));
 
-    if (selectedChannel) {
-        focusedChannel = null; // reset focus if channel is filtered
-        grouped = grouped.filter(arr => arr[0]?.channelName === selectedChannel);
+    let totalAllLabeled: rawDataType[] = [];
+    let selectedTotal: rawDataType[] = [];
+
+    // Checkbox check; f the "All" checkbox is checked, treat it as everything
+    const checkboxes = channelMenu.querySelectorAll('input[type="checkbox"]') as NodeListOf<HTMLInputElement>;
+    const allBox = channelMenu.querySelector('input[value="all"]') as HTMLInputElement;
+    const allChecked = allBox && allBox.checked;
+    const selected: string[] = [];
+    checkboxes.forEach((cb) => {
+        if (cb.value !== 'all' && cb.checked)
+            selected.push(cb.value);
+    });
+
+    let chosen = allSmoothed;
+    if (!allChecked) {
+        chosen = allSmoothed.filter(arr => {
+            const ch = arr[0]?.channelName;
+            return ch && selected.includes(ch);
+        });
+    } else {
+        let totalAll = getAggregateTimeSeries(allSmoothed);
+        totalAll = movingAverage(totalAll, windowSize);
+        totalAllLabeled = labelSeries(totalAll, "Total");
     }
 
-    const smoothed = grouped.map(series => movingAverage(series, windowSize));
     
-    if (!smoothed.flat().length) {
+    if (chosen.length > 1 && !allChecked) {
+        selectedTotal = getAggregateTimeSeries(chosen);
+        selectedTotal = movingAverage(selectedTotal, windowSize);
+        selectedTotal = labelSeries(selectedTotal, 'Selected Total');
+    }
+
+    // Final array-of-arrays
+    const finalSeriesArray: rawDataType[][] = [
+        ...chosen,
+        ...(totalAllLabeled.length ? [totalAllLabeled] : []),
+        ...(selectedTotal.length ? [selectedTotal] : []),
+    ];
+
+    if (!finalSeriesArray.flat().length) {
         context.clearRect(0, 0, width, height);
-        legendDiv.innerHTML = '(No data)';
+        legendDiv.innerHTML = '(No data/selection)';
         return;
     }
-    setupScales(smoothed);
 
-    currentChannels = smoothed; // store globally to use in zoom, tooltips
+    setupScales(finalSeriesArray);
+    currentChannels = finalSeriesArray;
     drawLines(currentChannels);
 
-    const channels = smoothed.map(arr => arr[0]!.channelName).filter(Boolean);
-    drawLegend(channels);
+    const channelNames = finalSeriesArray.map(arr => arr[0]!.channelName).filter(Boolean);
+    drawLegend(channelNames);
 }
 
 intervalSelect.addEventListener('change', updateChart);
 windowSizeInput.addEventListener('input', updateChart);
-channelFilterSelect.addEventListener('change', updateChart);
+channelMenu.addEventListener('change', updateChart);
 
 window.addEventListener('resize', () => {
     width = chartDiv.clientWidth;
@@ -429,6 +502,16 @@ updateChart();
         display: flex;
         flex-direction: column;
         gap: var(--line-height);
+    }
+
+    .dropdown-content {
+        display: none;
+        flex-direction: column;
+        gap: var(--line-height);
+        position: absolute;
+        background: rgba(0, 0, 0, 0.85);
+        margin-top: var(--line-height);
+        z-index: 2;
     }
 
     #chart {
