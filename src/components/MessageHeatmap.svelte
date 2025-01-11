@@ -2,20 +2,24 @@
 import { onMount } from "svelte";
 import * as d3 from "d3";
 import dataFile from "../data/messageData.json";
+import { type MessageData } from "../typing/messageData";
 
-interface RawDataType {
-    channelName: string;
-    date: Date;
-    count: number;
-}
-
-let rawData: RawDataType[] = dataFile.map((d: any) => ({
+let rawData: MessageData[] = dataFile.map((d: any) => ({
     channelName: d.channelName,
     date: new Date(d.date),
-    count: +d.count
+    count: +d.count,
+    order: +d.order,
 }));
 
-let allChannelNames = Array.from(new Set(rawData.map(d => d.channelName)));
+const channelRollup = d3.rollups(
+    rawData,
+    (v) => v[0],
+    (d) => d.channelName
+)
+.map(([_, val]) => val!)
+.sort((a, b) => d3.ascending(a.order, b.order));
+
+let allChannelNames = channelRollup.map(d => d.channelName);
 let selectedChannels: (string | "all")[] = $state(["all"]);
 let channelMenuVisible = $state(false);
 
@@ -49,7 +53,7 @@ function getDayOfYear(date: Date): number {
     return Math.floor(diff / (1000 * 60 * 60 * 24)) + 1;
 }
 
-function getFilteredData(): RawDataType[] { // If "all" selected, combine everything; otherwise, filter
+function getFilteredData(): MessageData[] { // If "all" selected, combine everything; otherwise, filter
     if (selectedChannels.includes("all"))
         return rawData;
 

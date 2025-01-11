@@ -2,23 +2,27 @@
 import { onMount } from "svelte";
 import * as d3 from "d3";
 import dataFile from "../data/messageData.json";
-
-interface RawDataType {
-    channelName: string;
-    date: Date;
-    count: number;
-}
+import { type MessageData } from "../typing/messageData";
 
 let interval = $state("week");
 let windowSize = $state(3);
 
-let rawData: RawDataType[] = dataFile.map((d: any) => ({
+let rawData: MessageData[] = dataFile.map((d: any) => ({
     channelName: d.channelName,
     date: new Date(d.date),
-    count: +d.count
+    count: +d.count,
+    order: +d.order
 }));
 
-let allChannelNames = Array.from(new Set(rawData.map(d => d.channelName)));
+const channelRollup = d3.rollups(
+    rawData,
+    (v) => v[0],
+    (d) => d.channelName
+)
+.map(([_, val]) => val!)
+.sort((a, b) => d3.ascending(a.order, b.order));
+
+let allChannelNames = channelRollup.map(d => d.channelName);
 let selectedChannels: (string | "all")[] = $state(["all"]);
 
 let channelMenuVisible = $state(false);
@@ -42,7 +46,7 @@ let yScale: d3.ScaleLinear<number, number>;
 let xOrig: d3.ScaleTime<number, number>;
 let yOrig: d3.ScaleLinear<number, number>;
 
-let currentChannels: RawDataType[][] = [];
+let currentChannels: MessageData[][] = [];
 let focusedChannel: string | null = null;
 let focusLock = false;
 let colorRange: string[] = [];
@@ -52,7 +56,7 @@ function toggleChannelMenu() {
     channelMenuVisible = !channelMenuVisible;
 }
 
-function groupDataByInterval(data: RawDataType[], intv: string) {
+function groupDataByInterval(data: MessageData[], intv: string) {
     const truncatedData = data.map(d => {
         const dt = new Date(d.date);
         let newDt = dt;
@@ -66,21 +70,26 @@ function groupDataByInterval(data: RawDataType[], intv: string) {
         } else if (intv === "month")
             newDt = new Date(dt.getFullYear(), dt.getMonth(), 1);
 
-        return { date: newDt, count: d.count, channelName: d.channelName };
+        return {
+            ...d,
+            date: newDt
+        };
     });
 
     const channelMap = d3.group(truncatedData, d => d.channelName);
-    const result: RawDataType[][] = [];
+    const result: MessageData[][] = [];
     channelMap.forEach((arr, channelName) => {
         const dateMap = d3.rollup(
             arr,
             v => d3.sum(v, d => d.count),
             d => +d.date
         );
+        const chOrder = arr[0]?.order ?? 99999;
         const groupedArray = Array.from(dateMap, ([time, count]) => ({
             date: new Date(time),
             count,
-            channelName
+            channelName,
+            order: chOrder
         }));
         groupedArray.sort((a, b) => +a.date - +b.date);
         result.push(groupedArray);
@@ -88,8 +97,8 @@ function groupDataByInterval(data: RawDataType[], intv: string) {
     return result;
 }
 
-function movingAverage(series: RawDataType[], windowSize: number) {
-    const result: RawDataType[] = [];
+function movingAverage(series: MessageData[], windowSize: number) {
+    const result: MessageData[] = [];
     for (let i = 0; i < series.length; i++) {
         const start = Math.max(0, i - (windowSize - 1));
         const window = series.slice(start, i + 1);
@@ -102,7 +111,7 @@ function movingAverage(series: RawDataType[], windowSize: number) {
     return result;
 }
 
-function getAggregateTimeSeries(channelsArray: RawDataType[][]) {
+function getAggregateTimeSeries(channelsArray: MessageData[][]) {
     const dateMap = new Map<number, number>();
     for (const series of channelsArray)
         for (const d of series) {
@@ -110,19 +119,19 @@ function getAggregateTimeSeries(channelsArray: RawDataType[][]) {
             dateMap.set(t, (dateMap.get(t) ?? 0) + d.count);
         }
 
-    const merged: RawDataType[] = [];
+    const merged: MessageData[] = [];
     for (const [time, sum] of dateMap.entries())
-        merged.push({ date: new Date(time), count: sum, channelName: "Total" });
+        merged.push({ date: new Date(time), count: sum, channelName: "Total", order: 99999 });
 
     merged.sort((a, b) => +a.date - +b.date);
     return merged;
 }
 
-function labelSeries(series: RawDataType[], label: string) {
-    return series.map(d => ({ ...d, channelName: label }));
+function labelSeries(series: MessageData[], label: string, order: number) {
+    return series.map(d => ({ ...d, channelName: label, order }));
 }
 
-function setupScales(channelsArray: RawDataType[][]) {
+function setupScales(channelsArray: MessageData[][]) {
     const allPoints = channelsArray.flat();
     const yMax = d3.max(allPoints, d => d.count) ?? 0;
     xOrig = d3
@@ -138,7 +147,7 @@ function setupScales(channelsArray: RawDataType[][]) {
     yScale = yOrig.copy();
 }
 
-function drawLines(channelsArray: RawDataType[][]) {
+function drawLines(channelsArray: MessageData[][]) {
     if (!context) return;
     context.clearRect(0, 0, width, height);
 
@@ -209,9 +218,20 @@ function drawLines(channelsArray: RawDataType[][]) {
 function drawLegend(channels: string[]) {
     if (!legendRef) return;
     legendRef.innerHTML = "";
+
+    const channelToOrder = new Map<string, number>();
+    for (const series of currentChannels)
+        if (series.length)
+            channelToOrder.set(series[0]!.channelName, series[0]!.order);
+
+    // Sort channel names by their known order
+    const sortedChannels = channels
+        .map(ch => ({ name: ch, order: channelToOrder.get(ch) ?? 99999 }))
+        .sort((a, b) => d3.ascending(a.order, b.order));
     const color = d3.scaleOrdinal(colorRange).domain(channels);
 
-    channels.forEach(ch => {
+    sortedChannels.forEach(chObj => {
+        const ch = chObj.name;
         const item = document.createElement("a");
         item.onclick = () => {
             focusedChannel = focusedChannel === ch && focusLock ? null : ch;
@@ -244,13 +264,13 @@ function updateChart() {
     const selected = selectedChannels.filter(ch => ch !== "all");
 
     let chosen = [...allSmoothed];
-    let totalAllLabeled: RawDataType[] = [];
-    let selectedTotal: RawDataType[] = [];
+    let totalAllLabeled: MessageData[] = [];
+    let selectedTotal: MessageData[] = [];
 
     if (allChecked) {
         let totalAll = getAggregateTimeSeries(allSmoothed);
         totalAll = movingAverage(totalAll, +windowSize);
-        totalAllLabeled = labelSeries(totalAll, "Total");
+        totalAllLabeled = labelSeries(totalAll, "Total", 99999);
         chosen = allSmoothed;
     } else
         chosen = allSmoothed.filter(arr => {
@@ -261,10 +281,10 @@ function updateChart() {
     if (chosen.length > 1 && !allChecked) {
         selectedTotal = getAggregateTimeSeries(chosen);
         selectedTotal = movingAverage(selectedTotal, +windowSize);
-        selectedTotal = labelSeries(selectedTotal, "Selected Total");
+        selectedTotal = labelSeries(selectedTotal, "Selected Total", 99998);
     }
 
-    const finalSeriesArray: RawDataType[][] = [
+    const finalSeriesArray: MessageData[][] = [
         ...chosen,
         ...(totalAllLabeled.length ? [totalAllLabeled] : []),
         ...(selectedTotal.length ? [selectedTotal] : []),
@@ -280,7 +300,12 @@ function updateChart() {
     currentChannels = finalSeriesArray;
     drawLines(currentChannels);
 
-    const channelNames = finalSeriesArray.map(arr => arr[0]!.channelName).filter(Boolean) as string[];
+    // Legend sorted by order
+    const channelObjects = finalSeriesArray
+        .map(arr => arr[0]!)
+        .filter(Boolean)
+        .sort((a, b) => d3.ascending(a.order, b.order));
+    const channelNames = channelObjects.map(d => d.channelName);
     drawLegend(channelNames);
 
     // Zoom
@@ -313,7 +338,7 @@ function onCanvasClick(e: MouseEvent) {
     const mx = e.clientX - rect.left;
     const my = e.clientY - rect.top;
 
-    let closest: RawDataType | null = null;
+    let closest: MessageData | null = null;
     let minDist = Infinity;
 
     for (const series of currentChannels)
@@ -340,7 +365,7 @@ function onCanvasMouseMove(e: MouseEvent) {
     const mx = e.clientX - rect.left;
     const my = e.clientY - rect.top;
 
-    let closest: RawDataType | null = null;
+    let closest: MessageData | null = null;
     let minDist = Infinity;
 
     if (focusedChannel && focusLock) {
