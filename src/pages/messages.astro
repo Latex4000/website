@@ -4,10 +4,10 @@ import MessageGraph from "../components/MessageGraph.svelte";
 import MessageHeatmap from "../components/MessageHeatmap.svelte";
 ---
 
-<Layout header="Graph of Messages">
+<Layout header="Message Charts | Updated: 2025-01-09">
     <div>
         <div class="messageOptions">
-            <label for="chartType">Select chart type:</label>
+            <label for="chartType">Chart type:</label>
             <select id="chartType">
             <option value="graph">Graph</option>
             <option value="heatmap">Heatmap</option>
@@ -15,12 +15,12 @@ import MessageHeatmap from "../components/MessageHeatmap.svelte";
         </div>
 
         <div id="graphContainer">
-            <MessageGraph client:only="svelte"/>
+            <MessageGraph client:visible/>
             </MessageGraph>
         </div>
 
         <div id="heatmapContainer" style="display: none;">
-            <MessageHeatmap client:only="svelte"/>
+            <MessageHeatmap client:visible/>
         </div>
     </div>
 
