@@ -33,7 +33,7 @@ let latestDate = d3.max(rawData, d => d.date) ?? new Date();
 
 let width: number;
 let height: number;
-const margin = { top: 20, right: 20, bottom: 30, left: 50 };
+const margin = { top: 0, right: 0, bottom: 30, left: 40 };
 
 let context: CanvasRenderingContext2D | null;
 
@@ -183,8 +183,7 @@ function drawLines(channelsArray: RawDataType[][]) {
 
     const channels = channelsArray.map(arr => arr[0]?.channelName).filter(Boolean) as string[];
     colorRange = channels
-        .map((_, i) => d3.interpolatePuBuGn(i / ((channels.length - 1) || 1)))
-        .map(c => d3.color(c)!.brighter(1).toString());
+        .map((_, i) => d3.interpolatePuBuGn(i / ((channels.length - 1) || 1)));
     const color = d3.scaleOrdinal(colorRange).domain(channels);
 
     channelsArray.forEach(series => {
@@ -398,93 +397,86 @@ function onCanvasMouseLeave() {
     }
 }
 
-function onResize() {
-    updateChart();
-}
-
 onMount(() => {
-    window.addEventListener("resize", onResize);
+    window.addEventListener("resize", updateChart);
     updateChart();
 });
 
 // re-runs whenever props change
-$effect(() => {
-    updateChart();
-});
+$effect(() => updateChart());
 
 </script>
 
 <div class="chartOptions">
-<label for="interval">Group by:</label>
-<select id="interval" bind:value={interval}>
-    <option value="day">Day</option>
-    <option value="week" selected>Week</option>
-    <option value="month">Month</option>
-</select>
+    <label for="interval">Group by:</label>
+    <select id="interval" bind:value={interval}>
+        <option value="day">Day</option>
+        <option value="week" selected>Week</option>
+        <option value="month">Month</option>
+    </select>
 
-<label for="windowSize">Window Size:</label>
-<input
-    id="windowSize"
-    type="number"
-    min="1"
-    bind:value={windowSize}
-/>
+    <label for="windowSize">Window Size:</label>
+    <input
+        id="windowSize"
+        type="number"
+        min="1"
+        bind:value={windowSize}
+    />
 
-<div class="dropdown">
-    <button type="button" onclick={toggleChannelMenu}>
-        Channels:
-    </button>
-    {#if channelMenuVisible}
-        <div class="dropdown-content">
-            <label>
-                <input
-                    type="checkbox"
-                    value="all"
-                    checked={selectedChannels.includes("all")}
-                    onchange={(e) => {
-                        const checked = (e.target as HTMLInputElement).checked;
-                        if (checked)
-                            selectedChannels = [...selectedChannels, "all"];
-                        else
-                            selectedChannels = selectedChannels.filter(ch => ch !== "all");
-                    }}
-                />
-                All
-            </label>
-            {#each allChannelNames as ch}
+    <div class="dropdown">
+        <button type="button" onclick={toggleChannelMenu}>
+            Channels:
+        </button>
+        {#if channelMenuVisible}
+            <div class="dropdown-content">
                 <label>
                     <input
-                    type="checkbox"
-                    value={ch}
-                    checked={selectedChannels.includes(ch)}
-                    onchange={(e) => {
-                        const checked = (e.target as HTMLInputElement).checked;
-                        if (checked)
-                            selectedChannels = [...selectedChannels, ch];
-                        else
-                            selectedChannels = selectedChannels.filter(item => item !== ch);
-                    }}
+                        type="checkbox"
+                        value="all"
+                        checked={selectedChannels.includes("all")}
+                        onchange={(e) => {
+                            const checked = (e.target as HTMLInputElement).checked;
+                            if (checked)
+                                selectedChannels = [...selectedChannels, "all"];
+                            else
+                                selectedChannels = selectedChannels.filter(ch => ch !== "all");
+                        }}
                     />
-                    {ch}
+                    All
                 </label>
-            {/each}
-        </div>
-    {/if}
-</div>
+                {#each allChannelNames as ch}
+                    <label>
+                        <input
+                        type="checkbox"
+                        value={ch}
+                        checked={selectedChannels.includes(ch)}
+                        onchange={(e) => {
+                            const checked = (e.target as HTMLInputElement).checked;
+                            if (checked)
+                                selectedChannels = [...selectedChannels, ch];
+                            else
+                                selectedChannels = selectedChannels.filter(item => item !== ch);
+                        }}
+                        />
+                        {ch}
+                    </label>
+                {/each}
+            </div>
+        {/if}
+    </div>
 </div>
 
 <div
-id="chart"
-bind:this={chartRef}
-style="position:relative; display:flex; flex-direction:column; gap:1rem;"
+    id="chart"
+    bind:this={chartRef}
 >
-<canvas
-    bind:this={canvasRef}
-    onmousemove={onCanvasMouseMove}
-    onmouseleave={onCanvasMouseLeave}
-    onclick={onCanvasClick}
-></canvas>
-<div id="tooltip" bind:this={tooltipRef}></div>
+    <canvas
+        bind:this={canvasRef}
+        onmousemove={onCanvasMouseMove}
+        onmouseleave={onCanvasMouseLeave}
+        onclick={onCanvasClick}
+    ></canvas>
+    <div id="tooltip" bind:this={tooltipRef}></div>
 </div>
 
 <div id="legend" bind:this={legendRef}></div>
@@ -493,33 +485,32 @@ style="position:relative; display:flex; flex-direction:column; gap:1rem;"
 .chartOptions {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: var(--line-height);
+    margin-bottom: var(--line-height);
 }
 
 .dropdown-content {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
     position: absolute;
     background: rgba(0, 0, 0, 0.85);
-    margin-top: 0.5rem;
-    z-index: 2;
     color: #fff;
     padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: var(--line-height);
+    z-index: 10;
 }
 
 #chart {
     position: relative;
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: var(--line-height);
 }
 
 #tooltip {
     position: absolute;
     pointer-events: none;
     background: rgba(0, 0, 0, 0.8);
-    color: #fff;
     padding: 0.5rem;
     font-size: 0.75rem;
     visibility: hidden;
@@ -528,7 +519,7 @@ style="position:relative; display:flex; flex-direction:column; gap:1rem;"
 
 #legend {
     display: flex;
-    gap: 1rem;
+    gap: var(--line-height);
     flex-wrap: wrap;
     margin-bottom: 1rem;
 }
