@@ -31,6 +31,7 @@ const { header } = Astro.props;
 	<body>
 		<div class="main">
 			<h1><a href="/" class="header">Latex 4000 / L4K</a></h1>
+			<h2><a href="/">Home</a> | <a href="/music">Music</a></h2>
 			<h2>{header}</h2>
 			<slot />
 			<div class="latex4000Webring">
@@ -44,6 +45,10 @@ const { header } = Astro.props;
 			</div>
 		</div>
 		<div class="footer">
+			<a href="https://www.youtube.com/@latex4000" target="_blank">YouTube</a>
+			|
+			<a href="https://soundcloud.com/latex4000" target="_blank">SoundCloud</a>
+			|
 			<a href="https://github.com/Latex4000" target="_blank">GitHub</a>
 			|
 			<a href="https://owickstrom.github.io/the-monospace-web/" target="_blank">Design implemented from The Monospace Web</a>
