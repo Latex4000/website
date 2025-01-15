@@ -411,6 +411,32 @@ function onCanvasMouseMove(e: MouseEvent) {
     <div>${d3.utcFormat("%b %d %Y")(closest.date)}</div>
     <div>${closest.count.toFixed()}</div>
 `;
+
+    if (context) {
+        drawLines(currentChannels);
+
+        const channels = currentChannels.map(arr => arr[0]?.channelName).filter(Boolean) as string[];
+        const color = d3.scaleOrdinal(colorRange).domain(channels);
+        const circleColor = color(closest.channelName) || "#fff";
+
+        context.beginPath();
+        context.arc(xScale(closest.date), yScale(closest.count), 5, 0, 2 * Math.PI);
+        
+        const gradient = context.createRadialGradient(
+            xScale(closest.date),
+            yScale(closest.count),
+            0,
+            xScale(closest.date),
+            yScale(closest.count),
+            5
+        );
+        gradient.addColorStop(0, circleColor);
+        gradient.addColorStop(0.5, circleColor);
+        gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+        context.fillStyle = gradient;
+
+        context.fill();
+    }
 }
 
 function onCanvasMouseLeave() {
