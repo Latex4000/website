@@ -31,7 +31,15 @@ const { header } = Astro.props;
 	<body>
 		<div class="main">
 			<h1><a href="/" class="header">Latex 4000 / L4K</a></h1>
-			<h2><a href="/">Home</a> | <a href="/music">Music</a></h2>
+			<h2>
+				<a href="/">Home</a>
+				|
+				<a href="/music">Sounds</a>
+				<!-- |
+				<a href="/words">Words</a>
+				|
+				<a href="/feed">Actions</a> -->
+			</h2>
 			<h2>{header}</h2>
 			<slot />
 			<div class="latex4000Webring">
