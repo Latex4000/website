@@ -12,7 +12,6 @@ Editing site:
   - Pages are in `src/pages/`, think of .astro as .html 2
 
 Deploying site:
-- Run `npm run build`
-- Run `neocities push ./dist` (requires [Neocities CLI](https://neocities.org/cli))
+- Run `npm run deploy`
 
 Yay
