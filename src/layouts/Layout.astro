@@ -19,11 +19,11 @@ const { header } = Astro.props;
 		<meta name="twitter:site" content="@Latex4000" />
 		<meta name="twitter:title" content="Latex 4000" />
 		<meta name="twitter:description" content="Latex 4000 Collective" />
-		<meta name="twitter:image" content="https://latex4000.neocities.org/logo.png" />
+		<meta name="twitter:image" content={new URL("/logo.png", Astro.url)} />
 		<meta property="og:title" content="Latex 4000" />
 		<meta property="og:type" content="website" />
-		<meta property="og:url" content="https://latex4000.neocities.org" />
-		<meta property="og:image" content="https://latex4000.neocities.org/logo.png" />
+		<meta property="og:url" content={Astro.url} />
+		<meta property="og:image" content={new URL("/logo.png", Astro.url)} />
 		<meta property="og:description" content="Latex 4000 Collective" />
 		<meta property="og:site_name" content="Latex 4000" />
 		<meta property="og:locale" content="en_US" />
