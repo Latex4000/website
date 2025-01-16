@@ -12,8 +12,10 @@ import vue from "@astrojs/vue";
 // https://astro.build/config
 export default defineConfig({
   output: "static",
-  site: "https://latex4000.neocities.org", // TODO: Change this to actual domain once decided 
+  site: "https://nonacademic.net",
+
   integrations: [sitemap(), svelte(), react(), vue()],
+
   build: {
     format: "file",
   },
