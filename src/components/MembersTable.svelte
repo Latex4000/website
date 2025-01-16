@@ -12,7 +12,7 @@ interface Member {
     addedRingToSite: boolean;
 }
 
-const data: Promise<Member[]> = fetch("https://latex4000.neocities.org/members.json")
+const data: Promise<Member[]> = fetch("/members.json")
     .then((r) => r.json())
     .then((members: Member[]) => rotateArray(members).filter((member: Member) => member.addedRingToSite));
 </script>

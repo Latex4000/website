@@ -5,7 +5,7 @@ interface Song {
     soundcloudUrl: string;
 }
 
-const data: Promise<Song[]> = fetch("https://latex4000.neocities.org/music.json")
+const data: Promise<Song[]> = fetch("/music.json")
     .then((r) => r.json());
 </script>
 
