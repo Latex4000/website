@@ -1,7 +1,6 @@
 # LATEX4000 Website Source Code
 
-Site: https://latex4000.neocities.org/
-Neocities: https://neocities.org/site/latex4000
+Site <https://nonacademic.net>
 
 Editing site:
 - Clone repository to a folder `git clone https://github.com/Latex4000/website.git`
