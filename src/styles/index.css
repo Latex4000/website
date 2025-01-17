@@ -59,7 +59,6 @@ body {
 	overflow-x: hidden;
 	display: flex;
 	flex-direction: column;
-	gap: var(--line-height);
 }
 
 @media screen and (max-width: 480px) {
@@ -72,6 +71,23 @@ body {
 	}
 }
 
+header {
+	text-decoration: none;
+	color: inherit;
+}
+
+main {
+	flex: 1;
+}
+
+main > *:first-child {
+	margin-top: 0;
+}
+
+footer {
+	font-size: .75rem;
+}
+
 h1,
 h2,
 h3,
@@ -79,14 +95,13 @@ h4,
 h5,
 h6 {
 	font-weight: var(--font-weight-bold);
-	margin: calc(var(--line-height) * 2) 0 var(--line-height);
+	margin: var(--line-height) 0;
 	line-height: var(--line-height);
 }
 
 h1 {
 	font-size: 2rem;
 	line-height: calc(2 * var(--line-height));
-	margin-bottom: calc(var(--line-height) * 2);
 	text-transform: uppercase;
 }
 
@@ -122,10 +137,6 @@ a {
 a:link,
 a:visited {
 	color: var(--text-color);
-}
-
-p {
-	margin-bottom: var(--line-height);
 }
 
 strong {
