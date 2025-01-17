@@ -12,7 +12,9 @@ export default defineConfig({
   site: "https://nonacademic.net",
 
   integrations: [
-    sitemap(),
+    sitemap({
+      filter: (page) => page !== "https://nonacademic.net/messages"
+    }),
     svelte(),
     react(),
     vue(),
