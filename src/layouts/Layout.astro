@@ -11,6 +11,7 @@ const { header, title } = Astro.props;
 		<meta name="generator" content={Astro.generator} />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="sitemap" href="/sitemap-index.xml" />
+		<link rel="alternate" type="application/rss+xml" title="Latex 4000's Words" href={new URL("/rss.xml", Astro.url)} />
 		<title>{title || "Latex 4000"}</title>
 		<meta name="description" content="Latex 4000 Collective" />
 		<meta name="author" content="Latex 4000" />
