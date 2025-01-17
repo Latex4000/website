@@ -1,7 +1,7 @@
 ---
 title: Hello World
 date: 2025-01-16
-color: \#ff6200
+author: \#ff6200
 ---
 
 # Hello

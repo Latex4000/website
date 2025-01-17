@@ -15,5 +15,5 @@ const { Content } = await render(word);
 ---
 <Layout title={word.data.title}>
     <Content />
-    <p style=`color: ${word.data.color.replace("\\", "")}`>-L</p>
+    <p style=`color: ${word.data.author.replace("\\", "")}`>-L</p>
 </Layout>

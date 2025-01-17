@@ -11,7 +11,7 @@ const words = defineCollection({
         title: z.string(),
         // Allow dates and parse strings as dates
         date: z.date().or(z.string().transform((val) => new Date(val))),
-        color: z.string(),
+        author: z.string(),
         tags: z.array(z.string()).optional(),
     }),
 });
