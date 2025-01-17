@@ -7,8 +7,10 @@
     "build": "astro check && astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "deploy": "npm run build && npm run deploy-upload",
-    "deploy-upload": "rsync -lprv --delete dist/ nonacademic.net:/srv/latex/"
+    "deploy": "npm run build && npm run deploy-upload-client && npm run deploy-upload-server && npm run deploy-restart-server",
+    "deploy-upload-client": "rsync -lprv --delete dist/client/ nonacademic.net:/srv/latex/",
+    "deploy-upload-server": "rsync -lprv --delete dist/server/ nonacademic.net:latex-server/",
+    "deploy-restart-server": "ssh nonacademic.net ./latex-server-restart"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
