@@ -29,7 +29,7 @@ const { header } = Astro.props;
 		<meta property="og:locale" content="en_US" />
 	</head>
 	<body>
-		<div class="main">
+		<header>
 			<h1><a href="/" class="header">Latex 4000 / L4K</a></h1>
 			<h2>
 				<a href="/">Home</a>
@@ -38,9 +38,11 @@ const { header } = Astro.props;
 				<!-- |
 				<a href="/words">Words</a>
 				|
-				<a href="/feed">Actions</a> -->
+				<a href="/actions">Actions</a> -->
 			</h2>
 			<h2>{header}</h2>
+		</header>
+		<main>
 			<slot />
 			<div class="latex4000Webring">
 				Webring:
@@ -51,8 +53,8 @@ const { header } = Astro.props;
 				</div>
 				<script is:inline id="latex4000Webring" src="https://nonacademic.net/webring.min.js" data-alias="latex4000"></script>
 			</div>
-		</div>
-		<div class="footer">
+		</main>
+		<footer>
 			<a href="https://www.youtube.com/@latex4000" target="_blank">YouTube</a>
 			|
 			<a href="https://soundcloud.com/latex4000" target="_blank">SoundCloud</a>
@@ -60,17 +62,17 @@ const { header } = Astro.props;
 			<a href="https://github.com/Latex4000" target="_blank">GitHub</a>
 			|
 			<a href="https://owickstrom.github.io/the-monospace-web/" target="_blank">Design implemented from The Monospace Web</a>
-		</div>
+		</footer>
 	</body>
 </html>
 
 <style>
-	.header {
+	header {
 		text-decoration: none;
 		color: inherit;
 	}
 
-	.footer {
+	footer {
 		font-size: .75rem;
 	}
 </style>
