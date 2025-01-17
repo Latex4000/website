@@ -9,7 +9,7 @@
     "astro": "astro",
     "deploy": "npm run build && npm run deploy-upload-client && npm run deploy-upload-server && npm run deploy-restart-server",
     "deploy-upload-client": "rsync -lprv --delete dist/client/ nonacademic.net:/srv/latex/",
-    "deploy-upload-server": "rsync -lprv --delete dist/server/ nonacademic.net:latex-server/",
+    "deploy-upload-server": "rsync -lprv --delete --relative dist/server/ package.json package-lock.json nonacademic.net:latex-server/",
     "deploy-restart-server": "ssh nonacademic.net ./latex-server-restart"
   },
   "dependencies": {
