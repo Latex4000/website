@@ -1,6 +1,6 @@
 ---
 import '../styles/index.css';
-const { header } = Astro.props;
+const { header, title } = Astro.props;
 ---
 
 <!doctype html>
@@ -11,16 +11,16 @@ const { header } = Astro.props;
 		<meta name="generator" content={Astro.generator} />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="sitemap" href="/sitemap-index.xml" />
-		<title>Latex 4000</title>
+		<title>{title || "Latex 4000"}</title>
 		<meta name="description" content="Latex 4000 Collective" />
 		<meta name="author" content="Latex 4000" />
 		<meta name="keywords" content="Latex 4000, collective, webring" />
 		<meta name="twitter:card" content="summary" />
 		<meta name="twitter:site" content="@Latex4000" />
-		<meta name="twitter:title" content="Latex 4000" />
+		<meta name="twitter:title" content={title || "Latex 4000"} />
 		<meta name="twitter:description" content="Latex 4000 Collective" />
 		<meta name="twitter:image" content={new URL("/logo.png", Astro.url)} />
-		<meta property="og:title" content="Latex 4000" />
+		<meta property="og:title" content={title || "Latex 4000"} />
 		<meta property="og:type" content="website" />
 		<meta property="og:url" content={Astro.url} />
 		<meta property="og:image" content={new URL("/logo.png", Astro.url)} />
@@ -35,9 +35,9 @@ const { header } = Astro.props;
 				<a href="/">Home</a>
 				|
 				<a href="/sounds">Sounds</a>
-				<!-- |
-				<a href="/words">Words</a>
 				|
+				<a href="/words">Words</a>
+				<!-- |
 				<a href="/actions">Actions</a> -->
 			</h2>
 			<h2>{header}</h2>
@@ -70,6 +70,10 @@ const { header } = Astro.props;
 	header {
 		text-decoration: none;
 		color: inherit;
+	}
+
+	main {
+		flex: 1;
 	}
 
 	footer {

@@ -1,0 +1,19 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+const words = await getCollection("words");
+---
+<Layout header="Words">
+    {words.length ? (
+        <p>Here are some words</p>
+        <ul>
+            {words.map(word => (
+                <li>
+                    <a href={`/words/${word.id}`}>{word.data.title}</a>
+                </li>
+            ))}
+        </ul>
+    ) : (
+        <p>No words currently</p>
+    )}
+</Layout>

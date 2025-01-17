@@ -1,0 +1,19 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection, render } from 'astro:content';
+
+export async function getStaticPaths () {
+    const words = await getCollection("words");
+    return words.map(word => ({
+        params: { id: word.id },
+        props: { word },
+    }));
+}
+
+const { word } = Astro.props;
+const { Content } = await render(word);
+---
+<Layout title={word.data.title}>
+    <Content />
+    <p>-L</p>
+</Layout>
