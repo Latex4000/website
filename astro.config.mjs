@@ -5,6 +5,7 @@ import svelte from "@astrojs/svelte";
 import react from "@astrojs/react";
 import vue from "@astrojs/vue";
 import mdx from "@astrojs/mdx";
+import node from "@astrojs/node";
 
 // https://astro.build/config
 export default defineConfig({
@@ -24,4 +25,8 @@ export default defineConfig({
   build: {
     format: "file",
   },
+
+  adapter: node({
+    mode: "standalone",
+  }),
 });
