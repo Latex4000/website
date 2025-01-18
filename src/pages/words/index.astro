@@ -9,7 +9,7 @@ const words = await getCollection("words");
         <ul>
             {words.map(word => (
                 <li>
-                    <a href={`/words/${word.id}`}>{word.data.title}</a>
+                    <a href={`/words/${word.id}`}>{word.data.title} - {word.data.date.toLocaleString()}</a>
                 </li>
             ))}
         </ul>
