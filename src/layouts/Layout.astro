@@ -45,14 +45,13 @@ const { header, title } = Astro.props;
 		</header>
 		<main>
 			<slot />
-			<div class="latex4000Webring">
+			<div>
 				Webring:
-				<div class="latex4000WebringButtons">
-					<a href="https://nonacademic.net" id="latex4000Prev" title="Previous">←</a>
-					<a href="#" id="latex4000Random" title="Random">Random</a>
-					<a href="https://nonacademic.net" id="latex4000Next" title="Next">→</a>
+				<div>
+					<a href="/ring?action=prev&from=Latex 4000" title="Previous">←</a>
+					<a href="/ring?action=rand&from=Latex 4000" title="Random">Random</a>
+					<a href="/ring?action=next&from=Latex 4000" title="Next">→</a>
 				</div>
-				<script is:inline id="latex4000Webring" src="https://nonacademic.net/webring.min.js" data-alias="latex4000"></script>
 			</div>
 		</main>
 		<footer>
