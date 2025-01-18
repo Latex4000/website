@@ -1,4 +1,6 @@
 import type { APIRoute } from "astro";
+import db from "../db";
+import type { Member } from "../typing/db";
 
 export const prerender = false;
 
@@ -10,13 +12,15 @@ export const GET: APIRoute = async (context) => {
 		return new Response(null, { status: 400 });
 	}
 
-	const members = [
-		{
-			alias: "Latex 4000",
-			site: context.site?.toString() ?? "",
-		},
-		...await getMembers(),
-	];
+	const members = await db.query<Member>("SELECT * FROM members WHERE site IS NOT NULL AND site_in_ring = 1");
+
+	members.unshift({
+		alias: "Latex 4000",
+		discord_id: "",
+		id: -1,
+		site: context.site?.toString() ?? "",
+		site_in_ring: true,
+	});
 
 	const fromMemberIndex = members.findIndex((member) => member.alias === alias);
 
@@ -41,19 +45,5 @@ export const GET: APIRoute = async (context) => {
 			break;
 	}
 
-	return context.redirect(members[toMemberIndex]!.site, 307);
+	return context.redirect(members[toMemberIndex]?.site ?? '', 307);
 };
-
-// TEMP
-interface Member {
-	alias: string;
-	site: string;
-	addedRingToSite: boolean;
-}
-
-// TEMP
-function getMembers(): Promise<Member[]> {
-	return fetch("https://nonacademic.net/members.json")
-		.then((response) => response.json())
-		.then((members: Member[]) => members.filter((member) => member.addedRingToSite));
-}
