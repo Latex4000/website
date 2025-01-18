@@ -3,6 +3,7 @@ interface Song {
     title: string;
     youtubeUrl: string;
     soundcloudUrl: string;
+    date: string;
 }
 
 const data: Promise<Song[]> = fetch("/music.json")
@@ -15,6 +16,7 @@ const data: Promise<Song[]> = fetch("/music.json")
     <table>
         <thead>
             <tr>
+                <th>Date</th>
                 <th>Title</th>
                 <th>YouTube</th>
                 <th>SoundCloud</th>
@@ -23,6 +25,7 @@ const data: Promise<Song[]> = fetch("/music.json")
         <tbody>
             {#each music as song}
                 <tr>
+                    <td><small>{new Date(song.date).toLocaleString()}</small></td>
                     <td>{song.title}</td>
                     <td><a href={song.youtubeUrl}>Link</a></td>
                     <td><a href={song.soundcloudUrl}>Link</a></td>
