@@ -2,10 +2,11 @@ import type { APIRoute } from "astro";
 import { db, eq, isDbError, Member } from "astro:db";
 import checkHmac from "../../server/hmac";
 import { jsonError, jsonResponse } from "../../server/responses";
+import type { Member as MemberType } from "../../../db/config";
 
 export const prerender = false;
 
-async function parseAndValidateRequest(request: Request) {
+async function parseAndValidateRequest(request: Request): Promise<MemberType> {
     if (request.headers.get("content-type") !== "application/json")
         throw new Error("Invalid content type");
 
