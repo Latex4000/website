@@ -30,9 +30,6 @@ export const POST: APIRoute = async ({ request }) => {
         }
     }
 
-    if (member.addedRingToSite)
-        return new Response(JSON.stringify({ error: "Cannot add a member with addedRingToSite set to true" }), { status: 400 });
-
     member.addedRingToSite = false;
 
     try {
