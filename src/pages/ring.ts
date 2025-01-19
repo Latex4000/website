@@ -1,32 +1,43 @@
 import type { APIRoute } from "astro";
-import db from "../db";
-import type { Member } from "../typing/db";
+import { db, Member } from "astro:db";
 
 export const prerender = false;
 
 export const GET: APIRoute = async (context) => {
 	const action = context.url.searchParams.get("action");
-	const alias = context.url.searchParams.get("from");
+	let site = context.url.searchParams.get("from");
 
-	if (!alias || (action !== "prev" && action !== "next" && action !== "rand")) {
+	console.log(action, site);
+
+	if (!site || (action !== "prev" && action !== "next" && action !== "rand"))
 		return new Response(null, { status: 400 });
+
+	try {
+		new URL(site);
+	} catch (e) {
+		// Add https:// to the site and try again
+		try {
+			new URL("https://" + site);
+			site = "https://" + site;
+		} catch (e) {
+			return new Response("Invalid site", { status: 404 });
+		}
 	}
 
-	const members = await db.query<Member>("SELECT * FROM members WHERE site IS NOT NULL AND site_in_ring = 1");
+	const members = await db.select({
+		site: Member.site,
+		addedRingToSite: Member.addedRingToSite,
+	}).from(Member);
 
 	members.unshift({
-		alias: "Latex 4000",
-		discord_id: "",
-		id: -1,
 		site: context.site?.toString() ?? "",
-		site_in_ring: true,
+		addedRingToSite: true,
 	});
 
-	const fromMemberIndex = members.findIndex((member) => member.alias === alias);
+	const fromMemberIndex = members.findIndex((member) => new URL(member.site).toString() === new URL(site).toString());
 
-	if (fromMemberIndex < 0) {
-		return new Response("Invalid alias", { status: 404 });
-	}
+	if (fromMemberIndex < 0)
+		return new Response("Invalid site", { status: 404 });
 
 	let toMemberIndex: number;
 

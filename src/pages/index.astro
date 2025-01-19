@@ -1,6 +1,16 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import MembersTable from '../components/MembersTable.svelte';
+import { db, Member } from "astro:db";
+
+export const prerender = false;
+
+function rotateArray<T>(array: T[]): T[] {
+    const startIndex = Math.round(Math.random() * array.length);
+    return [...array.slice(startIndex), ...array.slice(0, startIndex)];
+}
+
+const members = rotateArray(await db.select().from(Member));
 ---
 
 <Layout header="Yo">
@@ -14,5 +24,5 @@ import MembersTable from '../components/MembersTable.svelte';
 		On this site, you can find anyone from the group who has connected their website and socials to the webring, as well as a musical project we created to submit and upload tracks we don't want to upload on our own aliases
 	</p>
 	<p>Enjoy your stay</p>
-	<MembersTable client:only="svelte" />
+	<MembersTable client:only="svelte" members={members} />
 </Layout>
