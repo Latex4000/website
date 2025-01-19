@@ -23,14 +23,11 @@ export interface Member {
 
 export const Sound = defineTable({
   columns: {
-    title: column.text({ primaryKey: true }),
+    title: column.text(),
     youtubeUrl: column.text(),
     soundcloudUrl: column.text(),
     date: column.date({ default: NOW }),
   },
-  indexes: [
-    { on: ["title"], unique: true },
-  ],
 });
 
 export interface Sound {
