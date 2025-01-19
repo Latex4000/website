@@ -1,4 +1,4 @@
-import { column, defineDb, defineTable } from 'astro:db';
+import { column, defineDb, defineTable, NOW } from 'astro:db';
 
 export const Member = defineTable({
   columns: {
@@ -26,7 +26,7 @@ export const Sound = defineTable({
     title: column.text({ primaryKey: true }),
     youtubeUrl: column.text(),
     soundcloudUrl: column.text(),
-    date: column.date(),
+    date: column.date({ default: NOW }),
   },
   indexes: [
     { on: ["title"], unique: true },
