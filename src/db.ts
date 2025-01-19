@@ -1,3 +1,4 @@
+import { getSecret } from "astro:env/server";
 import type { Pool, PoolConnection, PoolOptions } from "mysql2/promise";
 import { createPool } from "mysql2/promise";
 
@@ -87,9 +88,9 @@ class MysqlPool {
 }
 
 const db = new MysqlPool({
-	database: process.env.MYSQL_DB ?? "latex",
-	password: process.env.MYSQL_PASS ?? "",
-	user: process.env.MYSQL_USER ?? "",
+	database: getSecret("MYSQL_DATABASE") ?? "",
+	password: getSecret("MYSQL_PASSWORD") ?? "",
+	user: getSecret("MYSQL_USER") ?? "",
 
 	charset: "utf8mb4_general_ci",
 
