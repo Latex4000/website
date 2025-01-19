@@ -5,7 +5,7 @@ import { db, Sound } from "astro:db";
 
 export const prerender = false;
 
-const sounds = await db.select().from(Sound);
+const sounds = (await db.select().from(Sound)).sort((a, b) => b.date.getTime() - a.date.getTime());
 ---
 
 <Layout header="Sounds">
