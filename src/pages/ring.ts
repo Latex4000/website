@@ -7,8 +7,6 @@ export const GET: APIRoute = async (context) => {
 	const action = context.url.searchParams.get("action");
 	let site = context.url.searchParams.get("from");
 
-	console.log(action, site);
-
 	if (!site || (action !== "prev" && action !== "next" && action !== "rand"))
 		return new Response(null, { status: 400 });
 

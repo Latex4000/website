@@ -5,6 +5,7 @@ Site <https://nonacademic.net>
 Editing site:
 - Clone repository to a folder `git clone https://github.com/Latex4000/website.git`
 - Go to new folder `cd website`
+- Add a `.env` file with a `SECRET_HMAC_KEY=secret` line
 - Run `npm install`
 - Run `npm run dev`
 - Open `http://localhost:4321/` in your browser
