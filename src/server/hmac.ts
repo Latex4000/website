@@ -1,7 +1,7 @@
 import { getSecret } from "astro:env/server";
 import crypto from "crypto";
 
-export function checkHmac(request: Request, body: string): boolean {
+export default function checkHmac(request: Request, body: string): boolean {
     const signature = request.headers.get("x-signature");
     const timestamp = request.headers.get("x-timestamp");
 
