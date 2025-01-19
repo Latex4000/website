@@ -1,9 +1,14 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import MusicTable from '../components/MusicTable.svelte';
+import { db, Sound } from "astro:db";
+
+export const prerender = false;
+
+const sounds = await db.select().from(Sound);
 ---
 
 <Layout header="Sounds">
     A lot of us in the group make music. This is some music we have released under the collective's name instead of our own:
-    <MusicTable client:only="svelte" />
+    <MusicTable client:only="svelte" sounds={sounds}/>
 </Layout>

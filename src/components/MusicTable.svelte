@@ -1,38 +1,26 @@
-<script lang="ts">    
-interface Song {
-    title: string;
-    youtubeUrl: string;
-    soundcloudUrl: string;
-    date: string;
-}
+<script lang="ts">
+import type { Sound } from "../../db/config";
 
-const data: Promise<Song[]> = fetch("/music.json")
-    .then((r) => r.json());
+let { sounds }: { sounds: Sound[] } = $props();
 </script>
 
-{#await data}
-    <p>Loading...</p>
-{:then music}
-    <table>
-        <thead>
+<table>
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Title</th>
+            <th>YouTube</th>
+            <th>SoundCloud</th>
+        </tr>
+    </thead>
+    <tbody>
+        {#each sounds as sound}
             <tr>
-                <th>Date</th>
-                <th>Title</th>
-                <th>YouTube</th>
-                <th>SoundCloud</th>
+                <td><small>{new Date(sound.date).toLocaleString()}</small></td>
+                <td>{sound.title}</td>
+                <td><a href={sound.youtubeUrl}>Link</a></td>
+                <td><a href={sound.soundcloudUrl}>Link</a></td>
             </tr>
-        </thead>
-        <tbody>
-            {#each music as song}
-                <tr>
-                    <td><small>{new Date(song.date).toLocaleString()}</small></td>
-                    <td>{song.title}</td>
-                    <td><a href={song.youtubeUrl}>Link</a></td>
-                    <td><a href={song.soundcloudUrl}>Link</a></td>
-                </tr>
-            {/each}
-        </tbody>
-    </table>
-{:catch error}
-    <p style="color: red">{error.message}</p>
-{/await}
+        {/each}
+    </tbody>
+</table>
