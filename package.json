@@ -3,8 +3,8 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro check && astro build",
+    "dev": "astro dev --remote",
+    "build": "astro check && astro build --remote",
     "preview": "astro preview",
     "astro": "astro",
     "deploy": "npm run build && npm run deploy-upload-client && npm run deploy-upload-server && npm run deploy-restart-server",
