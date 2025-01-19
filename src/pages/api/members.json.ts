@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { db, isDbError, Member } from "astro:db";
-import { checkHMAC } from "../../server/hmac";
+import { checkHmac } from "../../server/hmac";
 
 export const prerender = false;
 
@@ -13,7 +13,7 @@ export const POST: APIRoute = async ({ request }) => {
         return new Response(JSON.stringify({ error: "Invalid content type" }), { status: 400 });
 
     const member = await request.json();
-    if (!checkHMAC(request, JSON.stringify(member)))
+    if (!checkHmac(request, JSON.stringify(member)))
         return new Response(JSON.stringify({ error: "Forbidden" }), { status: 401 });
 
     if (!member.discord || !member.alias || !member.site || typeof member.discord !== "string" || typeof member.alias !== "string" || typeof member.site !== "string")
