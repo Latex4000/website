@@ -10,7 +10,7 @@ function rotateArray<T>(array: T[]): T[] {
     return [...array.slice(startIndex), ...array.slice(0, startIndex)];
 }
 
-const members = rotateArray(await db.select().from(Member));
+const members = rotateArray(await db.select().from(Member)).filter(member => member.addedRingToSite);
 ---
 
 <Layout header="Yo">
