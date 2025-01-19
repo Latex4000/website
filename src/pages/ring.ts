@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { db, Member } from "astro:db";
+import { db, eq, Member } from "astro:db";
 
 export const prerender = false;
 
@@ -27,7 +27,7 @@ export const GET: APIRoute = async (context) => {
 	const members = await db.select({
 		site: Member.site,
 		addedRingToSite: Member.addedRingToSite,
-	}).from(Member);
+	}).from(Member).where(eq(Member.addedRingToSite, true));
 
 	members.unshift({
 		site: context.site?.toString() ?? "",
