@@ -1,5 +1,5 @@
 // @ts-check
-import { defineConfig, envField } from 'astro/config';
+import { defineConfig } from 'astro/config';
 import sitemap from "@astrojs/sitemap";
 import svelte from "@astrojs/svelte";
 import react from "@astrojs/react";
@@ -29,12 +29,4 @@ export default defineConfig({
   adapter: node({
     mode: "standalone",
   }),
-
-  env: {
-    schema: {
-      MYSQL_DATABASE: envField.string({ context: 'server', access: 'secret', default: 'latex' }),
-      MYSQL_PASSWORD: envField.string({ context: 'server', access: 'secret' }),
-      MYSQL_USER: envField.string({ context: 'server', access: 'secret' }),
-    },
-  },
 });
