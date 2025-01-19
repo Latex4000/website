@@ -46,8 +46,8 @@ export const POST: APIRoute = async ({ request }) => {
         const member = await parseAndValidateRequest(request);
         member.addedRingToSite = false;
 
-        await db.insert(Member).values([member]);
-        return jsonResponse(member);
+        const memberRes = await db.insert(Member).values([member]).returning();
+        return jsonResponse(memberRes);
     } catch (err: any) {
         if (typeof err.status === "number")
             return jsonError(err.message, err.status);
@@ -64,12 +64,13 @@ export const PUT: APIRoute = async ({ request }) => {
     try {
         const member = await parseAndValidateRequest(request);
 
-        await db
+        const memberRes = await db
             .update(Member)
             .set(member)
-            .where(eq(Member.discord, member.discord));
+            .where(eq(Member.discord, member.discord))
+            .returning();
 
-        return jsonResponse(member);
+        return jsonResponse(memberRes);
     } catch (err: any) {
         if (typeof err.status === "number")
             return jsonError(err.message, err.status);

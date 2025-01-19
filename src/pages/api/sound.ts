@@ -33,8 +33,8 @@ export const POST: APIRoute = async ({ request }) => {
 
         sound.date = new Date(sound.date);
 
-        await db.insert(Sound).values([sound]);
-        return jsonResponse(sound);
+        const soundRes = await db.insert(Sound).values([sound]).returning();
+        return jsonResponse(soundRes);
     } catch (err: any) {
         if (typeof err.status === "number")
             return jsonError(err.message, err.status);
