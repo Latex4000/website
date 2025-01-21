@@ -55,7 +55,7 @@ export const POST: APIRoute = async (context) => {
 	try {
 		word = (await db.insert(Word).values({ slug }).returning())[0]!;
 	} catch (error) {
-		if (isDbError(error) && error.code === "SQLITE_CONSTRAINT_UNIQUE") {
+		if (isDbError(error) && error.code === "SQLITE_CONSTRAINT_PRIMARYKEY") {
 			return jsonError("Word already exists");
 		}
 
