@@ -34,17 +34,31 @@ export interface Sound {
 
 export const Word = defineTable({
   columns: {
-    date: column.date({ default: NOW }),
-    slug: column.text({ primaryKey: true }),
+    date: column.date({ default: NOW, unique: true }),
+    memberDiscord: column.text({ references: () => Member.columns.discord }),
+    tags: column.json({ default: [] }),
+    title: column.text(),
   },
 });
 
 export interface WordType {
   date: Date;
-  slug: string;
+  memberDiscord: Member['discord'];
+  tags: string[];
+  title: string;
+}
+
+type WordTypeInDb = Omit<WordType, 'tags'> & { tags: unknown; };
+
+export function wordFromDb(word: WordTypeInDb): WordType {
+  if (Array.isArray(word.tags) && word.tags.every((tag) => typeof tag === 'string')) {
+    return word as WordType;
+  }
+
+  throw new TypeError();
 }
 
 // https://astro.build/db/config
 export default defineDb({
-  tables: { Member, Sound, Word }
+  tables: { Member, Sound, Word },
 });

@@ -3,10 +3,11 @@ import { jsonError, jsonResponse } from "../server/responses";
 import { mkdir, writeFile } from "fs/promises";
 import { createWriteStream, ReadStream } from "fs";
 import { db, isDbError, Word } from "astro:db";
-import type { WordType } from "../../db/config";
+import { wordFromDb, type WordType } from "../../db/config";
 import { Marked } from "marked";
 import { baseUrl } from "marked-base-url";
 import { execFileSync } from "child_process";
+import checkHmac from "../server/hmac";
 
 export const prerender = false;
 
@@ -26,19 +27,37 @@ export const POST: APIRoute = async (context) => {
 		return jsonError("Request body must be form data");
 	}
 
-	const slug = formData.get("slug");
-	const md = formData.get("words");
+	const discord = formData.get("discord");
+	const title = formData.get("title");
+	const tags = formData.get("tags");
+	const md = formData.get("md");
 	const assetFiles = formData.getAll("assets") as File[];
 
+	if (typeof title !== "string" || !checkHmac(context.request, title)) {
+		return jsonError("Invalid HMAC", 401);
+	}
+
+	// Form validation
 	if (
-		typeof slug !== 'string' ||
-		slug.length > 2 ** 8 ||
-		!/^[a-z-]+$/.test(slug) ||
+		typeof discord !== 'string' ||
+		typeof title !== 'string' ||
+		(tags != null && typeof tags !== 'string') ||
 		typeof md !== 'string' ||
-		md.length > fileSizeLimit ||
 		assetFiles.some((value) => !(value instanceof File))
 	) {
 		return jsonError("Invalid form params");
+	}
+
+	if (title.length > 2 ** 10) {
+		return jsonError("Title is too long");
+	}
+
+	if ((tags?.length ?? 0) > 2 ** 10) {
+		return jsonError("Tags are too long");
+	}
+
+	if (md.length > fileSizeLimit) {
+		return jsonError("Markdown content is too long");
 	}
 
 	// File validation
@@ -53,19 +72,36 @@ export const POST: APIRoute = async (context) => {
 	}
 
 	// Store to DB
+	const date = new Date();
+
 	let word: WordType;
 	try {
-		word = (await db.insert(Word).values({ slug }).returning())[0]!;
+		word = wordFromDb(
+			await db
+				.insert(Word)
+				.values({
+					date,
+					memberDiscord: discord,
+					tags: tags?.split(',').map((tag) => tag.trim()) ?? [],
+					title,
+				})
+				.returning()
+				.get()
+		);
 	} catch (error) {
-		if (isDbError(error) && error.code === "SQLITE_CONSTRAINT_PRIMARYKEY") {
+		if (isDbError(error) && error.code === "SQLITE_CONSTRAINT_UNIQUE") {
 			return jsonError("Word already exists");
+		}
+
+		if (isDbError(error) && error.code === "SQLITE_CONSTRAINT_FOREIGNKEY") {
+			return jsonError("Invalid Discord ID");
 		}
 
 		throw error;
 	}
 
 	// Upload files
-	const directory = `${process.env.WORDS_UPLOAD_DIRECTORY}/${word.slug}`;
+	const directory = `${process.env.WORDS_UPLOAD_DIRECTORY}/${date.getTime()}`;
 
 	await mkdir(directory);
 	await writeFile(`${directory}/words.md`, md, "utf8");
