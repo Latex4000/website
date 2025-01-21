@@ -1,0 +1,24 @@
+---
+import { db } from 'astro:db';
+import Layout from '../../layouts/Layout.astro';
+import { Word } from 'astro:db';
+
+export const prerender = false;
+
+const words = await db.select().from(Word);
+---
+
+<Layout header="Words">
+	{words.length ? (
+		<p>Here are some words</p>
+		<ul>
+			{words.map(word => (
+				<li>
+					<a href={`/words_test/${word.slug}`}>{word.slug} - {word.date.toLocaleString()}</a>
+				</li>
+			))}
+		</ul>
+	) : (
+		<p>No words currently</p>
+	)}
+</Layout>

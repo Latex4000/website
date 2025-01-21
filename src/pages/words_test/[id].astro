@@ -1,0 +1,29 @@
+---
+import { db } from "astro:db";
+import Layout from "../../layouts/Layout.astro";
+import { Word } from "astro:db";
+import { eq } from "astro:db";
+
+export const prerender = false;
+
+const word = await db
+	.select()
+	.from(Word)
+	.where(eq(Word.slug, Astro.props.id))
+	.get();
+
+if (word == null) {
+	// todo
+	throw new Error();
+}
+
+const wordHtml = await fetch(`/words-raw/${word.slug}/words.html`).then(
+	(response) => response.text(),
+);
+---
+
+<Layout title={word.slug}>
+	<small>{word.date.toLocaleString()}</small>
+	<Fragment set:html={wordHtml} />
+	<!-- <p style=`color: ${word.data.author.replace("\\", "")}`>-L</p> -->
+</Layout>
