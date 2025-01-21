@@ -1,13 +1,13 @@
 import type { APIRoute } from "astro";
-import { jsonError, jsonResponse } from "../server/responses";
+import { jsonError, jsonResponse } from "../../server/responses";
 import { mkdir, writeFile } from "fs/promises";
 import { createWriteStream, ReadStream } from "fs";
 import { db, isDbError, Word } from "astro:db";
-import { wordFromDb, type WordType } from "../../db/config";
+import { wordFromDb, type WordType } from "../../../db/config";
 import { Marked } from "marked";
 import { baseUrl } from "marked-base-url";
 import { execFileSync } from "child_process";
-import checkHmac from "../server/hmac";
+import checkHmac from "../../server/hmac";
 
 export const prerender = false;
 
