@@ -9,12 +9,12 @@ const words = await db.select().from(Word);
 ---
 
 <Layout header="Words">
-	{words.length ? (
+	{words.length > 0 ? (
 		<p>Here are some words</p>
 		<ul>
 			{words.map(word => (
 				<li>
-					<a href={`/words_test/${word.slug}`}>{word.slug} - {word.date.toLocaleString()}</a>
+					<a href={`/words_test/${word.date.getTime()}`}>{word.title} - {word.date.toLocaleString()}</a>
 				</li>
 			))}
 		</ul>
