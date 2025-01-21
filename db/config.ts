@@ -7,11 +7,6 @@ export const Member = defineTable({
     site: column.text({ unique: true }),
     addedRingToSite: column.boolean(),
   },
-  indexes: [
-    { on: ["discord"], unique: true },
-    { on: ["alias"], unique: true },
-    { on: ["site"], unique: true },
-  ],
 });
 
 export interface Member {
@@ -40,7 +35,7 @@ export interface Sound {
 export const Word = defineTable({
   columns: {
     date: column.date({ default: NOW }),
-    slug: column.text({ unique: true }),
+    slug: column.text({ primaryKey: true }),
   },
 });
 
