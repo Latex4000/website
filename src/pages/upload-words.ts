@@ -24,22 +24,23 @@ export const POST: APIRoute = async (context) => {
 		return jsonError("Request body must be form data");
 	}
 
-	const mdFile = formData.get("md");
+	const slug = formData.get("slug");
+	const md = formData.get("words");
 	const assetFiles = formData.getAll("assets") as File[];
 
 	if (
-		!(mdFile instanceof File) ||
+		typeof slug !== 'string' ||
+		slug.length > 2 ** 8 ||
+		!/^[a-z-]+$/.test(slug) ||
+		typeof md !== 'string' ||
+		md.length > fileSizeLimit ||
 		assetFiles.some((value) => !(value instanceof File))
 	) {
 		return jsonError("Invalid form params");
 	}
 
 	// File validation
-	if (!/^[a-z-]+$/.test(mdFile.name)) {
-		return jsonError("Markdown file name must match [a-z-]+");
-	}
-
-	for (const file of [mdFile, ...assetFiles]) {
+	for (const file of assetFiles) {
 		if (file.size > fileSizeLimit) {
 			return jsonError(`File "${file.name}" is too large (${file.size / 2 ** 10}KiB > ${fileSizeLimit / 2 ** 10}KiB)`);
 		}
@@ -52,7 +53,7 @@ export const POST: APIRoute = async (context) => {
 	// Store to DB
 	let word: WordType;
 	try {
-		word = (await db.insert(Word).values({ slug: mdFile.name }).returning())[0]!;
+		word = (await db.insert(Word).values({ slug }).returning())[0]!;
 	} catch (error) {
 		if (isDbError(error) && error.code === "SQLITE_CONSTRAINT_UNIQUE") {
 			return jsonError("Word already exists");
@@ -63,7 +64,6 @@ export const POST: APIRoute = async (context) => {
 
 	// Upload files
 	const directory = `${process.env.WORDS_UPLOAD_DIRECTORY}/${word.slug}`;
-	const md = await mdFile.text();
 
 	await mkdir(directory);
 	await writeFile(`${directory}/words.md`, md, "utf8");
