@@ -2,24 +2,43 @@
 import { db } from 'astro:db';
 import Layout from '../../layouts/Layout.astro';
 import { Word } from 'astro:db';
-import { wordId } from '../../../db/config';
+import { wordFromDb, wordId } from '../../../db/config';
+import { Member } from 'astro:db';
+import { eq } from 'astro:db';
 
 export const prerender = false;
 
-const words = await db.select().from(Word);
+const wordResults = await db
+	.select({
+		word: Word,
+		memberColour: Member.colour,
+	})
+	.from(Word)
+	.innerJoin(Member, eq(Word.memberDiscord, Member.discord));
 ---
 
 <Layout header="Words">
-	{words.length > 0 ? (
+	{wordResults.length > 0 ? (
 		<p>Here are some words</p>
 		<ul>
-			{words.map(word => (
-				<li>
-					<a href={`/words/${wordId(word)}`}>{word.title} - {word.date.toLocaleString()}</a>
-				</li>
-			))}
+			{wordResults.map((wordResult) => {
+				const word = wordFromDb(wordResult.word);
+				const memberColour = wordResult.memberColour;
+
+				return (
+					<li style={`--marker-color: ${memberColour}`}>
+						<a href={`/words/${wordId(word)}`}>{word.title} - {word.date.toLocaleString()}</a>
+					</li>
+				);
+			})}
 		</ul>
 	) : (
 		<p>No words currently</p>
 	)}
 </Layout>
+
+<style>
+	li::marker {
+		color: var(--marker-color);
+	}
+</style>
