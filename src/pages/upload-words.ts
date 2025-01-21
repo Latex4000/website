@@ -5,12 +5,14 @@ import { createWriteStream, ReadStream } from "fs";
 import { db, isDbError, Word } from "astro:db";
 import type { WordType } from "../../db/config";
 import { Marked } from "marked";
+import { baseUrl } from "marked-base-url";
 import { execFileSync } from "child_process";
 
 export const prerender = false;
 
 const fileSizeLimit = 2 ** 20;
-const marked = new Marked({ silent: true });
+const marked = new Marked({ silent: true })
+	.use(baseUrl("https://nonacademic.net/words-raw/"));
 
 export const POST: APIRoute = async (context) => {
 	if (process.env.WORDS_UPLOAD_DIRECTORY == null) {
