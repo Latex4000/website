@@ -7,55 +7,64 @@ export default async function seed() {
 			"discord": "352605625869402123",
 			"alias": "VINXIS",
 			"site": "https://vinxis.moe/",
-			"addedRingToSite": true
+			"addedRingToSite": true,
+			"colour": "#aaaaaa",
 		},
 		{
 			"discord": "93076479650332672",
 			"alias": "nyquill",
 			"site": "https://nyquill.moe/",
-			"addedRingToSite": false
+			"addedRingToSite": false,
+			"colour": "#bbbbbb",
 		},
 		{
 			"discord": "94635842785521664",
 			"alias": "cl8n",
 			"site": "https://clayton.cc/",
-			"addedRingToSite": true
+			"addedRingToSite": true,
+			"colour": "#cccccc",
 		},
 		{
 			"discord": "126885302185885697",
 			"alias": "sammish",
 			"site": "https://sammi.sh/",
-			"addedRingToSite": true
+			"addedRingToSite": true,
+			"colour": "#dddddd",
 		},
 		{
 			"discord": "122019342769455105",
 			"alias": "uberzolik",
 			"site": "https://uwuzolik.neocities.org/",
-			"addedRingToSite": true
+			"addedRingToSite": true,
+			"colour": "#eeeeee",
 		},
 		{
 			"discord": "92448752152875008",
 			"alias": "uzzi",
 			"site": "https://uzzi.ca/",
-			"addedRingToSite": true
+			"addedRingToSite": true,
+			"colour": "#ffffff",
 		},
 		{
 			"discord": "211350311246233600",
 			"alias": "invoker",
 			"site": "https://invoqwer.ca/projects",
-			"addedRingToSite": true
+			"addedRingToSite": true,
+			"colour": "#999999",
 		},
 		{
 			"discord": "92671864312176640",
 			"alias": "diodex",
 			"site": "https://www.diodex.moe/",
-			"addedRingToSite": true
+			"addedRingToSite": true,
+			"colour": "#888888",
 		},
 		{
 			"discord": "304444747068604416",
 			"alias": "kambojk",
 			"site": "https://kambojk.lol/",
-			"addedRingToSite": true
+			"addedRingToSite": true,
+			"colour": "#777777",
 		}
 	]);
 
