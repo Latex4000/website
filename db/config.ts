@@ -6,7 +6,7 @@ export const Member = defineTable({
     alias: column.text({ unique: true }),
     site: column.text({ unique: true }),
     addedRingToSite: column.boolean(),
-    colour: column.text(),
+    color: column.text(),
   },
 });
 
@@ -15,7 +15,7 @@ export interface Member {
   alias: string;
   site: string;
   addedRingToSite: boolean;
-  colour: string;
+  color: string;
 }
 
 export const Sound = defineTable({

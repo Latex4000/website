@@ -11,7 +11,7 @@ export const prerender = false;
 const wordResults = await db
 	.select({
 		word: Word,
-		memberColour: Member.colour,
+		memberColor: Member.color,
 	})
 	.from(Word)
 	.innerJoin(Member, eq(Word.memberDiscord, Member.discord));
@@ -23,10 +23,10 @@ const wordResults = await db
 		<ul>
 			{wordResults.map((wordResult) => {
 				const word = wordFromDb(wordResult.word);
-				const memberColour = wordResult.memberColour;
+				const memberColor = wordResult.memberColor;
 
 				return (
-					<li style={`--marker-color: ${memberColour}`}>
+					<li style={`--marker-color: ${memberColor}`}>
 						<a href={`/words/${wordId(word)}`}>{word.title} - {word.date.toLocaleString()}</a>
 					</li>
 				);

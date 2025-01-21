@@ -7,8 +7,8 @@ import type { Member as MemberType } from "../../../db/config";
 export const prerender = false;
 
 type AlmostMemberType =
-    & Omit<MemberType, 'addedRingToSite' | 'colour'>
-    & Partial<Pick<MemberType, 'addedRingToSite' | 'colour'>>;
+    & Omit<MemberType, 'addedRingToSite' | 'color'>
+    & Partial<Pick<MemberType, 'addedRingToSite' | 'color'>>;
 
 async function parseAndValidateRequest(request: Request): Promise<AlmostMemberType> {
     if (request.headers.get("content-type") !== "application/json")
@@ -30,22 +30,22 @@ async function parseAndValidateRequest(request: Request): Promise<AlmostMemberTy
         typeof member.alias !== "string" ||
         typeof member.site !== "string" ||
         (member.addedRingToSite != null && typeof member.addedRingToSite !== "boolean") ||
-        (member.colour != null && typeof member.colour !== "string")
+        (member.color != null && typeof member.color !== "string")
     )
         throw new Error("Member has missing string keys/invalid keys");
 
-    if (member.colour != null) {
-        const colourMatch = (member.colour as string).trim().match(/^#?((?:[0-9a-f]{3}){1,2})$/i);
+    if (member.color != null) {
+        const colorMatch = (member.color as string).trim().match(/^#?((?:[0-9a-f]{3}){1,2})$/i);
 
-        if (colourMatch?.[1] == null) {
-            throw new Error("Invalid colour");
+        if (colorMatch?.[1] == null) {
+            throw new Error("Invalid color");
         }
 
-        const sixCharColour = colourMatch[1].length === 3
-            ? colourMatch[1].split("").map((char) => char.repeat(2)).join("")
-            : colourMatch[1];
+        const sixCharColor = colorMatch[1].length === 3
+            ? colorMatch[1].split("").map((char) => char.repeat(2)).join("")
+            : colorMatch[1];
 
-        member.colour = `#${sixCharColour.toLowerCase()}`;
+        member.color = `#${sixCharColor.toLowerCase()}`;
     }
 
     try {
@@ -65,8 +65,8 @@ export const POST: APIRoute = async ({ request }) => {
     try {
         const member = await parseAndValidateRequest(request);
         member.addedRingToSite = false;
-        if (member.colour == null) {
-            member.colour = "#" + Math.floor(Math.random() * 0xffffff)
+        if (member.color == null) {
+            member.color = "#" + Math.floor(Math.random() * 0xffffff)
                 .toString(16)
                 .toLowerCase()
                 .padStart(6, "0");

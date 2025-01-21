@@ -16,7 +16,7 @@ if (process.env.WORDS_UPLOAD_DIRECTORY == null) {
 const wordResult = await db
 	.select({
 		word: Word,
-		memberColour: Member.colour,
+		memberColor: Member.color,
 	})
 	.from(Word)
 	.innerJoin(Member, eq(Word.memberDiscord, Member.discord))
@@ -35,7 +35,7 @@ if (wordResult == null) {
 }
 
 const word = wordFromDb(wordResult.word);
-const memberColour = wordResult.memberColour;
+const memberColor = wordResult.memberColor;
 
 const wordHtml = await readFile(
 	`${process.env.WORDS_UPLOAD_DIRECTORY}/${wordId(word)}/words.html`,
@@ -46,7 +46,7 @@ const wordHtml = await readFile(
 <Layout title={word.title}>
 	<small>{word.date.toLocaleString()}</small>
 	<Fragment set:html={wordHtml} />
-	<p style={{ color: memberColour }}>-L</p>
+	<p style={{ color: memberColor }}>-L</p>
 	<div class="tags">
 		{word.tags.map((tag) => <small>{tag}</small>)}
 	</div>
