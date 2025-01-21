@@ -37,7 +37,19 @@ export interface Sound {
   date: Date;
 }
 
+export const Word = defineTable({
+  columns: {
+    date: column.date({ default: NOW }),
+    slug: column.text({ unique: true }),
+  },
+});
+
+export interface WordType {
+  date: Date;
+  slug: string;
+}
+
 // https://astro.build/db/config
 export default defineDb({
-  tables: { Member, Sound }
+  tables: { Member, Sound, Word }
 });
