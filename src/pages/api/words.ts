@@ -3,7 +3,7 @@ import { jsonError, jsonResponse } from "../../server/responses";
 import { mkdir, writeFile } from "fs/promises";
 import { createWriteStream, ReadStream } from "fs";
 import { db, isDbError, Word } from "astro:db";
-import { wordFromDb, type WordType } from "../../../db/config";
+import { wordFromDb, wordId, type WordType } from "../../../db/config";
 import { Marked } from "marked";
 import { baseUrl } from "marked-base-url";
 import { execFileSync } from "child_process";
@@ -72,15 +72,12 @@ export const POST: APIRoute = async (context) => {
 	}
 
 	// Store to DB
-	const date = new Date();
-
 	let word: WordType;
 	try {
 		word = wordFromDb(
 			await db
 				.insert(Word)
 				.values({
-					date,
 					memberDiscord: discord,
 					tags: tags?.split(',').map((tag) => tag.trim()) ?? [],
 					title,
@@ -101,7 +98,7 @@ export const POST: APIRoute = async (context) => {
 	}
 
 	// Upload files
-	const directory = `${process.env.WORDS_UPLOAD_DIRECTORY}/${date.getTime()}`;
+	const directory = `${process.env.WORDS_UPLOAD_DIRECTORY}/${wordId(word)}`;
 
 	await mkdir(directory);
 	await writeFile(`${directory}/words.md`, md, "utf8");
