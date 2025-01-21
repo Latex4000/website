@@ -3,8 +3,14 @@ import { db } from "astro:db";
 import Layout from "../../layouts/Layout.astro";
 import { Word } from "astro:db";
 import { eq } from "astro:db";
+import { readFile } from "fs/promises";
 
 export const prerender = false;
+
+if (process.env.WORDS_UPLOAD_DIRECTORY == null) {
+	// todo ..?
+	return jsonError("Env not set", 500);
+}
 
 const word = await db
 	.select()
@@ -17,8 +23,9 @@ if (word == null) {
 	throw new Error();
 }
 
-const wordHtml = await fetch(`/words-raw/${word.slug}/words.html`).then(
-	(response) => response.text(),
+const wordHtml = await readFile(
+	`${process.env.WORDS_UPLOAD_DIRECTORY}/${word.slug}/words.html`,
+	"utf8",
 );
 ---
 
