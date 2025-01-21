@@ -5,17 +5,14 @@ import { Word } from "astro:db";
 import { eq } from "astro:db";
 import { readFile } from "fs/promises";
 import { Member } from "astro:db";
-import { wordFromDb } from "../../../db/config";
+import { encodeSqlDate, wordFromDb, wordId } from "../../../db/config";
 
 export const prerender = false;
 
 if (process.env.WORDS_UPLOAD_DIRECTORY == null) {
-	// todo ..?
-	Astro.response.status = 500;
-	return jsonError("Env not set", 500);
+	return new Response(null, { status: 500 });
 }
 
-const timestamp = Number.parseInt(Astro.params.timestamp!, 10);
 const wordResult = await db
 	.select({
 		word: Word,
@@ -23,20 +20,25 @@ const wordResult = await db
 	})
 	.from(Word)
 	.innerJoin(Member, eq(Word.memberDiscord, Member.discord))
-	.where(eq(Word.date, new Date(timestamp)))
+	.where(
+		eq(
+			Word.date,
+			encodeSqlDate(
+				new Date(Number.parseInt(Astro.params.timestamp!, 10) * 1000),
+			),
+		),
+	)
 	.get();
 
 if (wordResult == null) {
-	// todo ..?
-	Astro.response.status = 404;
-	return;
+	return new Response(null, { status: 404 });
 }
 
 const word = wordFromDb(wordResult.word);
 const memberColour = wordResult.memberColour;
 
 const wordHtml = await readFile(
-	`${process.env.WORDS_UPLOAD_DIRECTORY}/${timestamp}/words.html`,
+	`${process.env.WORDS_UPLOAD_DIRECTORY}/${wordId(word)}/words.html`,
 	"utf8",
 );
 ---

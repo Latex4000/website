@@ -2,6 +2,7 @@
 import { db } from 'astro:db';
 import Layout from '../../layouts/Layout.astro';
 import { Word } from 'astro:db';
+import { wordId } from '../../../db/config';
 
 export const prerender = false;
 
@@ -14,7 +15,7 @@ const words = await db.select().from(Word);
 		<ul>
 			{words.map(word => (
 				<li>
-					<a href={`/words_test/${word.date.getTime()}`}>{word.title} - {word.date.toLocaleString()}</a>
+					<a href={`/words_test/${wordId(word)}`}>{word.title} - {word.date.toLocaleString()}</a>
 				</li>
 			))}
 		</ul>
