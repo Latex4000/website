@@ -1,19 +1,25 @@
 ---
-import { getCollection } from 'astro:content';
+import { db } from 'astro:db';
 import Layout from '../../layouts/Layout.astro';
-const words = await getCollection("words");
+import { Word } from 'astro:db';
+import { wordId } from '../../../db/config';
+
+export const prerender = false;
+
+const words = await db.select().from(Word);
 ---
+
 <Layout header="Words">
-    {words.length ? (
-        <p>Here are some words</p>
-        <ul>
-            {words.map(word => (
-                <li>
-                    <a href={`/words/${word.id}`}>{word.data.title} - {word.data.date.toLocaleString()}</a>
-                </li>
-            ))}
-        </ul>
-    ) : (
-        <p>No words currently</p>
-    )}
+	{words.length > 0 ? (
+		<p>Here are some words</p>
+		<ul>
+			{words.map(word => (
+				<li>
+					<a href={`/words/${wordId(word)}`}>{word.title} - {word.date.toLocaleString()}</a>
+				</li>
+			))}
+		</ul>
+	) : (
+		<p>No words currently</p>
+	)}
 </Layout>
