@@ -15,7 +15,7 @@ if (process.env.WORDS_UPLOAD_DIRECTORY == null) {
 const word = await db
 	.select()
 	.from(Word)
-	.where(eq(Word.slug, Astro.props.id))
+	.where(eq(Word.slug, Astro.params.slug!))
 	.get();
 
 if (word == null) {
