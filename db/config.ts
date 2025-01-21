@@ -1,4 +1,4 @@
-import { column, defineDb, defineTable, NOW } from 'astro:db';
+import { column, defineDb, defineTable, NOW, sql } from 'astro:db';
 
 export const Member = defineTable({
   columns: {
@@ -60,7 +60,15 @@ export function wordFromDb(word: WordTypeInDb): WordType {
   throw new TypeError();
 }
 
+export function wordId(word: Pick<WordType, 'date'>): string {
+  return Math.floor(word.date.getTime() / 1000).toString(10);
+}
+
 // https://astro.build/db/config
 export default defineDb({
   tables: { Member, Sound, Word },
 });
+
+export function encodeSqlDate(date: Date): ReturnType<typeof sql.raw> {
+  return sql.raw(`'${date.toISOString().replace("T", " ").slice(0, 19)}'`);
+}
