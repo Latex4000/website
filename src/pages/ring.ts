@@ -44,5 +44,8 @@ export const GET: APIRoute = async (context) => {
 			break;
 	}
 
-	return context.redirect(members[toMemberIndex]!.site, 307);
+	if (!members[toMemberIndex]!.site)
+		return new Response("Member has no site, there is an issue with the database", { status: 500 });
+
+	return context.redirect(members[toMemberIndex]!.site!, 307);
 };

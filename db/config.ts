@@ -4,7 +4,7 @@ export const Member = defineTable({
   columns: {
     discord: column.text({ primaryKey: true }),
     alias: column.text({ unique: true }),
-    site: column.text({ unique: true }),
+    site: column.text({ unique: true, optional: true }),
     addedRingToSite: column.boolean(),
     color: column.text(),
   },
@@ -13,7 +13,7 @@ export const Member = defineTable({
 export interface Member {
   discord: string;
   alias: string;
-  site: string;
+  site: string | null;
   addedRingToSite: boolean;
   color: string;
 }
