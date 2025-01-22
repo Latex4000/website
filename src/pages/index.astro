@@ -11,6 +11,7 @@ function rotateArray<T>(array: T[]): T[] {
 }
 
 const members = rotateArray(await db.select().from(Member));
+members.sort((a, b) => a.addedRingToSite === b.addedRingToSite ? 0 : a.addedRingToSite ? -1 : 1);
 ---
 
 <Layout header="Yo">
