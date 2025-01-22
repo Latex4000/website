@@ -107,10 +107,9 @@ export const POST: APIRoute = async (context) => {
 	}
 
 	// Upload compiled HTML file
-	
-	const marked = new Marked({ silent: true })
-		.use(baseUrl(`https://nonacademic.net/words-raw/${wordId(word)}/`));
-	const html = marked.parse(md, { async: false });
+	const html = new Marked(baseUrl(new URL(`/words-raw/${wordId(word)}/`, context.url).toString()))
+		.parse(md, { async: false, silent: true });
+
 	await writeFile(`${directory}/words.html`, html, "utf8");
 
 	if (process.env.WORDS_RUN_AFTER_UPLOAD != null) {
