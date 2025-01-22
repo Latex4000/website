@@ -12,8 +12,6 @@ import checkHmac from "../../server/hmac";
 export const prerender = false;
 
 const fileSizeLimit = 2 ** 20;
-const marked = new Marked({ silent: true })
-	.use(baseUrl("https://nonacademic.net/words-raw/"));
 
 export const POST: APIRoute = async (context) => {
 	if (process.env.WORDS_UPLOAD_DIRECTORY == null) {
@@ -109,6 +107,9 @@ export const POST: APIRoute = async (context) => {
 	}
 
 	// Upload compiled HTML file
+	
+	const marked = new Marked({ silent: true })
+		.use(baseUrl(`https://nonacademic.net/words-raw/${wordId(word)}/`));
 	const html = marked.parse(md, { async: false });
 	await writeFile(`${directory}/words.html`, html, "utf8");
 
