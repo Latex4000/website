@@ -15,7 +15,7 @@ let { members }: { members: Member[] } = $props();
         {#each members as member}
             <tr>
                 <td>{member.alias}</td>
-                <td><a href={member.site}>{member.site}</a></td>
+                <td>{#if member.addedRingToSite}<a href={member.site}>{member.site}</a>{/if}</td>
             </tr>
         {/each}
     </tbody>
