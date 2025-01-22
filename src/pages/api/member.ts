@@ -1,8 +1,8 @@
 import type { APIRoute } from "astro";
 import { db, eq, isDbError, Member } from "astro:db";
-import checkHmac from "../../server/hmac";
 import { jsonError, jsonResponse } from "../../server/responses";
 import type { Member as MemberType } from "../../../db/config";
+import { validateHmac } from "../../server/hmac";
 
 export const prerender = false;
 
@@ -14,13 +14,13 @@ async function parseAndValidateRequest(request: Request): Promise<AlmostMemberTy
     if (request.headers.get("content-type") !== "application/json")
         throw new Error("Invalid content type");
 
-    const member = await request.json();
-
-    if (!checkHmac(request, JSON.stringify(member))) {
+    if (!validateHmac(request)) {
         const err = new Error("Forbidden");
         (err as any).status = 401;
         throw err;
     }
+
+    const member = await request.json();
 
     if (
         !member.discord ||

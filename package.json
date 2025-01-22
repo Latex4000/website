@@ -22,6 +22,7 @@
     "@astrojs/sitemap": "^3.2.1",
     "@astrojs/svelte": "^7.0.3",
     "@astrojs/vue": "^5.0.4",
+    "@latex4000/fetch-hmac": "^0.1.0",
     "@types/d3": "^7.4.3",
     "@types/react": "^19.0.4",
     "@types/react-dom": "^19.0.2",

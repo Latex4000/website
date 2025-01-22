@@ -7,7 +7,7 @@ import { wordFromDb, wordId, type WordType } from "../../../db/config";
 import { Marked } from "marked";
 import { baseUrl } from "marked-base-url";
 import { execFileSync } from "child_process";
-import checkHmac from "../../server/hmac";
+import { hmacInvalidResponse, validateHmac } from "../../server/hmac";
 
 export const prerender = false;
 
@@ -16,6 +16,10 @@ const fileSizeLimit = 2 ** 20;
 export const POST: APIRoute = async (context) => {
 	if (process.env.WORDS_UPLOAD_DIRECTORY == null) {
 		return jsonError("Env not set", 500);
+	}
+
+	if (!validateHmac(context.request)) {
+		return hmacInvalidResponse();
 	}
 
 	let formData: FormData;
@@ -30,10 +34,6 @@ export const POST: APIRoute = async (context) => {
 	const tags = formData.get("tags");
 	const md = formData.get("md");
 	const assetFiles = formData.getAll("assets") as File[];
-
-	if (typeof title !== "string" || !checkHmac(context.request, title)) {
-		return jsonError("Invalid HMAC", 401);
-	}
 
 	// Form validation
 	if (
