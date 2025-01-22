@@ -15,7 +15,7 @@ async function parseAndValidateRequest(request: Request): Promise<AlmostMemberTy
         throw new Error("Invalid content type");
 
     if (!await validateHmac(request)) {
-        const err = new Error("Forbidden");
+        const err = new Error("Invalid HMAC");
         (err as any).status = 401;
         throw err;
     }
@@ -25,12 +25,11 @@ async function parseAndValidateRequest(request: Request): Promise<AlmostMemberTy
     if (
         !member.discord ||
         !member.alias ||
-        !member.site ||
         typeof member.discord !== "string" ||
         typeof member.alias !== "string" ||
-        typeof member.site !== "string" ||
         (member.addedRingToSite != null && typeof member.addedRingToSite !== "boolean") ||
-        (member.color != null && typeof member.color !== "string")
+        (member.color != null && typeof member.color !== "string") ||
+        (member.site != null && typeof member.site !== "string")
     )
         throw new Error("Member has missing string keys/invalid keys");
 
@@ -48,15 +47,16 @@ async function parseAndValidateRequest(request: Request): Promise<AlmostMemberTy
         member.color = `#${sixCharColor.toLowerCase()}`;
     }
 
-    try {
-        member.site = new URL(member.site).toString();
-    } catch {
+    if (member.site != null)
         try {
-            member.site = new URL("https://" + member.site).toString();
+            member.site = new URL(member.site).toString();
         } catch {
-            throw new Error("Invalid site");
+            try {
+                member.site = new URL("https://" + member.site).toString();
+            } catch {
+                throw new Error("Invalid site");
+            }
         }
-    }
 
     return member;
 }
