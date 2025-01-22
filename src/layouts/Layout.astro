@@ -32,7 +32,8 @@ const { header, title } = Astro.props;
 	<body>
 		<header>
 			<h1><a href="/" class="header">Latex 4000 / L4K</a></h1>
-			<h2>
+			<h2 class="header-nav">
+				<span class="header-nav-ch">!ch </span>
 				<a href="/">Home</a>
 				|
 				<a href="/sounds">Sounds</a>
@@ -65,3 +66,16 @@ const { header, title } = Astro.props;
 		</footer>
 	</body>
 </html>
+
+<style>
+	.header-nav {
+		position: relative;
+	}
+
+	.header-nav-ch {
+		position: absolute;
+		right: 100%;
+		text-transform: none;
+		white-space: pre;
+	}
+</style>
