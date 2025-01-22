@@ -10,7 +10,7 @@ export const POST: APIRoute = async ({ request }) => {
         if (request.headers.get("content-type") !== "application/json")
             throw new Error("Invalid content type");
 
-        if (!validateHmac(request)) {
+        if (!await validateHmac(request)) {
             return hmacInvalidResponse();
         }
 

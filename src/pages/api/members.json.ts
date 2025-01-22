@@ -6,7 +6,7 @@ import { hmacInvalidResponse, validateHmac } from "../../server/hmac";
 export const prerender = false;
 
 export const GET: APIRoute = async ({ request }) => {
-    if (!validateHmac(request)) {
+    if (!await validateHmac(request)) {
         return hmacInvalidResponse();
     }
 

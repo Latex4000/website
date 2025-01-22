@@ -14,7 +14,7 @@ async function parseAndValidateRequest(request: Request): Promise<AlmostMemberTy
     if (request.headers.get("content-type") !== "application/json")
         throw new Error("Invalid content type");
 
-    if (!validateHmac(request)) {
+    if (!await validateHmac(request)) {
         const err = new Error("Forbidden");
         (err as any).status = 401;
         throw err;

@@ -18,7 +18,7 @@ export const POST: APIRoute = async (context) => {
 		return jsonError("Env not set", 500);
 	}
 
-	if (!validateHmac(context.request)) {
+	if (!await validateHmac(context.request)) {
 		return hmacInvalidResponse();
 	}
 
