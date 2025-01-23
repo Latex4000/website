@@ -19,7 +19,7 @@ let dataArrayRight: Uint8Array;
 let animationId: number;
 let isPlaying = false;
 let isPaused = false;
-let mouseOnVisualizer = 0;
+let mouseOnVisualizer: [number, number] | undefined = undefined;
 let fileInput: HTMLInputElement;
 
 let canvasSize: number = 1000;
@@ -133,7 +133,7 @@ const stopAudio = () => {
     ctx.fillRect(0, 0, canvasSize, canvasSize);
     isPlaying = false;
     isPaused = false;
-    mouseOnVisualizer = 0;
+    mouseOnVisualizer = undefined;
 };
 
 const handleKeyDown = (event: KeyboardEvent) => {
@@ -211,12 +211,16 @@ const drawInstructionNote = (ctx: CanvasRenderingContext2D) => {
     ctx.textAlign = "left";
     ctx.font = "10px JetBrains Mono";
     ctx.textBaseline = "top";
-    if (mouseOnVisualizer) // Write the frequency the cursor y position is currently at
-        ctx.fillText(frequencyScale.invert(canvasSize - mouseOnVisualizer).toFixed(0), 2, 2);
-    ctx.fillText("`   | x", 2, canvasSize - 48);
-    ctx.fillText(`[]  | ${blockSize}`, 2, canvasSize - 36);
-    ctx.fillText(`+/- | ${gainNode.gain.value.toFixed(1)}`, 2, canvasSize - 24);
-    ctx.fillText(`' ' | ${!isPaused ? "o" : "s"}`, 2, canvasSize - 12);
+    if (mouseOnVisualizer) {
+        ctx.fillText(frequencyScale.invert(canvasSize - mouseOnVisualizer[1]).toFixed(0), 0, 0);
+        const pan = panningScale.invert(mouseOnVisualizer[0]);
+        const panText = (Math.floor(Math.abs(pan) * 100) / 100).toFixed(2);
+        ctx.fillText(`${panText} ${panText === (0).toFixed(2) ? "C" : pan < 0 ? "L" : "R"}`, 0, 12);
+    }
+    ctx.fillText("`   | x", 0, canvasSize - 46);
+    ctx.fillText(`[]  | ${blockSize}`, 0, canvasSize - 34);
+    ctx.fillText(`+/- | ${gainNode.gain.value.toFixed(1)}`, 0, canvasSize - 22);
+    ctx.fillText(`' ' | ${!isPaused ? "o" : "s"}`, 0, canvasSize - 10);
 };
 
 const handleCanvasClick = () => fileInput.click();
@@ -265,7 +269,10 @@ const mouseAnimation = (timestamp: number) => {
 
 const onCanvasMouseMove = (event: MouseEvent | TouchEvent) => {
     if (isPlaying) // Canvas top is 0, bottom is canvasSize
-        mouseOnVisualizer = (event instanceof MouseEvent ? event.clientY : event.touches[0]!.clientY) - canvas.offsetTop;
+        mouseOnVisualizer = [
+            (event instanceof MouseEvent ? event.clientX : event.touches[0]!.clientX) - canvas.getBoundingClientRect().left, 
+            (event instanceof MouseEvent ? event.clientY : event.touches[0]!.clientY) - canvas.getBoundingClientRect().top
+        ]
 
     if (isPlaying || target === 1)
         return;
@@ -276,7 +283,7 @@ const onCanvasMouseMove = (event: MouseEvent | TouchEvent) => {
 };
 
 const onCanvasMouseLeave = () => {
-    mouseOnVisualizer = 0;
+    mouseOnVisualizer = undefined;
 
     if (isPlaying || target === 0)
         return;
