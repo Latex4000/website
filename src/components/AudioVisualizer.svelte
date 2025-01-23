@@ -30,14 +30,19 @@ let frequencyScale: d3.ScaleLinear<number, number>;
 let panningScale: d3.ScaleLinear<number, number>;
 
 // Custom Color Scale: Black -> Orange -> White -> Purple
-const customColorScale = d3.scaleLinear<string>()
-    .domain([0, 0.333, 0.666, 1])
-    .range([
-        "#000000",
-        "#FF4500",
-        "#FFFFFF",
-        "#800080"
-    ]);
+let gradientChoice = 0;
+const gradientChoices = [
+    ["#FFFFFF"],
+    ["#9e0142", "#d53e4f", "#f46d43", "#fdae61", "#fee08b", "#ffffbf", "#e6f598", "#abdda4", "#66c2a5", "#3288bd", "#5e4fa2"],
+    ["#7f3b08", "#b35806", "#e08214", "#fdb863", "#fee0b6", "#f7f7f7", "#d8daeb", "#b2abd2", "#8073ac", "#542788", "#2d004b"],
+    ["#543005", "#8c510a", "#bf812d", "#dfc27d", "#f6e8c3", "#f5f5f5", "#c7eae5", "#80cdc1", "#35978f", "#01665e", "#003c30"],
+    ["#40004b", "#762a83", "#9970ab", "#c2a5cf", "#e7d4e8", "#f7f7f7", "#d9f0d3", "#a6dba0", "#5aae61", "#1b7837", "#00441b"],
+    ["#8e0152", "#c51b7d", "#de77ae", "#f1b6da", "#fde0ef", "#f7f7f7", "#e6f5d0", "#b8e186", "#7fbc41", "#4d9221", "#276419"],
+    ["#67001f", "#b2182b", "#d6604d", "#f4a582", "#fddbc7", "#f7f7f7", "#d1e5f0", "#92c5de", "#4393c3", "#2166ac", "#053061"],
+].map(g => ["#000000", ...g]); // All gradients start with black and then go to the specified colors
+let customColorScale = d3.scaleLinear<string>()
+    .domain(gradientChoices[gradientChoice]!.map((_, i) => i / (gradientChoices[gradientChoice]!.length - 1)))
+    .range(gradientChoices[gradientChoice]!);
 
 function resizeCanvas() {
     const rect = chartRef.getBoundingClientRect();
@@ -58,6 +63,15 @@ function resizeCanvas() {
 }
 
 onMount(() => {
+    // A touch event anywhere outside the canvas changes gradient
+    window.addEventListener('touchstart', (event) => {
+        if (!canvas.contains(event.target as Node)) {
+            gradientChoice = (gradientChoice + 1) % gradientChoices.length;
+            customColorScale = d3.scaleLinear<string>()
+                .domain(gradientChoices[gradientChoice]!.map((_, i) => i / (gradientChoices[gradientChoice]!.length - 1)))
+                .range(gradientChoices[gradientChoice]!);
+        }
+    });
     window.addEventListener("resize", resizeCanvas);
     resizeCanvas();
 
@@ -147,6 +161,12 @@ const handleKeyDown = (event: KeyboardEvent) => {
         gainNode.gain.value = Math.min(gainNode.gain.value + 0.1, 2);
     if ((event.key === '-' || event.key === '_') && gainNode.gain.value > 0)
         gainNode.gain.value = Math.max(gainNode.gain.value - 0.1, 0);
+    if (event.key === "?" || event.key === "/") {
+        gradientChoice = (gradientChoice + 1) % gradientChoices.length;
+        customColorScale = d3.scaleLinear<string>()
+            .domain(gradientChoices[gradientChoice]!.map((_, i) => i / (gradientChoices[gradientChoice]!.length - 1)))
+            .range(gradientChoices[gradientChoice]!);
+    }
 
     if (event.code === "Space") {
         event.preventDefault();
@@ -217,10 +237,11 @@ const drawInstructionNote = (ctx: CanvasRenderingContext2D) => {
         const panText = (Math.floor(Math.abs(pan) * 100) / 100).toFixed(2);
         ctx.fillText(`${panText === (0).toFixed(2) ? "C" : pan.toFixed(2)}`, 0, 12);
     }
-    ctx.fillText("`   | x", 0, canvasSize - 46);
-    ctx.fillText(`[]  | ${blockSize}`, 0, canvasSize - 34);
-    ctx.fillText(`+/- | ${gainNode.gain.value.toFixed(1)}`, 0, canvasSize - 22);
-    ctx.fillText(`' ' | ${!isPaused ? "o" : "s"}`, 0, canvasSize - 10);
+    ctx.fillText("`   | x", 0, canvasSize - 58);
+    ctx.fillText(`[]  | ${blockSize}`, 0, canvasSize - 46);
+    ctx.fillText(`+/- | ${gainNode.gain.value.toFixed(1)}`, 0, canvasSize - 34);
+    ctx.fillText(`' ' | ${!isPaused ? "o" : "s"}`, 0, canvasSize - 22);
+    ctx.fillText(`?   | ${gradientChoice}`, 0, canvasSize - 10);
 };
 
 const handleCanvasClick = () => fileInput.click();
