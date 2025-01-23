@@ -1,6 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import MembersTable from '../components/MembersTable.svelte';
+import MembersList from '../components/MembersList.svelte';
 import { db, Member } from "astro:db";
 
 export const prerender = false;
@@ -10,8 +10,11 @@ function rotateArray<T>(array: T[]): T[] {
     return [...array.slice(startIndex), ...array.slice(0, startIndex)];
 }
 
-const members = rotateArray(await db.select().from(Member));
-members.sort((a, b) => a.addedRingToSite === b.addedRingToSite ? 0 : a.addedRingToSite ? -1 : 1);
+const members = rotateArray(await db.select({
+	addedRingToSite: Member.addedRingToSite,
+	site: Member.site,
+	alias: Member.alias,
+}).from(Member));
 ---
 
 <Layout header="Yo">
@@ -25,5 +28,5 @@ members.sort((a, b) => a.addedRingToSite === b.addedRingToSite ? 0 : a.addedRing
 		On this site, you can find anyone from the group who has connected their website and socials to the webring, as well as a musical project we created to submit and upload tracks we don't want to upload on our own aliases
 	</p>
 	<p>Enjoy your stay</p>
-	<MembersTable client:only="svelte" members={members} />
+	<MembersList client:only="svelte" members={members} />
 </Layout>
