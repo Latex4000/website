@@ -370,6 +370,17 @@ input[type=checkbox]:checked:before {
 	background: var(--text-color);
 }
 
+input[type=file] {
+	display: none;
+}
+
+input[type=file] + label {
+	display: inline-block;
+	padding: calc(var(--line-height) / 2) 1ch;
+	border: var(--border-thickness) solid var(--text-color);
+	cursor: pointer;
+}
+
 button:focus,
 input:focus {
 	--border-thickness: 3px;
