@@ -89,7 +89,7 @@ export const POST: APIRoute = async (context) => {
 		}
 
 		if (isDbError(error) && error.code === "SQLITE_CONSTRAINT_FOREIGNKEY") {
-			return jsonError("Invalid Discord ID");
+			return jsonError("Invalid Discord ID; member does not exist; probably needs to join first");
 		}
 
 		throw error;
