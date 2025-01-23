@@ -29,7 +29,7 @@ const wordResults = (
 
 				return (
 					<li style={`--marker-color: ${memberColor}`}>
-						<a href={`/words/${wordId(word)}`}>{word.title} - {word.date.toLocaleString()}</a>
+						<a href={`/words/${wordId(word)}`}>{word.title}<br>{word.date.toLocaleString()}</a>
 					</li>
 				);
 			})}
@@ -43,6 +43,10 @@ const wordResults = (
 
 	li {
 		margin-top: var(--line-height);
+	}
+
+	li a {
+		text-decoration: none;
 	}
 
 	li::marker {
