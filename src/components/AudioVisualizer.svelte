@@ -215,7 +215,7 @@ const drawInstructionNote = (ctx: CanvasRenderingContext2D) => {
         ctx.fillText(frequencyScale.invert(canvasSize - mouseOnVisualizer[1]).toFixed(0), 0, 0);
         const pan = panningScale.invert(mouseOnVisualizer[0]);
         const panText = (Math.floor(Math.abs(pan) * 100) / 100).toFixed(2);
-        ctx.fillText(`${panText} ${panText === (0).toFixed(2) ? "C" : pan < 0 ? "L" : "R"}`, 0, 12);
+        ctx.fillText(`${panText === (0).toFixed(2) ? "C" : pan.toFixed(2)}`, 0, 12);
     }
     ctx.fillText("`   | x", 0, canvasSize - 46);
     ctx.fillText(`[]  | ${blockSize}`, 0, canvasSize - 34);
