@@ -8,13 +8,15 @@ import { eq } from 'astro:db';
 
 export const prerender = false;
 
-const wordResults = await db
-	.select({
-		word: Word,
-		memberColor: Member.color,
-	})
-	.from(Word)
-	.innerJoin(Member, eq(Word.memberDiscord, Member.discord));
+const wordResults = (
+	await db
+		.select({
+			word: Word,
+			memberColor: Member.color,
+		})
+		.from(Word)
+		.innerJoin(Member, eq(Word.memberDiscord, Member.discord))
+	).sort((a, b) => b.word.date.getTime() - a.word.date.getTime());
 ---
 
 <Layout header="Words">
@@ -38,6 +40,11 @@ const wordResults = await db
 </Layout>
 
 <style>
+
+	li {
+		margin-top: var(--line-height);
+	}
+
 	li::marker {
 		color: var(--marker-color);
 	}
