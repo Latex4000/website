@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 import { db, eq, isDbError, Member } from "astro:db";
 import { jsonError, jsonResponse } from "../../server/responses";
 import type { Member as MemberType } from "../../../db/config";
-import { validateHmac } from "../../server/hmac";
+import { hmacInvalidResponse, validateHmac } from "../../server/hmac";
 
 export const prerender = false;
 
@@ -59,6 +59,17 @@ async function parseAndValidateRequest(request: Request): Promise<AlmostMemberTy
         }
 
     return member;
+}
+
+export const GET: APIRoute = async ({ url, request }) => {
+    if (!await validateHmac(request))
+        return hmacInvalidResponse();
+
+    const id = url.searchParams.get("id");
+    if (!id)
+        return jsonError("Missing id");
+
+    return jsonResponse(await db.select().from(Member).where(eq(Member.discord, id)));
 }
 
 export const POST: APIRoute = async ({ request }) => {
