@@ -23,6 +23,7 @@ let mouseOnVisualizer: [number, number] | undefined = undefined;
 let fileInput: HTMLInputElement;
 
 let canvasSize: number = 1000;
+let fftSize = 11; // 2048; // Number of bins in the FFT analysis; Must be a power of 2 between 5 and 15
 let blockSize: number = 5; // Size of each block in pixels
 
 // D3 Scales
@@ -84,8 +85,8 @@ onMount(() => {
     // Create separate AnalyserNodes for left and right channels
     analyserLeft = audioContext.createAnalyser();
     analyserRight = audioContext.createAnalyser();
-    analyserLeft.fftSize = 2048;
-    analyserRight.fftSize = 2048;
+    analyserLeft.fftSize = 2 ** fftSize;
+    analyserRight.fftSize = 2 ** fftSize;
 
     const bufferLength = analyserLeft.frequencyBinCount;
     dataArrayLeft = new Uint8Array(bufferLength);
@@ -167,6 +168,22 @@ const handleKeyDown = (event: KeyboardEvent) => {
             .domain(gradientChoices[gradientChoice]!.map((_, i) => i / (gradientChoices[gradientChoice]!.length - 1)))
             .range(gradientChoices[gradientChoice]!);
     }
+    if ((event.key === "<" || event.key === ",") && fftSize > 5) {
+        fftSize--;
+        analyserLeft.fftSize = 2 ** fftSize;
+        analyserRight.fftSize = 2 ** fftSize;
+        const bufferLength = analyserLeft.frequencyBinCount;
+        dataArrayLeft = new Uint8Array(bufferLength);
+        dataArrayRight = new Uint8Array(bufferLength);
+    }
+    if ((event.key === ">" || event.key === ".") && fftSize < 15) {
+        fftSize++;
+        analyserLeft.fftSize = 2 ** fftSize;
+        analyserRight.fftSize = 2 ** fftSize;
+        const bufferLength = analyserLeft.frequencyBinCount;
+        dataArrayLeft = new Uint8Array(bufferLength);
+        dataArrayRight = new Uint8Array(bufferLength);
+    }
 
     if (event.code === "Space") {
         event.preventDefault();
@@ -237,7 +254,8 @@ const drawInstructionNote = (ctx: CanvasRenderingContext2D) => {
         const panText = (Math.floor(Math.abs(pan) * 100) / 100).toFixed(2);
         ctx.fillText(`${panText === (0).toFixed(2) ? "C" : pan.toFixed(2)}`, 0, 12);
     }
-    ctx.fillText("`   | x", 0, canvasSize - 58);
+    ctx.fillText("`   | x", 0, canvasSize - 70);
+    ctx.fillText(`<>  | ${fftSize}`, 0, canvasSize - 58);
     ctx.fillText(`[]  | ${blockSize}`, 0, canvasSize - 46);
     ctx.fillText(`+/- | ${gainNode.gain.value.toFixed(1)}`, 0, canvasSize - 34);
     ctx.fillText(`' ' | ${!isPaused ? "o" : "s"}`, 0, canvasSize - 22);
