@@ -29,12 +29,14 @@ let frequencyScale: d3.ScaleLinear<number, number>;
 let panningScale: d3.ScaleLinear<number, number>;
 
 // Custom Color Scale: Black -> Orange -> White -> Purple
-const customColorScale = d3.scaleLinear<string>([
-    "#000000",
-    "#FF4500",
-    "#FFFFFF",
-    "#800080"
-]);
+const customColorScale = d3.scaleLinear<string>()
+    .domain([0, 0.333, 0.666, 1])
+    .range([
+        "#000000",
+        "#FF4500",
+        "#FFFFFF",
+        "#800080"
+    ]);
 
 function resizeCanvas() {
     const rect = chartRef.getBoundingClientRect();
