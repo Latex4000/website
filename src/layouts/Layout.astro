@@ -38,7 +38,7 @@ const { header, title } = Astro.props;
     <header>
       <h1><a href="/" class="header">Latex 4000 / L4K</a></h1>
       <h2 class="header-nav">
-        <a href="/random" class="header-nav-ch">!ch</a>
+        <span class="header-nav-ch"><a href="/random">!ch</a>&#32;</span>
         <a href="/">Home</a>
         |
         <a href="/sounds">Sounds</a>
@@ -85,7 +85,7 @@ const { header, title } = Astro.props;
 
   .header-nav-ch {
     position: absolute;
-    right: calc(100% + var(--line-height));
+    right: 100%;
     text-transform: none;
     white-space: pre;
   }
