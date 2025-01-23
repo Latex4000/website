@@ -10,52 +10,55 @@ import { encodeSqlDate, wordFromDb, wordId } from "../../../db/config";
 export const prerender = false;
 
 if (process.env.WORDS_UPLOAD_DIRECTORY == null) {
-	return new Response(null, { status: 500 });
+  return new Response(null, { status: 500 });
 }
 
 const wordResult = await db
-	.select({
-		word: Word,
-		memberColor: Member.color,
-	})
-	.from(Word)
-	.innerJoin(Member, eq(Word.memberDiscord, Member.discord))
-	.where(
-		eq(
-			Word.date,
-			encodeSqlDate(
-				new Date(Number.parseInt(Astro.params.timestamp!, 10) * 1000),
-			),
-		),
-	)
-	.get();
+  .select({
+    word: Word,
+    memberColor: Member.color,
+  })
+  .from(Word)
+  .innerJoin(Member, eq(Word.memberDiscord, Member.discord))
+  .where(
+    eq(
+      Word.date,
+      encodeSqlDate(
+        new Date(Number.parseInt(Astro.params.timestamp!, 10) * 1000)
+      )
+    )
+  )
+  .get();
 
 if (wordResult == null) {
-	return new Response(null, { status: 404 });
+  return new Response(null, { status: 404 });
 }
 
 const word = wordFromDb(wordResult.word);
 const memberColor = wordResult.memberColor;
 
 const wordHtml = await readFile(
-	`${process.env.WORDS_UPLOAD_DIRECTORY}/${wordId(word)}/words.html`,
-	"utf8",
+  `${process.env.WORDS_UPLOAD_DIRECTORY}/${wordId(word)}/words.html`,
+  "utf8"
 );
 ---
 
 <Layout title={word.title}>
-	<small>{word.date.toLocaleString()}</small>
-	<Fragment set:html={wordHtml} />
-	<p style={{ color: memberColor }}>-L</p>
-	<div class="tags">
-		{word.tags.map((tag) => <small>{tag}</small>)}
-	</div>
+  <small>{word.date.toLocaleString()}</small>
+  <Fragment set:html={wordHtml} />
+  <p style={{ color: memberColor }}>-L</p>
+  <div class="tags">
+    {word.tags.map((tag) => <small>{tag}</small>)}
+  </div>
 </Layout>
 
 <style>
-	.tags {
-		display: flex;
-		gap: var(--line-height);
-		margin: var(--line-height) 0;
-	}
+  p {
+    line-height: 1.5;
+  }
+  .tags {
+    display: flex;
+    gap: var(--line-height);
+    margin: var(--line-height) 0;
+  }
 </style>
