@@ -30,17 +30,21 @@ let blockSize: number = 5; // Size of each block in pixels
 let frequencyScale: d3.ScaleLinear<number, number>;
 let panningScale: d3.ScaleLinear<number, number>;
 
+let isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+let backgroundColor = isDarkMode ? "#000000" : "#FFFFFF";
+let textColor = isDarkMode ? "#FFFFFF" : "#000000";
+
 // Custom Color Scale: Black -> Orange -> White -> Purple
 let gradientChoice = 0;
 const gradientChoices = [
-    ["#FFFFFF"],
+    [textColor],
     ["#9e0142", "#d53e4f", "#f46d43", "#fdae61", "#fee08b", "#ffffbf", "#e6f598", "#abdda4", "#66c2a5", "#3288bd", "#5e4fa2"],
     ["#2d004b", "#542788", "#8073ac", "#b2abd2", "#d8daeb", "#f7f7f7", "#fee0b6", "#fdb863", "#e08214", "#b35806", "#7f3b08"],
     ["#40004b", "#762a83", "#9970ab", "#c2a5cf", "#e7d4e8", "#f7f7f7", "#d9f0d3", "#a6dba0", "#5aae61", "#1b7837", "#00441b"],
     ["#8e0152", "#c51b7d", "#de77ae", "#f1b6da", "#fde0ef", "#f7f7f7", "#e6f5d0", "#b8e186", "#7fbc41", "#4d9221", "#276419"],
     ["#543005", "#8c510a", "#bf812d", "#dfc27d", "#f6e8c3", "#f5f5f5", "#c7eae5", "#80cdc1", "#35978f", "#01665e", "#003c30"],
     ["#67001f", "#b2182b", "#d6604d", "#f4a582", "#fddbc7", "#f7f7f7", "#d1e5f0", "#92c5de", "#4393c3", "#2166ac", "#053061"],
-].map(g => ["#000000", ...g]); // All gradients start with black and then go to the specified colors
+].map(g => [backgroundColor, ...g]); // All gradients start with black and then go to the specified colors
 let customColorScale = d3.scaleLinear<string>()
     .domain(gradientChoices[gradientChoice]!.map((_, i) => i / (gradientChoices[gradientChoice]!.length - 1)))
     .range(gradientChoices[gradientChoice]!);
@@ -144,7 +148,7 @@ const stopAudio = () => {
 
     cancelAnimationFrame(animationId);
     const ctx = canvas.getContext('2d')!;
-    ctx.fillStyle = "#000000";
+    ctx.fillStyle = backgroundColor;
     ctx.fillRect(0, 0, canvasSize, canvasSize);
     isPlaying = false;
     isPaused = false;
@@ -208,7 +212,7 @@ const draw = () => {
         analyserRight.getByteFrequencyData(dataArrayRight);
 
         // Clear Canvas
-        ctx.fillStyle = "#000000";
+        ctx.fillStyle = backgroundColor;
         ctx.fillRect(0, 0, canvasSize, canvasSize);
 
         const bufferLength = analyserLeft.frequencyBinCount;
@@ -244,7 +248,7 @@ const draw = () => {
 
 // Draw instructional notes on the canvas.
 const drawInstructionNote = (ctx: CanvasRenderingContext2D) => {
-    ctx.fillStyle = "#FFFFFF";
+    ctx.fillStyle = textColor;
     ctx.textAlign = "left";
     ctx.font = "10px JetBrains Mono";
     ctx.textBaseline = "top";
@@ -292,7 +296,7 @@ const mouseAnimation = (timestamp: number) => {
     ctx.clearRect(0, 0, width, height);
 
     // Draw the white square based on progress
-    ctx.fillStyle = "#FFFFFF";
+    ctx.fillStyle = textColor;
 
     // Calculate size based on progress (from 0 to full size)
     const size = progress * Math.min(width, height);
