@@ -142,7 +142,6 @@ const handleKeyDown = (event: KeyboardEvent) => {
         gainNode.gain.value = Math.min(gainNode.gain.value + 0.1, 2);
     if ((event.key === '-' || event.key === '_') && gainNode.gain.value > 0)
         gainNode.gain.value = Math.max(gainNode.gain.value - 0.1, 0);
-    console.log(gainNode.gain.value, blockSize);
 
     if (event.code === "Space") {
         event.preventDefault();
