@@ -1,81 +1,123 @@
 ---
-import '../styles/index.css';
+import "../styles/index.css";
 const { header, title } = Astro.props;
 ---
 
 <!doctype html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="sitemap" href="/sitemap-index.xml" />
-		<link rel="alternate" type="application/rss+xml" title="Latex 4000's Words" href={new URL("/rss.xml", Astro.url)} />
-		<title>{title || "Latex 4000"}</title>
-		<meta name="description" content="Latex 4000 Collective" />
-		<meta name="author" content="Latex 4000" />
-		<meta name="keywords" content="Latex 4000, collective, webring" />
-		<meta name="twitter:card" content="summary" />
-		<meta name="twitter:site" content="@Latex4000" />
-		<meta name="twitter:title" content={title || "Latex 4000"} />
-		<meta name="twitter:description" content="Latex 4000 Collective" />
-		<meta name="twitter:image" content={new URL("/logo.png", Astro.url)} />
-		<meta property="og:title" content={title || "Latex 4000"} />
-		<meta property="og:type" content="website" />
-		<meta property="og:url" content={Astro.url} />
-		<meta property="og:image" content={new URL("/logo.png", Astro.url)} />
-		<meta property="og:description" content="Latex 4000 Collective" />
-		<meta property="og:site_name" content="Latex 4000" />
-		<meta property="og:locale" content="en_US" />
-	</head>
-	<body>
-		<header>
-			<h1><a href="/" class="header">Latex 4000 / L4K</a></h1>
-			<h2 class="header-nav">
-				<span class="header-nav-ch">!ch </span>
-				<a href="/">Home</a>
-				|
-				<a href="/sounds">Sounds</a>
-				|
-				<a href="/words">Words</a>
-				<!-- |
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title="Latex 4000's Words"
+      href={new URL("/rss.xml", Astro.url)}
+    />
+    <title>{title || "Latex 4000"}</title>
+    <meta name="description" content="Latex 4000 Collective" />
+    <meta name="author" content="Latex 4000" />
+    <meta name="keywords" content="Latex 4000, collective, webring" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:site" content="@Latex4000" />
+    <meta name="twitter:title" content={title || "Latex 4000"} />
+    <meta name="twitter:description" content="Latex 4000 Collective" />
+    <meta name="twitter:image" content={new URL("/logo.png", Astro.url)} />
+    <meta property="og:title" content={title || "Latex 4000"} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={Astro.url} />
+    <meta property="og:image" content={new URL("/logo.png", Astro.url)} />
+    <meta property="og:description" content="Latex 4000 Collective" />
+    <meta property="og:site_name" content="Latex 4000" />
+    <meta property="og:locale" content="en_US" />
+  </head>
+  <body>
+    <header>
+      <h1><a href="/" class="header">Latex 4000 / L4K</a></h1>
+      <h2 class="header-nav">
+        <span class="header-nav-ch">!ch</span>
+        <a href="/">Home</a>
+        |
+        <a href="/sounds">Sounds</a>
+        |
+        <a href="/words">Words</a>
+        <!-- |
 				<a href="/actions">Actions</a> -->
-			</h2>
-			<h2>{header}</h2>
-		</header>
-		<main>
-			<slot />
-			<div>
-				Webring:
-				<div>
-					<a href="/ring?action=prev&from=Latex 4000" title="Previous">←</a>
-					<a href="/ring?action=rand&from=Latex 4000" title="Random">Random</a>
-					<a href="/ring?action=next&from=Latex 4000" title="Next">→</a>
-				</div>
-			</div>
-		</main>
-		<footer>
-			<a href="https://www.youtube.com/@latex4000" target="_blank">YouTube</a>
-			|
-			<a href="https://soundcloud.com/latex4000" target="_blank">SoundCloud</a>
-			|
-			<a href="https://github.com/Latex4000" target="_blank">GitHub</a>
-			|
-			<a href="https://owickstrom.github.io/the-monospace-web/" target="_blank">Design implemented from The Monospace Web</a>
-		</footer>
-	</body>
+      </h2>
+      <h2>{header}</h2>
+    </header>
+    <main>
+      <slot />
+      <div class="webring">
+        Webring:
+        <div>
+          <a href="/ring?action=prev&from=Latex 4000" title="Previous">←</a>
+          <a href="/ring?action=rand&from=Latex 4000" title="Random">Random</a>
+          <a href="/ring?action=next&from=Latex 4000" title="Next">→</a>
+        </div>
+      </div>
+    </main>
+    <footer>
+      <div class="footer-links">
+        <a href="https://www.youtube.com/@latex4000" target="_blank">YouTube</a>
+        |
+        <a href="https://soundcloud.com/latex4000" target="_blank">SoundCloud</a
+        >
+        |
+        <a href="https://github.com/Latex4000" target="_blank">GitHub</a>
+      </div>
+      <a
+        href="https://owickstrom.github.io/the-monospace-web/"
+        target="_blank"
+        id="monospace-web">Design implemented from The Monospace Web</a
+      >
+    </footer>
+  </body>
 </html>
 
 <style>
-	.header-nav {
-		position: relative;
-	}
+  .header-nav {
+    position: relative;
+  }
 
-	.header-nav-ch {
-		position: absolute;
-		right: 100%;
-		text-transform: none;
-		white-space: pre;
-	}
+  .header-nav-ch {
+    position: absolute;
+    right: 100%;
+    text-transform: none;
+    white-space: pre;
+  }
+  footer {
+    margin-block: 0.5rem;
+  }
+  #monospace-web {
+    opacity: 0.5;
+  }
+
+  @media only screen and (max-width: 600px) {
+    .webring {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    header {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    .header-nav {
+      justify-content: center;
+      align-items: center;
+    }
+    footer {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+  }
 </style>
