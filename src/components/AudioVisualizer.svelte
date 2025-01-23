@@ -3,7 +3,6 @@ import { onMount, onDestroy } from 'svelte';
 import { cubicInOut } from 'svelte/easing';
 import * as d3 from 'd3';
 
-let canvasSize: number = 1000;
 let chartRef: HTMLDivElement;
 let canvas: HTMLCanvasElement;
 
@@ -22,7 +21,7 @@ let isPlaying = false;
 let isPaused = false;
 let fileInput: HTMLInputElement;
 
-// Configuration
+let canvasSize: number = 1000;
 let blockSize: number = 5; // Size of each block in pixels
 
 // D3 Scales
@@ -39,9 +38,11 @@ const customColorScale = d3.scaleLinear<string>([
 
 function resizeCanvas() {
     const rect = chartRef.getBoundingClientRect();
+    const originalBlockCount = Math.floor(canvasSize / blockSize);
     canvasSize = Math.floor(rect.width);
     canvas.width = canvasSize;
     canvas.height = canvasSize;
+    blockSize = Math.floor(canvasSize / originalBlockCount);
 
     // Update scales based on new canvas size
     frequencyScale = d3.scaleLinear()
