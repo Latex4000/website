@@ -6,6 +6,8 @@ import * as d3 from 'd3';
 let chartRef: HTMLDivElement;
 let canvas: HTMLCanvasElement;
 
+let fileName: string = "";
+
 let audioContext: AudioContext;
 let audioBuffer: AudioBuffer;
 let sourceNode: AudioBufferSourceNode;
@@ -19,6 +21,7 @@ let dataArrayRight: Uint8Array;
 let animationId: number;
 let isPlaying = false;
 let isPaused = false;
+let volumeAffects = false;
 let mouseOnVisualizer: [number, number] | undefined = undefined;
 let fileInput: HTMLInputElement;
 
@@ -35,7 +38,7 @@ let backgroundColor = isDarkMode ? "#000000" : "#FFFFFF";
 let textColor = isDarkMode ? "#FFFFFF" : "#000000";
 
 // Custom Color Scale: Black -> Orange -> White -> Purple
-let gradientChoice = 0;
+let gradientChoice = 1;
 const gradientChoices = [
     [textColor],
     ["#9e0142", "#d53e4f", "#f46d43", "#fdae61", "#fee08b", "#ffffbf", "#e6f598", "#abdda4", "#66c2a5", "#3288bd", "#5e4fa2"],
@@ -46,8 +49,8 @@ const gradientChoices = [
     ["#67001f", "#b2182b", "#d6604d", "#f4a582", "#fddbc7", "#f7f7f7", "#d1e5f0", "#92c5de", "#4393c3", "#2166ac", "#053061"],
 ].map(g => [backgroundColor, ...g]); // All gradients start with black and then go to the specified colors
 let customColorScale = d3.scaleLinear<string>()
-    .domain(gradientChoices[gradientChoice]!.map((_, i) => i / (gradientChoices[gradientChoice]!.length - 1)))
-    .range(gradientChoices[gradientChoice]!);
+    .domain(gradientChoices[gradientChoice - 1]!.map((_, i) => i / (gradientChoices[gradientChoice - 1]!.length - 1)))
+    .range(gradientChoices[gradientChoice - 1]!);
 
 function resizeCanvas() {
     const rect = chartRef.getBoundingClientRect();
@@ -73,8 +76,8 @@ onMount(() => {
         if (!canvas.contains(event.target as Node)) {
             gradientChoice = (gradientChoice + 1) % gradientChoices.length;
             customColorScale = d3.scaleLinear<string>()
-                .domain(gradientChoices[gradientChoice]!.map((_, i) => i / (gradientChoices[gradientChoice]!.length - 1)))
-                .range(gradientChoices[gradientChoice]!);
+                .domain(gradientChoices[gradientChoice - 1]!.map((_, i) => i / (gradientChoices[gradientChoice - 1]!.length - 1)))
+                .range(gradientChoices[gradientChoice - 1]!);
         }
     });
     window.addEventListener("resize", resizeCanvas);
@@ -110,6 +113,7 @@ const handleFileUpload = async (event: Event) => {
         if (isPlaying)
             stopAudio();
 
+        fileName = file.name;
         playAudio();
     }
 };
@@ -147,6 +151,7 @@ const stopAudio = () => {
     if (analyserRight) analyserRight.disconnect();
 
     cancelAnimationFrame(animationId);
+    fileName = "";
     const ctx = canvas.getContext('2d')!;
     ctx.fillStyle = backgroundColor;
     ctx.fillRect(0, 0, canvasSize, canvasSize);
@@ -156,21 +161,23 @@ const stopAudio = () => {
 };
 
 const handleKeyDown = (event: KeyboardEvent) => {
-    if ((event.key === '`' || event.key === '~') && isPlaying)
+    if ((event.key === '`' || event.key === '~' || event.key === 'Escape') && isPlaying)
         stopAudio();
     if ((event.key === ']' || event.key === '}') && blockSize < canvasSize / 20)
         blockSize++;
     if ((event.key === '[' || event.key === '{') && blockSize > 1)
         blockSize--;
     if ((event.key === '+' || event.key === '=') && gainNode.gain.value < 2)
-        gainNode.gain.value = Math.min(gainNode.gain.value + 0.1, 2);
+        gainNode.gain.value = Math.min(gainNode.gain.value + 0.05, 2);
     if ((event.key === '-' || event.key === '_') && gainNode.gain.value > 0)
-        gainNode.gain.value = Math.max(gainNode.gain.value - 0.1, 0);
-    if (event.key === "?" || event.key === "/") {
-        gradientChoice = (gradientChoice + 1) % gradientChoices.length;
+        gainNode.gain.value = Math.max(gainNode.gain.value - 0.05, 0);
+    if (event.key === "?" || event.key === "/")
+        volumeAffects = !volumeAffects;
+    if (!isNaN(parseInt(event.key)) && parseInt(event.key) > 0 && parseInt(event.key) <= gradientChoices.length) {
+        gradientChoice = parseInt(event.key);
         customColorScale = d3.scaleLinear<string>()
-            .domain(gradientChoices[gradientChoice]!.map((_, i) => i / (gradientChoices[gradientChoice]!.length - 1)))
-            .range(gradientChoices[gradientChoice]!);
+            .domain(gradientChoices[gradientChoice - 1]!.map((_, i) => i / (gradientChoices[gradientChoice - 1]!.length - 1)))
+            .range(gradientChoices[gradientChoice - 1]!);
     }
     if ((event.key === "<" || event.key === ",") && fftSize > 5) {
         fftSize--;
@@ -215,13 +222,14 @@ const draw = () => {
         ctx.fillStyle = backgroundColor;
         ctx.fillRect(0, 0, canvasSize, canvasSize);
 
-        const bufferLength = analyserLeft.frequencyBinCount;
+        drawMouseInformation(ctx);
 
+        const bufferLength = analyserLeft.frequencyBinCount;
         for (let i = 0; i < bufferLength; i++) {
             const amplitudeLeft = dataArrayLeft[i]! / 255;
             const amplitudeRight = dataArrayRight[i]! / 255;
 
-            const amplitude = (amplitudeLeft + amplitudeRight) / 2;
+            const amplitude = (amplitudeLeft + amplitudeRight) / 2 * (volumeAffects ? gainNode.gain.value : 1);
             const frequency = i * audioContext.sampleRate / analyserLeft.fftSize;
 
             // Map frequency to Y position
@@ -246,24 +254,34 @@ const draw = () => {
     drawFrame();
 };
 
-// Draw instructional notes on the canvas.
-const drawInstructionNote = (ctx: CanvasRenderingContext2D) => {
+// Draw mouse position information on the canvas.
+const drawMouseInformation = (ctx: CanvasRenderingContext2D) => {
     ctx.fillStyle = textColor;
     ctx.textAlign = "left";
     ctx.font = "10px JetBrains Mono";
     ctx.textBaseline = "top";
+    ctx.fillText(fileName, canvasSize - ctx.measureText(fileName).width, 0);
     if (mouseOnVisualizer) {
         ctx.fillText(frequencyScale.invert(canvasSize - mouseOnVisualizer[1]).toFixed(0), 0, 0);
         const pan = panningScale.invert(mouseOnVisualizer[0]);
         const panText = (Math.floor(Math.abs(pan) * 100) / 100).toFixed(2);
         ctx.fillText(`${panText === (0).toFixed(2) ? "C" : pan.toFixed(2)}`, 0, 12);
     }
-    ctx.fillText("`   | x", 0, canvasSize - 70);
-    ctx.fillText(`<>  | ${fftSize}`, 0, canvasSize - 58);
-    ctx.fillText(`[]  | ${blockSize}`, 0, canvasSize - 46);
-    ctx.fillText(`+/- | ${gainNode.gain.value.toFixed(1)}`, 0, canvasSize - 34);
-    ctx.fillText(`' ' | ${!isPaused ? "o" : "s"}`, 0, canvasSize - 22);
-    ctx.fillText(`?   | ${gradientChoice}`, 0, canvasSize - 10);
+};
+
+// Draw instructional notes on the canvas.
+const drawInstructionNote = (ctx: CanvasRenderingContext2D) => {
+    ctx.fillStyle = textColor;
+    ctx.textAlign = "left";
+    ctx.font = "10px JetBrains Mono";
+    ctx.textBaseline = "top";
+    ctx.fillText("`   | x", 0, canvasSize - 82);
+    ctx.fillText(`<>  | ${fftSize}`, 0, canvasSize - 70);
+    ctx.fillText(`[]  | ${blockSize}`, 0, canvasSize - 58);
+    ctx.fillText(`1-${gradientChoices.length} | ${gradientChoice}`, 0, canvasSize - 46);
+    ctx.fillText(`+/- | ${gainNode.gain.value.toFixed(2)}`, 0, canvasSize - 34);
+    ctx.fillText(`?   | ${volumeAffects ? "o" : "s"}`, 0, canvasSize - 22);
+    ctx.fillText(`' ' | ${!isPaused ? "o" : "s"}`, 0, canvasSize - 10);
 };
 
 const handleCanvasClick = () => fileInput.click();
