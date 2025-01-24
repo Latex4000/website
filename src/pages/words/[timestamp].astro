@@ -10,7 +10,7 @@ import { encodeSqlDate, wordFromDb, wordId } from "../../../db/config";
 export const prerender = false;
 
 if (process.env.WORDS_UPLOAD_DIRECTORY == null) {
-  return new Response(null, { status: 500 });
+  return new Response("WORDS_UPLOAD_DIRECTORY not set", { status: 500 });
 }
 
 const wordResult = await db

@@ -15,7 +15,7 @@ const fileSizeLimit = 2 ** 20;
 
 export const POST: APIRoute = async (context) => {
 	if (process.env.WORDS_UPLOAD_DIRECTORY == null) {
-		return jsonError("Env not set", 500);
+		return jsonError("WORDS_UPLOAD_DIRECTORY not set", 500);
 	}
 
 	let formData: FormData;

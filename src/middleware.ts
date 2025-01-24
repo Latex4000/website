@@ -1,5 +1,4 @@
 import { validateHmac } from "@latex4000/fetch-hmac";
-import { getSecret } from "astro:env/server";
 import { defineMiddleware } from "astro:middleware";
 import { jsonError } from "./server/responses";
 
@@ -8,10 +7,11 @@ const checkHmacForApi = defineMiddleware((context, next) => {
 		return next();
 	}
 
-	return validateHmac(
-		process.env.SECRET_HMAC_KEY ?? getSecret("SECRET_HMAC_KEY") ?? import.meta.env.SECRET_HMAC_KEY,
-		context.request,
-	)
+	if (!process.env.SECRET_HMAC_KEY) {
+		return jsonError("SECRET_HMAC_KEY not set", 500);
+	}
+
+	return validateHmac(process.env.SECRET_HMAC_KEY, context.request)
 		.then((valid) => valid ? next() : jsonError("Invalid HMAC", 401))
 		.catch((error) => {
 			console.error(error);

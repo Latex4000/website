@@ -12,7 +12,7 @@ export const prerender = false;
 
 export const POST: APIRoute = async ({ request }) => {
 	if (process.env.SOUNDS_UPLOAD_DIRECTORY == null) {
-		return jsonError("Env not set", 500);
+		return jsonError("SOUNDS_UPLOAD_DIRECTORY not set", 500);
 	}
 
 	let formData: FormData;
