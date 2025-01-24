@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "db/development.sh && ASTRO_DB_REMOTE_URL=file:./latex-development.db astro dev --remote",
+    "dev": "./development.sh",
     "build": "astro check && astro build --remote",
     "deploy": "./deploy.sh"
   },
