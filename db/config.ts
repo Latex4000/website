@@ -20,6 +20,7 @@ export interface Member {
 
 export const Sound = defineTable({
   columns: {
+    id: column.number({ primaryKey: true }),
     title: column.text(),
     youtubeUrl: column.text(),
     soundcloudUrl: column.text(),
@@ -28,6 +29,7 @@ export const Sound = defineTable({
 });
 
 export interface Sound {
+  id: number;
   title: string;
   youtubeUrl: string;
   soundcloudUrl: string;
@@ -36,6 +38,7 @@ export interface Sound {
 
 export const Word = defineTable({
   columns: {
+    id: column.number({ primaryKey: true }),
     date: column.date({ default: NOW, unique: true }),
     memberDiscord: column.text({ references: () => Member.columns.discord }),
     tags: column.json({ default: [] }),
@@ -44,6 +47,7 @@ export const Word = defineTable({
 });
 
 export interface WordType {
+  id: number;
   date: Date;
   memberDiscord: Member['discord'];
   tags: string[];
