@@ -2,6 +2,15 @@
 
 set -eu
 
+sqlite_js="$(cat <<-'EOF'
+	const { readFileSync } = require("node:fs");
+	const { createClient } = require("@libsql/client");
+
+	createClient({ url: `file:${process.argv[1]}` })
+		.executeMultiple(readFileSync(process.stdin.fd, "utf8"));
+	EOF
+)"
+
 # Validate arguments
 
 usage() {
@@ -38,5 +47,5 @@ while IFS= read -r migration_file; do
 	test "$migration" -lt "$start_migration" && continue
 
 	printf 'Applying %s\n' "$migration_file" >&2
-	sqlite3 -- "$database" <"$directory/$migration_file"
+	node -e "$sqlite_js" -- "$database" <"$directory/$migration_file"
 done
