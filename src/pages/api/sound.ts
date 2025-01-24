@@ -1,36 +1,94 @@
 import type { APIRoute } from "astro";
 import { jsonError, jsonResponse } from "../../server/responses";
-import { db, isDbError, Sound } from "astro:db";
+import { db, Sound } from "astro:db";
+import type { SoundType } from "../../../db/config";
+import { mkdir } from "fs/promises";
+import { createWriteStream, ReadStream } from "fs";
+import { execFileSync } from "child_process";
+import { finished } from "stream/promises";
 
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request }) => {
-    try {
-        if (request.headers.get("content-type") !== "application/json")
-            return jsonError("Invalid content type");
+	if (process.env.SOUNDS_UPLOAD_DIRECTORY == null) {
+		return jsonError("Env not set", 500);
+	}
 
-        const sound = await request.json();
+	let formData: FormData;
+	try {
+		formData = await request.formData();
+	} catch {
+		return jsonError("Request body must be form data");
+	}
 
-        if (
-            !sound.title ||
-            !sound.youtubeUrl ||
-            !sound.soundcloudUrl ||
-            typeof sound.title !== "string" ||
-            typeof sound.youtubeUrl !== "string" ||
-            typeof sound.soundcloudUrl !== "string"
-        )
-            return jsonError("Member has missing string keys/invalid keys");
+	// TODO
+	// const discord = formData.get("discord");
+	const title = formData.get("title");
+	const soundcloudUrl = formData.get("soundcloudUrl");
+	const youtubeUrl = formData.get("youtubeUrl");
+	const track = formData.get("track");
+	const cover = formData.get("cover");
+	// TODO
+	// const tags = formData.get("tags");
 
-        await db.insert(Sound).values(sound);
-        return jsonResponse(null);
-    } catch (err: any) {
-        if (typeof err.status === "number")
-            return jsonError(err.message, err.status);
+	// Form validation
+	if (
+		typeof title !== "string" ||
+		typeof soundcloudUrl !== "string" ||
+		!URL.canParse(soundcloudUrl) ||
+		typeof youtubeUrl !== "string" ||
+		!URL.canParse(youtubeUrl) ||
+		!(track instanceof File) ||
+		!(cover instanceof File)
+	) {
+		return jsonError("Invalid form params");
+	}
 
-        if (isDbError(err))
-            return jsonError(err.message);
+	// File validation
+	if (track.name !== "track.mp3" && track.name !== "track.wav") {
+		return jsonError("Invalid track name or extension");
+	}
 
-        console.error(err);
-        return jsonError("Internal server error", 500);
-    }
+	if (cover.name !== "cover.jpg" && cover.name !== "cover.png") {
+		return jsonError("Invalid cover name or extension");
+	}
+
+	// Store to DB
+	let sound: SoundType;
+	try {
+		sound = await db
+			.insert(Sound)
+			.values({
+				title,
+				soundcloudUrl,
+				youtubeUrl,
+			})
+			.returning()
+			.get();
+	} catch (error) {
+		// TODO
+		// if (isDbError(error) && error.code === "SQLITE_CONSTRAINT_FOREIGNKEY") {
+		// 	return jsonError("Invalid Discord ID");
+		// }
+
+		throw error;
+	}
+
+	// Upload files
+	const directory = `${process.env.SOUNDS_UPLOAD_DIRECTORY}/${sound.id}`;
+
+	await mkdir(directory);
+
+	for (const file of [track, cover]) {
+		await finished(
+			ReadStream.fromWeb(file.stream())
+				.pipe(createWriteStream(`${directory}/${file.name}`))
+		);
+	}
+
+	if (process.env.SOUNDS_RUN_AFTER_UPLOAD != null) {
+		execFileSync(process.env.SOUNDS_RUN_AFTER_UPLOAD, [directory], { stdio: "ignore" });
+	}
+
+	return jsonResponse(sound);
 };
