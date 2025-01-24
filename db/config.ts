@@ -25,6 +25,9 @@ export const Sound = defineTable({
     youtubeUrl: column.text(),
     soundcloudUrl: column.text(),
     date: column.date({ default: NOW }),
+    tags: column.json({ default: [] }),
+    trackType: column.text(),
+    coverType: column.text(),
   },
 });
 
@@ -34,6 +37,27 @@ export interface SoundType {
   youtubeUrl: string;
   soundcloudUrl: string;
   date: Date;
+  tags: string[];
+  trackType: "mp3" | "wav";
+  coverType: "jpg" | "png";
+}
+
+type SoundTypeInDb = Omit<SoundType, 'tags' | 'trackType' | 'coverType'> & {
+  tags: unknown;
+  trackType: string;
+  coverType: string;
+};
+
+export function soundFromDb(sound: SoundTypeInDb): SoundType {
+  if (
+    Array.isArray(sound.tags) && sound.tags.every((tag) => typeof tag === 'string') &&
+    (sound.trackType === "mp3" || sound.trackType === "wav") &&
+    (sound.coverType === "jpg" || sound.coverType === "png")
+  ) {
+    return sound as SoundType;
+  }
+
+  throw new TypeError();
 }
 
 export const Word = defineTable({
