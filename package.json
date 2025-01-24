@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "./development.sh",
     "build": "astro check && astro build --remote",
-    "deploy": "./deploy.sh"
+    "deploy": "./deploy.sh",
+    "db:pull": "rsync -pv nonacademic.net:latex-server/latex.db latex.db",
+    "db:push-evil": "rsync -pv latex.db nonacademic.net:latex-server/latex.db"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
