@@ -7,6 +7,7 @@ import { wordFromDb, wordId, type WordType } from "../../../db/config";
 import { Marked } from "marked";
 import { baseUrl } from "marked-base-url";
 import { execFileSync } from "child_process";
+import { finished } from "stream/promises";
 
 export const prerender = false;
 
@@ -97,8 +98,10 @@ export const POST: APIRoute = async (context) => {
 	await writeFile(`${directory}/words.md`, md, "utf8");
 
 	for (const file of assetFiles) {
-		ReadStream.fromWeb(file.stream())
-			.pipe(createWriteStream(`${directory}/${file.name}`));
+		await finished(
+			ReadStream.fromWeb(file.stream())
+				.pipe(createWriteStream(`${directory}/${file.name}`))
+		);
 	}
 
 	// Upload compiled HTML file
