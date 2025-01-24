@@ -2,7 +2,6 @@ import type { APIRoute } from "astro";
 import { db, eq, isDbError, Member } from "astro:db";
 import { jsonError, jsonResponse } from "../../server/responses";
 import type { MemberType } from "../../../db/config";
-import { hmacInvalidResponse, validateHmac } from "../../server/hmac";
 
 export const prerender = false;
 
@@ -13,12 +12,6 @@ type AlmostMemberType =
 async function parseAndValidateRequest(request: Request): Promise<AlmostMemberType> {
     if (request.headers.get("content-type") !== "application/json")
         throw new Error("Invalid content type");
-
-    if (!await validateHmac(request)) {
-        const err = new Error("Invalid HMAC");
-        (err as any).status = 401;
-        throw err;
-    }
 
     const member = await request.json();
 
@@ -61,10 +54,7 @@ async function parseAndValidateRequest(request: Request): Promise<AlmostMemberTy
     return member;
 }
 
-export const GET: APIRoute = async ({ url, request }) => {
-    if (!await validateHmac(request))
-        return hmacInvalidResponse();
-
+export const GET: APIRoute = async ({ url }) => {
     const id = url.searchParams.get("id");
     if (!id)
         return jsonError("Missing id");

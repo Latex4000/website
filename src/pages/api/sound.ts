@@ -1,7 +1,6 @@
 import type { APIRoute } from "astro";
 import { jsonError, jsonResponse } from "../../server/responses";
 import { db, isDbError, Sound } from "astro:db";
-import { hmacInvalidResponse, validateHmac } from "../../server/hmac";
 
 export const prerender = false;
 
@@ -9,10 +8,6 @@ export const POST: APIRoute = async ({ request }) => {
     try {
         if (request.headers.get("content-type") !== "application/json")
             return jsonError("Invalid content type");
-
-        if (!await validateHmac(request)) {
-            return hmacInvalidResponse();
-        }
 
         const sound = await request.json();
 
