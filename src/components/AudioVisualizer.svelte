@@ -278,10 +278,10 @@ const drawInstructionNote = (ctx: CanvasRenderingContext2D) => {
     ctx.fillText("`   | x", 0, canvasSize - 82);
     ctx.fillText(`<>  | ${fftSize}`, 0, canvasSize - 70);
     ctx.fillText(`[]  | ${blockSize}`, 0, canvasSize - 58);
-    ctx.fillText(`+/- | ${gainNode.gain.value.toFixed(2)}`, 0, canvasSize - 46);
-    ctx.fillText(`' ' | ${!isPaused ? "o" : "s"}`, 0, canvasSize - 34);
+    ctx.fillText(`1-${gradientChoices.length} | ${gradientChoice}`, 0, canvasSize - 46);
+    ctx.fillText(`+/- | ${gainNode.gain.value.toFixed(2)}`, 0, canvasSize - 34);
     ctx.fillText(`?   | ${volumeAffects ? "o" : "s"}`, 0, canvasSize - 22);
-    ctx.fillText(`1-${gradientChoices.length} | ${gradientChoice}`, 0, canvasSize - 10);
+    ctx.fillText(`' ' | ${!isPaused ? "o" : "s"}`, 0, canvasSize - 10);
 };
 
 const handleCanvasClick = () => fileInput.click();
