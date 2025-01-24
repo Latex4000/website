@@ -6,6 +6,8 @@ import * as d3 from 'd3';
 let chartRef: HTMLDivElement;
 let canvas: HTMLCanvasElement;
 
+let fileName: string = "";
+
 let audioContext: AudioContext;
 let audioBuffer: AudioBuffer;
 let sourceNode: AudioBufferSourceNode;
@@ -110,6 +112,7 @@ const handleFileUpload = async (event: Event) => {
         if (isPlaying)
             stopAudio();
 
+        fileName = file.name;
         playAudio();
     }
 };
@@ -147,6 +150,7 @@ const stopAudio = () => {
     if (analyserRight) analyserRight.disconnect();
 
     cancelAnimationFrame(animationId);
+    fileName = "";
     const ctx = canvas.getContext('2d')!;
     ctx.fillStyle = backgroundColor;
     ctx.fillRect(0, 0, canvasSize, canvasSize);
@@ -252,6 +256,7 @@ const drawInstructionNote = (ctx: CanvasRenderingContext2D) => {
     ctx.textAlign = "left";
     ctx.font = "10px JetBrains Mono";
     ctx.textBaseline = "top";
+    ctx.fillText(fileName, canvasSize - ctx.measureText(fileName).width, 0);
     if (mouseOnVisualizer) {
         ctx.fillText(frequencyScale.invert(canvasSize - mouseOnVisualizer[1]).toFixed(0), 0, 0);
         const pan = panningScale.invert(mouseOnVisualizer[0]);
