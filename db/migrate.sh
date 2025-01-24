@@ -42,7 +42,7 @@ directory='db/migration'
 ls "$directory" | \
 sort -n | \
 while IFS= read -r migration_file; do
-	migration="$(printf %.3s "$migration_file")"
+	migration="$(printf '%.3s' "$migration_file")"
 
 	test "$migration" -lt "$start_migration" && continue
 
