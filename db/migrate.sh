@@ -14,17 +14,17 @@ test $# -lt 1 -o $# -gt 2 && usage
 database="$1"
 start_migration="${2:-1}"
 
+if test -n "${2:-}" -a ! -w "$database"; then
+	printf '<database> must be a writable file\n\n' >&2
+	usage
+fi
+
 case "$start_migration" in
 	''|*[!0-9]*)
 		printf '<start_migration> must be a number\n\n' >&2
 		usage
 		;;
 esac
-
-if test "$start_migration" -ne 1 -a ! -w "$database"; then
-	printf '<database> must be a writable file\n\n' >&2
-	usage
-fi
 
 # Apply migrations
 
