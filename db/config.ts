@@ -10,7 +10,7 @@ export const Member = defineTable({
   },
 });
 
-export interface Member {
+export interface MemberType {
   discord: string;
   alias: string;
   site: string | null;
@@ -28,7 +28,7 @@ export const Sound = defineTable({
   },
 });
 
-export interface Sound {
+export interface SoundType {
   id: number;
   title: string;
   youtubeUrl: string;
@@ -49,7 +49,7 @@ export const Word = defineTable({
 export interface WordType {
   id: number;
   date: Date;
-  memberDiscord: Member['discord'];
+  memberDiscord: MemberType['discord'];
   tags: string[];
   title: string;
 }

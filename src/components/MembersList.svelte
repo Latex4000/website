@@ -1,7 +1,7 @@
 <script lang="ts">
-import type { Member } from "../../db/config";
+import type { MemberType } from "../../db/config";
 
-export let members: Member[] = [];
+export let members: MemberType[] = [];
 
 function gridColumns (node: Node) {
     const containerWidth = (node as HTMLElement).clientWidth;

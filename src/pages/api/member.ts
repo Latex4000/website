@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { db, eq, isDbError, Member } from "astro:db";
 import { jsonError, jsonResponse } from "../../server/responses";
-import type { Member as MemberType } from "../../../db/config";
+import type { MemberType } from "../../../db/config";
 import { hmacInvalidResponse, validateHmac } from "../../server/hmac";
 
 export const prerender = false;
