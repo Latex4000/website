@@ -160,16 +160,16 @@ const stopAudio = () => {
 };
 
 const handleKeyDown = (event: KeyboardEvent) => {
-    if ((event.key === '`' || event.key === '~') && isPlaying)
+    if ((event.key === '`' || event.key === '~' || event.key === 'Escape') && isPlaying)
         stopAudio();
     if ((event.key === ']' || event.key === '}') && blockSize < canvasSize / 20)
         blockSize++;
     if ((event.key === '[' || event.key === '{') && blockSize > 1)
         blockSize--;
     if ((event.key === '+' || event.key === '=') && gainNode.gain.value < 2)
-        gainNode.gain.value = Math.min(gainNode.gain.value + 0.1, 2);
+        gainNode.gain.value = Math.min(gainNode.gain.value + 0.05, 2);
     if ((event.key === '-' || event.key === '_') && gainNode.gain.value > 0)
-        gainNode.gain.value = Math.max(gainNode.gain.value - 0.1, 0);
+        gainNode.gain.value = Math.max(gainNode.gain.value - 0.05, 0);
     if (event.key === "?" || event.key === "/") {
         gradientChoice = (gradientChoice + 1) % gradientChoices.length;
         customColorScale = d3.scaleLinear<string>()
@@ -219,8 +219,9 @@ const draw = () => {
         ctx.fillStyle = backgroundColor;
         ctx.fillRect(0, 0, canvasSize, canvasSize);
 
-        const bufferLength = analyserLeft.frequencyBinCount;
+        drawMouseInformation(ctx);
 
+        const bufferLength = analyserLeft.frequencyBinCount;
         for (let i = 0; i < bufferLength; i++) {
             const amplitudeLeft = dataArrayLeft[i]! / 255;
             const amplitudeRight = dataArrayRight[i]! / 255;
@@ -250,8 +251,8 @@ const draw = () => {
     drawFrame();
 };
 
-// Draw instructional notes on the canvas.
-const drawInstructionNote = (ctx: CanvasRenderingContext2D) => {
+// Draw mouse position information on the canvas.
+const drawMouseInformation = (ctx: CanvasRenderingContext2D) => {
     ctx.fillStyle = textColor;
     ctx.textAlign = "left";
     ctx.font = "10px JetBrains Mono";
@@ -263,10 +264,18 @@ const drawInstructionNote = (ctx: CanvasRenderingContext2D) => {
         const panText = (Math.floor(Math.abs(pan) * 100) / 100).toFixed(2);
         ctx.fillText(`${panText === (0).toFixed(2) ? "C" : pan.toFixed(2)}`, 0, 12);
     }
+};
+
+// Draw instructional notes on the canvas.
+const drawInstructionNote = (ctx: CanvasRenderingContext2D) => {
+    ctx.fillStyle = textColor;
+    ctx.textAlign = "left";
+    ctx.font = "10px JetBrains Mono";
+    ctx.textBaseline = "top";
     ctx.fillText("`   | x", 0, canvasSize - 70);
     ctx.fillText(`<>  | ${fftSize}`, 0, canvasSize - 58);
     ctx.fillText(`[]  | ${blockSize}`, 0, canvasSize - 46);
-    ctx.fillText(`+/- | ${gainNode.gain.value.toFixed(1)}`, 0, canvasSize - 34);
+    ctx.fillText(`+/- | ${gainNode.gain.value.toFixed(2)}`, 0, canvasSize - 34);
     ctx.fillText(`' ' | ${!isPaused ? "o" : "s"}`, 0, canvasSize - 22);
     ctx.fillText(`?   | ${gradientChoice}`, 0, canvasSize - 10);
 };
