@@ -1,5 +1,3 @@
-BEGIN TRANSACTION;
-
 DROP TABLE IF EXISTS "Member";
 CREATE TABLE "Member" (
 	"discord" text,
@@ -38,5 +36,3 @@ CREATE TABLE "_astro_db_snapshot" (
 	"snapshot" BLOB,
 	PRIMARY KEY("id" AUTOINCREMENT)
 );
-
-COMMIT;

@@ -7,9 +7,18 @@ sqlite_js="$(cat <<-'EOF'
 	const { createClient } = require("@libsql/client");
 
 	createClient({ url: `file:${process.argv[1]}` })
-		.executeMultiple(readFileSync(process.stdin.fd, "utf8"));
+		.executeMultiple(
+			"BEGIN TRANSACTION;\n" +
+			"PRAGMA defer_foreign_keys = 1;\n" +
+			readFileSync(process.stdin.fd, "utf8") +
+			"COMMIT;\n"
+		);
 	EOF
 )"
+
+apply_migration() {
+	node -e "$sqlite_js" -- "$1" <"$2"
+}
 
 # Validate arguments
 
@@ -47,5 +56,5 @@ while IFS= read -r migration_file; do
 	test "$migration" -lt "$start_migration" && continue
 
 	printf 'Applying %s\n' "$migration_file" >&2
-	node -e "$sqlite_js" -- "$database" <"$directory/$migration_file"
+	apply_migration "$database" "$directory/$migration_file"
 done

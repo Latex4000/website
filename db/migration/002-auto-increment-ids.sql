@@ -1,6 +1,3 @@
-BEGIN TRANSACTION;
-PRAGMA defer_foreign_keys = 1;
-
 CREATE TABLE "_tmp_Sound" (
 	"id" INTEGER PRIMARY KEY AUTOINCREMENT,
 	"title" text NOT NULL,
@@ -31,5 +28,3 @@ INSERT INTO "_tmp_Word" ("id", "date", "memberDiscord", "tags", "title")
 
 DROP TABLE "Word";
 ALTER TABLE "_tmp_Word" RENAME TO "Word";
-
-COMMIT;
