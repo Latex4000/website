@@ -270,8 +270,8 @@ const draw = () => {
             // Map frequency to Y position
             const y = canvasSize - frequencyScale(frequency) - blockSize;
 
-            // Map panning to X position
-            const pan = (amplitudeRight - amplitudeLeft) / (amplitudeLeft + amplitudeRight + 1e-6); // Range [-1, 1]
+            // Map panning to X position (also check if mono too, in which case pan = 0)
+            const pan = audioBuffer.numberOfChannels === 1 ? 0 : (amplitudeRight - amplitudeLeft) / (amplitudeLeft + amplitudeRight + 1e-6); // Range [-1, 1]
             const x = panningScale(pan);
 
             // Get color based on amplitude
