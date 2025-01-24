@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "astro dev",
+    "dev": "./development.sh",
     "build": "astro check && astro build --remote",
     "deploy": "./deploy.sh"
   },
