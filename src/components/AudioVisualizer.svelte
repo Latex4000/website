@@ -7,6 +7,7 @@ let chartRef: HTMLDivElement;
 let canvas: HTMLCanvasElement;
 
 let fileName: string = "";
+let lastFile: File | null = null;
 
 let audioContext: AudioContext;
 let audioBuffer: AudioBuffer;
@@ -101,21 +102,55 @@ onMount(() => {
 
     // Event listener for ESC key to stop playback
     window.addEventListener('keydown', handleKeyDown);
+
+    // Add drag and drop event listeners
+    canvas.addEventListener('dragover', handleDragOver);
+    canvas.addEventListener('drop', handleDrop);
 });
+
+const handleDragOver = (event: DragEvent) => {
+    event.preventDefault();
+    event.dataTransfer!.dropEffect = 'copy';
+};
+
+const handleDrop = (event: DragEvent) => {
+    event.preventDefault();
+    const files = event.dataTransfer?.files;
+    if (files && files.length > 0) {
+        const file = files[0]!;
+        if (lastFile && file.name === lastFile.name && file.size === lastFile.size && file.lastModified === lastFile.lastModified) {
+            // Same file dropped, replay from the beginning
+            if (isPlaying) {
+                stopAudio();
+                playAudio();
+            }
+        } else {
+            // Different file, handle as new upload
+            lastFile = file;
+            handleFile(file);
+        }
+    }
+};
 
 const handleFileUpload = async (event: Event) => {
     const target = event.target as HTMLInputElement | null;
     const file = target?.files?.[0];
     if (file) {
-        const arrayBuffer = await file.arrayBuffer();
-        audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-
-        if (isPlaying)
-            stopAudio();
-
-        fileName = file.name;
-        playAudio();
+        target.value = "";
+        lastFile = file;
+        handleFile(file);
     }
+};
+
+const handleFile = async (file: File) => {
+    const arrayBuffer = await file.arrayBuffer();
+    audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+
+    if (isPlaying)
+        stopAudio();
+
+    fileName = file.name;
+    playAudio();
 };
 
 const playAudio = () => {
