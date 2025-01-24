@@ -27,7 +27,7 @@ export const POST: APIRoute = async (context) => {
 
 	const discord = formData.get("discord");
 	const title = formData.get("title");
-	const tags = formData.get("tags");
+	const tags = formData.get("tags") ?? "";
 	const md = formData.get("md");
 	const assetFiles = formData.getAll("assets") as File[];
 
@@ -35,7 +35,7 @@ export const POST: APIRoute = async (context) => {
 	if (
 		typeof discord !== 'string' ||
 		typeof title !== 'string' ||
-		(tags != null && typeof tags !== 'string') ||
+		typeof tags !== 'string' ||
 		typeof md !== 'string' ||
 		assetFiles.some((value) => !(value instanceof File))
 	) {
@@ -46,7 +46,7 @@ export const POST: APIRoute = async (context) => {
 		return jsonError("Title is too long");
 	}
 
-	if ((tags?.length ?? 0) > 2 ** 10) {
+	if (tags.length > 2 ** 10) {
 		return jsonError("Tags are too long");
 	}
 
@@ -73,7 +73,7 @@ export const POST: APIRoute = async (context) => {
 				.insert(Word)
 				.values({
 					memberDiscord: discord,
-					tags: tags?.split(',').map((tag) => tag.trim()) ?? [],
+					tags: tags.length === 0 ? [] : tags.split(",").map((tag) => tag.trim()),
 					title,
 				})
 				.returning()
