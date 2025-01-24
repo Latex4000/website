@@ -1,11 +1,12 @@
 import type { APIRoute } from "astro";
 import { jsonError, jsonResponse } from "../../server/responses";
 import { db, Sound } from "astro:db";
-import type { SoundType } from "../../../db/config";
+import { soundFromDb, type SoundType } from "../../../db/config";
 import { mkdir } from "fs/promises";
 import { createWriteStream, ReadStream } from "fs";
 import { execFileSync } from "child_process";
 import { finished } from "stream/promises";
+import { extname } from "path";
 
 export const prerender = false;
 
@@ -28,8 +29,7 @@ export const POST: APIRoute = async ({ request }) => {
 	const youtubeUrl = formData.get("youtubeUrl");
 	const track = formData.get("track");
 	const cover = formData.get("cover");
-	// TODO
-	// const tags = formData.get("tags");
+	const tags = formData.get("tags") ?? "";
 
 	// Form validation
 	if (
@@ -39,9 +39,14 @@ export const POST: APIRoute = async ({ request }) => {
 		typeof youtubeUrl !== "string" ||
 		!URL.canParse(youtubeUrl) ||
 		!(track instanceof File) ||
-		!(cover instanceof File)
+		!(cover instanceof File) ||
+		typeof tags !== "string"
 	) {
 		return jsonError("Invalid form params");
+	}
+
+	if (tags.length > 2 ** 10) {
+		return jsonError("Tags are too long");
 	}
 
 	// File validation
@@ -56,15 +61,20 @@ export const POST: APIRoute = async ({ request }) => {
 	// Store to DB
 	let sound: SoundType;
 	try {
-		sound = await db
-			.insert(Sound)
-			.values({
-				title,
-				soundcloudUrl,
-				youtubeUrl,
-			})
-			.returning()
-			.get();
+		sound = soundFromDb(
+			await db
+				.insert(Sound)
+				.values({
+					title,
+					soundcloudUrl,
+					youtubeUrl,
+					tags: tags.length === 0 ? [] : tags.split(",").map((tag) => tag.trim()),
+					trackType: extname(track.name).slice(1),
+					coverType: extname(cover.name).slice(1),
+				})
+				.returning()
+				.get()
+		);
 	} catch (error) {
 		// TODO
 		// if (isDbError(error) && error.code === "SQLITE_CONSTRAINT_FOREIGNKEY") {
