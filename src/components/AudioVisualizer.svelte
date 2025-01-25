@@ -271,6 +271,41 @@
         draw();
     };
 
+    const seekAudio = (offsetSeconds: number) => {
+        if (isPlaying) {
+            sourceNode.stop();
+            sourceNode.disconnect();
+        }
+
+        // Clamp out of bounds offset
+        offsetSeconds = Math.min(
+            Math.max(offsetSeconds, 0),
+            audioBuffer.duration,
+        );
+
+        // Create new source, channel splitter, connect to analyzers, gain, etc.
+        sourceNode = audioContext.createBufferSource();
+        sourceNode.buffer = audioBuffer;
+
+        const splitter = audioContext.createChannelSplitter(2);
+        sourceNode.connect(splitter);
+        splitter.connect(analyserLeft, 0);
+        splitter.connect(analyserRight, 1);
+
+        sourceNode.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        // Start it at offsetSeconds
+        sourceNode.start(0, offsetSeconds);
+
+        // For normal audioStartTime in playAudio: currentTime = audioContext.currentTime - audioStartTime
+        // Then for seeking we want: audioStartTime = audioContext.currentTime - offsetSeconds
+        audioStartTime = audioContext.currentTime - offsetSeconds;
+
+        cancelAnimationFrame(animationId);
+        draw();
+    };
+
     const stopAudio = () => {
         if (sourceNode) {
             sourceNode.stop();
@@ -495,6 +530,14 @@
 
     const handleCanvasClick = () => fileInput.click();
 
+    const handleSeekClick = (event: MouseEvent) => {
+        event.preventDefault();
+        const rect = canvas.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const fraction = Math.min(Math.max(x / canvasSize, 0), 1);
+        seekAudio(fraction * audioBuffer.duration);
+    };
+
     let progress = 0;
     let target = 0;
     let startTime: number;
@@ -588,6 +631,8 @@
         ontouchend={onCanvasMouseLeave}
         ontouchcancel={onCanvasMouseLeave}
         onclick={handleCanvasClick}
+        oncontextmenu={(e) => e.preventDefault()}
+        onauxclick={handleSeekClick}
     ></canvas>
 </div>
 
