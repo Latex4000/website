@@ -400,6 +400,11 @@
             dataArrayLeft = new Uint8Array(bufferLength);
             dataArrayRight = new Uint8Array(bufferLength);
         }
+        // if left/right key pressed, seek 5 seconds back/forward
+        if (event.key === "ArrowLeft")
+            seekAudio(audioContext.currentTime - audioStartTime - 5);
+        if (event.key === "ArrowRight")
+            seekAudio(audioContext.currentTime - audioStartTime + 5);
 
         if (event.code === "Space") {
             event.preventDefault();
