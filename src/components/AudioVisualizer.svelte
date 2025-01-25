@@ -8,6 +8,7 @@
 
     let fileName: string = "";
     let lastFile: File | null = null;
+    let audioStartTime = 0;
 
     let audioContext: AudioContext;
     let audioBuffer: AudioBuffer;
@@ -264,6 +265,7 @@
         sourceNode.start();
         isPlaying = true;
         target = 0;
+        audioStartTime = audioContext.currentTime;
         draw();
     };
 
@@ -360,6 +362,16 @@
         const ctx = canvas.getContext("2d")!;
 
         const drawFrame = () => {
+            if (
+                parseFloat(audioBuffer.duration.toFixed(3)) <=
+                parseFloat(
+                    (audioContext.currentTime - audioStartTime).toFixed(3),
+                )
+            ) {
+                stopAudio();
+                return;
+            }
+
             analyserLeft.getByteFrequencyData(dataArrayLeft);
             analyserRight.getByteFrequencyData(dataArrayRight);
 
@@ -367,6 +379,7 @@
             ctx.fillStyle = backgroundColor;
             ctx.fillRect(0, 0, canvasSize, canvasSize);
 
+            drawAudioInformation(ctx);
             drawMouseInformation(ctx);
 
             const bufferLength = analyserLeft.frequencyBinCount;
@@ -406,13 +419,37 @@
         drawFrame();
     };
 
+    // Draw audio information on the canvas.
+    const drawAudioInformation = (ctx: CanvasRenderingContext2D) => {
+        ctx.fillStyle = textColor;
+        ctx.textAlign = "left";
+        ctx.font = "10px JetBrains Mono";
+        ctx.textBaseline = "top";
+        ctx.fillText(fileName, canvasSize - ctx.measureText(fileName).width, 0);
+        // Write current time/total time mm:ss/mm:ss
+        const currentTime = audioContext.currentTime - audioStartTime;
+        const duration = audioBuffer.duration;
+        const currentMinutes = Math.floor(currentTime / 60);
+        const currentSeconds = Math.floor(currentTime % 60);
+        const totalMinutes = Math.floor(duration / 60);
+        const totalSeconds = Math.floor(duration % 60);
+        ctx.fillText(
+            `${currentMinutes}:${currentSeconds
+                .toString()
+                .padStart(2, "0")}/${totalMinutes}:${totalSeconds
+                .toString()
+                .padStart(2, "0")}`,
+            canvasSize - ctx.measureText("0:00/0:00").width,
+            12,
+        );
+    };
+
     // Draw mouse position information on the canvas.
     const drawMouseInformation = (ctx: CanvasRenderingContext2D) => {
         ctx.fillStyle = textColor;
         ctx.textAlign = "left";
         ctx.font = "10px JetBrains Mono";
         ctx.textBaseline = "top";
-        ctx.fillText(fileName, canvasSize - ctx.measureText(fileName).width, 0);
         if (mouseOnVisualizer) {
             ctx.fillText(
                 frequencyScale
