@@ -562,17 +562,52 @@
     const handleScroll = (event: WheelEvent) => {
         event.preventDefault();
 
-        // If alt key then change volume
-        if (event.altKey) {
-            if (event.deltaY < 0 && gainNode.gain.value < 2)
-                gainNode.gain.value = Math.min(gainNode.gain.value + 0.05, 2);
-            if (event.deltaY > 0 && gainNode.gain.value > 0)
-                gainNode.gain.value = Math.max(gainNode.gain.value - 0.05, 0);
+        // If ctrl is pressed, zoom in/out on frequency
+        if (event.ctrlKey && mouseOnVisualizer) {
+            const delta = event.deltaY > 0 ? -1 : 1;
+            const bottomDistFromCentre = canvasSize - mouseOnVisualizer[1];
+            const topDistFromCentre = mouseOnVisualizer[1];
+
+            // If they are scrolling from the top/bottom edges, only the opposite scale should change, if they are scrolling from the middle, both should change equally
+            const topScaleFactor = -(
+                1 +
+                delta * (topDistFromCentre / canvasSize)
+            );
+            const bottomScaleFactor =
+                1 + delta * (bottomDistFromCentre / canvasSize);
+            console.log(topScaleFactor, bottomScaleFactor);
+            lowFrequency = Math.min(
+                highFrequency,
+                Math.max(20, lowFrequency * topScaleFactor),
+            );
+            highFrequency = Math.max(
+                lowFrequency,
+                Math.min(20000, highFrequency * bottomScaleFactor),
+            );
+
+            frequencyScale = showLog
+                ? d3
+                      .scaleLog()
+                      .domain([lowFrequency, highFrequency])
+                      .range([0, canvasSize - blockSize])
+                : d3
+                      .scaleLinear()
+                      .domain([lowFrequency, highFrequency])
+                      .range([0, canvasSize - blockSize]);
             return;
         }
 
-        if (event.deltaY < 0 && blockSize < canvasSize / 20) blockSize++;
-        if (event.deltaY > 0 && blockSize > 1) blockSize--;
+        // If alt key then change volume
+        if (event.altKey) {
+            if (event.deltaY < 0 && blockSize < canvasSize / 20) blockSize++;
+            if (event.deltaY > 0 && blockSize > 1) blockSize--;
+            return;
+        }
+
+        if (event.deltaY < 0 && gainNode.gain.value < 2)
+            gainNode.gain.value = Math.min(gainNode.gain.value + 0.05, 2);
+        if (event.deltaY > 0 && gainNode.gain.value > 0)
+            gainNode.gain.value = Math.max(gainNode.gain.value - 0.05, 0);
     };
 
     let progress = 0;
