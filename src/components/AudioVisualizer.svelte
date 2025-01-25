@@ -564,7 +564,7 @@
 
         // If ctrl is pressed, zoom in/out on frequency
         if (event.ctrlKey && mouseOnVisualizer) {
-            const delta = event.deltaY > 0 ? -1 : 1;
+            const delta = event.deltaY > 0 ? 1 : -1;
             const bottomDistFromCentre = canvasSize - mouseOnVisualizer[1];
             const topDistFromCentre = mouseOnVisualizer[1];
 
