@@ -14,105 +14,124 @@ export const prerender = false;
 const fileSizeLimit = 2 ** 20;
 
 export const POST: APIRoute = async (context) => {
-	if (process.env.WORDS_UPLOAD_DIRECTORY == null) {
-		return jsonError("WORDS_UPLOAD_DIRECTORY not set", 500);
-	}
+    if (process.env.WORDS_UPLOAD_DIRECTORY == null) {
+        return jsonError("WORDS_UPLOAD_DIRECTORY not set", 500);
+    }
 
-	let formData: FormData;
-	try {
-		formData = await context.request.formData();
-	} catch {
-		return jsonError("Request body must be form data");
-	}
+    let formData: FormData;
+    try {
+        formData = await context.request.formData();
+    } catch {
+        return jsonError("Request body must be form data");
+    }
 
-	const discord = formData.get("discord");
-	const title = formData.get("title");
-	const tags = formData.get("tags") ?? "";
-	const md = formData.get("md");
-	const assetFiles = formData.getAll("assets") as File[];
+    const discord = formData.get("discord");
+    const title = formData.get("title");
+    const tags = formData.get("tags") ?? "";
+    const md = formData.get("md");
+    const assetFiles = formData.getAll("assets") as File[];
 
-	// Form validation
-	if (
-		typeof discord !== 'string' ||
-		typeof title !== 'string' ||
-		typeof tags !== 'string' ||
-		typeof md !== 'string' ||
-		assetFiles.some((value) => !(value instanceof File))
-	) {
-		return jsonError("Invalid form params");
-	}
+    // Form validation
+    if (
+        typeof discord !== "string" ||
+        typeof title !== "string" ||
+        typeof tags !== "string" ||
+        typeof md !== "string" ||
+        assetFiles.some((value) => !(value instanceof File))
+    ) {
+        return jsonError("Invalid form params");
+    }
 
-	if (title.length > 2 ** 10) {
-		return jsonError("Title is too long");
-	}
+    if (title.length > 2 ** 10) {
+        return jsonError("Title is too long");
+    }
 
-	if (tags.length > 2 ** 10) {
-		return jsonError("Tags are too long");
-	}
+    if (tags.length > 2 ** 10) {
+        return jsonError("Tags are too long");
+    }
 
-	if (md.length > fileSizeLimit) {
-		return jsonError("Markdown content is too long");
-	}
+    if (md.length > fileSizeLimit) {
+        return jsonError("Markdown content is too long");
+    }
 
-	// File validation
-	for (const file of assetFiles) {
-		if (file.size > fileSizeLimit) {
-			return jsonError(`File "${file.name}" is too large (${file.size / 2 ** 10}KiB > ${fileSizeLimit / 2 ** 10}KiB)`);
-		}
-	}
+    // File validation
+    for (const file of assetFiles) {
+        if (file.size > fileSizeLimit) {
+            return jsonError(
+                `File "${file.name}" is too large (${file.size / 2 ** 10}KiB > ${fileSizeLimit / 2 ** 10}KiB)`,
+            );
+        }
+    }
 
-	if (assetFiles.some((file) => file.name === "words.md" || file.name === "words.html")) {
-		return jsonError("Cannot upload asset file named \"words.md\" or \"words.html\"");
-	}
+    if (
+        assetFiles.some(
+            (file) => file.name === "words.md" || file.name === "words.html",
+        )
+    ) {
+        return jsonError(
+            'Cannot upload asset file named "words.md" or "words.html"',
+        );
+    }
 
-	// Store to DB
-	let word: WordType;
-	try {
-		word = wordFromDb(
-			await db
-				.insert(Word)
-				.values({
-					memberDiscord: discord,
-					tags: tags.length === 0 ? [] : tags.split(",").map((tag) => tag.trim()),
-					title,
-				})
-				.returning()
-				.get()
-		);
-	} catch (error) {
-		if (isDbError(error) && error.code === "SQLITE_CONSTRAINT_UNIQUE") {
-			return jsonError("Word already exists");
-		}
+    // Store to DB
+    let word: WordType;
+    try {
+        word = wordFromDb(
+            await db
+                .insert(Word)
+                .values({
+                    memberDiscord: discord,
+                    tags:
+                        tags.length === 0
+                            ? []
+                            : tags.split(",").map((tag) => tag.trim()),
+                    title,
+                })
+                .returning()
+                .get(),
+        );
+    } catch (error) {
+        if (isDbError(error) && error.code === "SQLITE_CONSTRAINT_UNIQUE") {
+            return jsonError("Word already exists");
+        }
 
-		if (isDbError(error) && error.code === "SQLITE_CONSTRAINT_FOREIGNKEY") {
-			return jsonError("Invalid Discord ID; member does not exist; probably needs to join first");
-		}
+        if (isDbError(error) && error.code === "SQLITE_CONSTRAINT_FOREIGNKEY") {
+            return jsonError(
+                "Invalid Discord ID; member does not exist; probably needs to join first",
+            );
+        }
 
-		throw error;
-	}
+        throw error;
+    }
 
-	// Upload files
-	const directory = `${process.env.WORDS_UPLOAD_DIRECTORY}/${wordId(word)}`;
+    // Upload files
+    const directory = `${process.env.WORDS_UPLOAD_DIRECTORY}/${wordId(word)}`;
 
-	await mkdir(directory);
-	await writeFile(`${directory}/words.md`, md, "utf8");
+    await mkdir(directory);
+    await writeFile(`${directory}/words.md`, md, "utf8");
 
-	for (const file of assetFiles) {
-		await finished(
-			ReadStream.fromWeb(file.stream())
-				.pipe(createWriteStream(`${directory}/${file.name}`))
-		);
-	}
+    for (const file of assetFiles) {
+        await finished(
+            ReadStream.fromWeb(file.stream()).pipe(
+                createWriteStream(`${directory}/${file.name}`),
+            ),
+        );
+    }
 
-	// Upload compiled HTML file
-	const html = new Marked(baseUrl(new URL(`/words-uploads/${wordId(word)}/`, context.url).toString()))
-		.parse(md, { async: false, silent: true });
+    // Upload compiled HTML file
+    const html = new Marked(
+        baseUrl(
+            new URL(`/words-uploads/${wordId(word)}/`, context.url).toString(),
+        ),
+    ).parse(md, { async: false, silent: true });
 
-	await writeFile(`${directory}/words.html`, html, "utf8");
+    await writeFile(`${directory}/words.html`, html, "utf8");
 
-	if (process.env.WORDS_RUN_AFTER_UPLOAD != null) {
-		execFileSync(process.env.WORDS_RUN_AFTER_UPLOAD, [directory], { stdio: "ignore" });
-	}
+    if (process.env.WORDS_RUN_AFTER_UPLOAD != null) {
+        execFileSync(process.env.WORDS_RUN_AFTER_UPLOAD, [directory], {
+            stdio: "ignore",
+        });
+    }
 
-	return jsonResponse(word);
+    return jsonResponse(word);
 };

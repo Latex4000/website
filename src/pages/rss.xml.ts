@@ -18,5 +18,5 @@ export const GET: APIRoute = async (context) => {
             pubDate: word.date,
             author: "L",
         })),
-    })
-}
+    });
+};

@@ -1,7 +1,7 @@
 <script lang="ts">
-import type { SoundType } from "../../db/config";
+    import type { SoundType } from "../../db/config";
 
-let { sounds }: { sounds: SoundType[] } = $props();
+    let { sounds }: { sounds: SoundType[] } = $props();
 </script>
 
 <table>

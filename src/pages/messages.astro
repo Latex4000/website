@@ -9,17 +9,17 @@ import MessageHeatmap from "../components/MessageHeatmap.svelte";
         <div class="messageOptions">
             <label for="chartType">Chart type:</label>
             <select id="chartType">
-            <option value="graph">Graph</option>
-            <option value="heatmap">Heatmap</option>
+                <option value="graph">Graph</option>
+                <option value="heatmap">Heatmap</option>
             </select>
         </div>
 
         <div id="graphContainer">
-            <MessageGraph client:visible/>
+            <MessageGraph client:visible />
         </div>
 
         <div id="heatmapContainer" style="display: none;">
-            <MessageHeatmap client:visible/>
+            <MessageHeatmap client:visible />
         </div>
     </div>
 

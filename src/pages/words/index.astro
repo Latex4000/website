@@ -9,47 +9,47 @@ import { eq } from 'astro:db';
 export const prerender = false;
 
 const wordResults = (
-	await db
-		.select({
-			word: Word,
-			memberColor: Member.color,
-		})
-		.from(Word)
-		.innerJoin(Member, eq(Word.memberDiscord, Member.discord))
-	).sort((a, b) => b.word.date.getTime() - a.word.date.getTime());
+    await db
+        .select({
+            word: Word,
+            memberColor: Member.color,
+        })
+        .from(Word)
+        .innerJoin(Member, eq(Word.memberDiscord, Member.discord))
+    ).sort((a, b) => b.word.date.getTime() - a.word.date.getTime());
 ---
 
 <Layout header="Words">
-	{wordResults.length > 0 ? (
-		<p>Here are some words</p>
-		<ul>
-			{wordResults.map((wordResult) => {
-				const word = wordFromDb(wordResult.word);
-				const memberColor = wordResult.memberColor;
+    {wordResults.length > 0 ? (
+        <p>Here are some words</p>
+        <ul>
+            {wordResults.map((wordResult) => {
+                const word = wordFromDb(wordResult.word);
+                const memberColor = wordResult.memberColor;
 
-				return (
-					<li style={`--marker-color: ${memberColor}`}>
-						<a href={`/words/${wordId(word)}`}>{word.title}<br>{word.date.toLocaleString()}</a>
-					</li>
-				);
-			})}
-		</ul>
-	) : (
-		<p>No words currently</p>
-	)}
+                return (
+                    <li style={`--marker-color: ${memberColor}`}>
+                        <a href={`/words/${wordId(word)}`}>{word.title}<br>{word.date.toLocaleString()}</a>
+                    </li>
+                );
+            })}
+        </ul>
+    ) : (
+        <p>No words currently</p>
+    )}
 </Layout>
 
 <style>
 
-	li {
-		margin-top: var(--line-height);
-	}
+    li {
+        margin-top: var(--line-height);
+    }
 
-	li a {
-		text-decoration: none;
-	}
+    li a {
+        text-decoration: none;
+    }
 
-	li::marker {
-		color: var(--marker-color);
-	}
+    li::marker {
+        color: var(--marker-color);
+    }
 </style>

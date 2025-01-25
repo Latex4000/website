@@ -1,14 +1,17 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import MusicTable from '../components/MusicTable.svelte';
+import MusicTable from "../components/MusicTable.svelte";
 import { db, Sound } from "astro:db";
 
 export const prerender = false;
 
-const sounds = (await db.select().from(Sound)).sort((a, b) => b.date.getTime() - a.date.getTime());
+const sounds = (await db.select().from(Sound)).sort(
+    (a, b) => b.date.getTime() - a.date.getTime()
+);
 ---
 
 <Layout header="Sounds">
-    A lot of us in the group make music. This is some music we have released under the collective's name instead of our own:
-    <MusicTable client:only="svelte" sounds={sounds}/>
+    A lot of us in the group make music. This is some music we have released
+    under the collective's name instead of our own:
+    <MusicTable client:only="svelte" sounds={sounds} />
 </Layout>
