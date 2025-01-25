@@ -27,9 +27,12 @@
     let mouseOnVisualizer: [number, number] | undefined = undefined;
     let fileInput: HTMLInputElement;
 
-    let canvasSize: number = 1000;
+    let canvasSize = 1000;
     let fftSize = 11; // 2048; // Number of bins in the FFT analysis; Must be a power of 2 between 5 and 15
-    let blockSize: number = 5; // Size of each block in pixels
+    let blockSize = 5; // Size of each block in pixels
+    let showLog = false;
+    let lowFrequency = 20;
+    let highFrequency = 20000;
 
     // D3 Scales
     let frequencyScale: d3.ScaleLinear<number, number>;
@@ -140,10 +143,15 @@
         blockSize = Math.floor(canvasSize / originalBlockCount);
 
         // Update scales based on new canvas size
-        frequencyScale = d3
-            .scaleLinear()
-            .domain([20, 20000])
-            .range([0, canvasSize - blockSize]);
+        frequencyScale = showLog
+            ? d3
+                  .scaleLog()
+                  .domain([lowFrequency, highFrequency])
+                  .range([0, canvasSize - blockSize])
+            : d3
+                  .scaleLinear()
+                  .domain([lowFrequency, highFrequency])
+                  .range([0, canvasSize - blockSize]);
 
         panningScale = d3
             .scaleLinear()
@@ -327,6 +335,18 @@
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
+        if (event.key === "s") {
+            showLog = !showLog;
+            frequencyScale = showLog
+                ? d3
+                      .scaleLog()
+                      .domain([lowFrequency, highFrequency])
+                      .range([0, canvasSize - blockSize])
+                : d3
+                      .scaleLinear()
+                      .domain([lowFrequency, highFrequency])
+                      .range([0, canvasSize - blockSize]);
+        }
         if (
             (event.key === "`" ||
                 event.key === "~" ||
@@ -511,19 +531,20 @@
         ctx.textAlign = "left";
         ctx.font = "10px JetBrains Mono";
         ctx.textBaseline = "top";
-        ctx.fillText("`   | x", 0, canvasSize - 82);
-        ctx.fillText(`<>  | ${fftSize}`, 0, canvasSize - 70);
-        ctx.fillText(`[]  | ${blockSize}`, 0, canvasSize - 58);
+        ctx.fillText("`   | x", 0, canvasSize - 94);
+        ctx.fillText(`<>  | ${fftSize}`, 0, canvasSize - 82);
+        ctx.fillText(`[]  | ${blockSize}`, 0, canvasSize - 70);
         ctx.fillText(
             `1-${gradientChoices.length} | ${gradientChoice}`,
             0,
-            canvasSize - 46,
+            canvasSize - 58,
         );
         ctx.fillText(
             `+/- | ${gainNode.gain.value.toFixed(2)}`,
             0,
-            canvasSize - 34,
+            canvasSize - 46,
         );
+        ctx.fillText(`s   | ${showLog ? "lo" : "li"}`, 0, canvasSize - 34);
         ctx.fillText(`?   | ${volumeAffects ? "o" : "s"}`, 0, canvasSize - 22);
         ctx.fillText(`' ' | ${!isPaused ? "o" : "s"}`, 0, canvasSize - 10);
     };
@@ -536,6 +557,22 @@
         const x = event.clientX - rect.left;
         const fraction = Math.min(Math.max(x / canvasSize, 0), 1);
         seekAudio(fraction * audioBuffer.duration);
+    };
+
+    const handleScroll = (event: WheelEvent) => {
+        event.preventDefault();
+
+        // If alt key then change volume
+        if (event.altKey) {
+            if (event.deltaY < 0 && gainNode.gain.value < 2)
+                gainNode.gain.value = Math.min(gainNode.gain.value + 0.05, 2);
+            if (event.deltaY > 0 && gainNode.gain.value > 0)
+                gainNode.gain.value = Math.max(gainNode.gain.value - 0.05, 0);
+            return;
+        }
+
+        if (event.deltaY < 0 && blockSize < canvasSize / 20) blockSize++;
+        if (event.deltaY > 0 && blockSize > 1) blockSize--;
     };
 
     let progress = 0;
@@ -633,6 +670,7 @@
         onclick={handleCanvasClick}
         oncontextmenu={(e) => e.preventDefault()}
         onauxclick={handleSeekClick}
+        onwheel={handleScroll}
     ></canvas>
 </div>
 
