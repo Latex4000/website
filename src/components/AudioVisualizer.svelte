@@ -263,6 +263,8 @@
         gainNode.connect(audioContext.destination);
 
         sourceNode.start();
+        audioContext.resume();
+        isPaused = false;
         isPlaying = true;
         target = 0;
         audioStartTime = audioContext.currentTime;
