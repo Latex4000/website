@@ -105,7 +105,7 @@ export const POST: APIRoute = async (context) => {
 	}
 
 	// Upload compiled HTML file
-	const html = new Marked(baseUrl(new URL(`/words-raw/${wordId(word)}/`, context.url).toString()))
+	const html = new Marked(baseUrl(new URL(`/words-uploads/${wordId(word)}/`, context.url).toString()))
 		.parse(md, { async: false, silent: true });
 
 	await writeFile(`${directory}/words.html`, html, "utf8");
