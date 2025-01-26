@@ -485,7 +485,7 @@
     const drawAudioInformation = (ctx: CanvasRenderingContext2D) => {
         ctx.fillStyle = textColor;
         ctx.textAlign = "left";
-        ctx.font = "10px JetBrains Mono";
+        ctx.font = "8px JetBrains Mono";
         ctx.textBaseline = "top";
         ctx.fillText(fileName, canvasSize - ctx.measureText(fileName).width, 0);
         // Write current time/total time mm:ss/mm:ss
@@ -510,7 +510,7 @@
     const drawMouseInformation = (ctx: CanvasRenderingContext2D) => {
         ctx.fillStyle = textColor;
         ctx.textAlign = "left";
-        ctx.font = "10px JetBrains Mono";
+        ctx.font = "8px JetBrains Mono";
         ctx.textBaseline = "top";
         if (mouseOnVisualizer) {
             ctx.fillText(
@@ -534,7 +534,7 @@
     const drawInstructionNote = (ctx: CanvasRenderingContext2D) => {
         ctx.fillStyle = textColor;
         ctx.textAlign = "left";
-        ctx.font = "10px JetBrains Mono";
+        ctx.font = "8px JetBrains Mono";
         ctx.textBaseline = "top";
         ctx.fillText("`   | x", 0, canvasSize - 94);
         ctx.fillText(`<>  | ${fftSize}`, 0, canvasSize - 82);
