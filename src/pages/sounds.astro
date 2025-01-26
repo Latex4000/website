@@ -1,17 +1,121 @@
 ---
+import { soundFromDb } from "../../db/config";
 import Layout from "../layouts/Layout.astro";
-import MusicTable from "../components/MusicTable.svelte";
 import { db, Sound } from "astro:db";
+import AudioPlayer from "../components/AudioPlayer";
 
 export const prerender = false;
 
-const sounds = (await db.select().from(Sound)).sort(
-    (a, b) => b.date.getTime() - a.date.getTime()
-);
+const sounds = (await db.select().from(Sound))
+    .sort((a, b) => b.date.getTime() - a.date.getTime())
+    .map(soundFromDb);
 ---
 
 <Layout header="Sounds">
     A lot of us in the group make music. This is some music we have released
     under the collective's name instead of our own:
-    <MusicTable client:only="svelte" sounds={sounds} />
+    <div class="sounds">
+        {
+            sounds.map((sound) => (
+                <div class="sound">
+                    <img
+                        alt=""
+                        src={`/sounds-uploads/${sound.id}/cover.${sound.coverType}`}
+                    />
+                    <div class="details">
+                        <h2>{sound.title}</h2>
+                        {/* prettier-ignore */}
+                        <div>
+                            <a href={sound.youtubeUrl}>{/* prettier-ignore */}<span class="y">You</span><span class="t">Tube</span></a>
+                            |
+                            <a href={sound.soundcloudUrl}>{/* prettier-ignore */}<span class="s">Sound</span><span class="c">Cloud</span></a>
+                            |
+                            <span>{sound.date.toLocaleString()}</span>
+                        </div>
+                        <AudioPlayer
+                            client:only="react"
+                            src={`/sounds-uploads/${sound.id}/track.${sound.trackType}`}
+                        />
+                        <div class="tags">
+                            {sound.tags.map((tag) => (
+                                <span>{tag}</span>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            ))
+        }
+    </div>
 </Layout>
+
+<style>
+    .sounds {
+        margin: 1lh 0;
+        display: flex;
+        flex-direction: column;
+        gap: 1lh;
+    }
+
+    .sound {
+        display: flex;
+        gap: 2ch;
+        flex: 0 0 round(11lh, 1ch);
+    }
+
+    img {
+        width: 11lh;
+        height: 100%;
+        flex: none;
+        object-fit: cover;
+    }
+
+    .details {
+        display: flex;
+        flex-direction: column;
+        gap: 1lh;
+        flex-grow: 1;
+        min-width: 0;
+    }
+
+    h2 {
+        height: 2lh;
+        margin: 0;
+        text-transform: none;
+    }
+
+    .tags {
+        display: flex;
+        gap: 2ch;
+        overflow-x: auto;
+        margin-top: auto;
+    }
+
+    .tags > span {
+        border: var(--border-thickness) solid white;
+        padding: calc(0.5lh - var(--border-thickness))
+            calc(2ch - var(--border-thickness));
+        text-wrap: nowrap;
+    }
+
+    .y {
+        color: rgb(40, 40, 40);
+    }
+
+    @media (prefers-color-scheme: dark) {
+        .y {
+            color: rgb(205, 205, 205);
+        }
+    }
+
+    .t {
+        color: rgb(255, 0, 0);
+    }
+
+    .s {
+        color: rgb(255, 85, 0);
+    }
+
+    .c {
+        color: rgb(255, 115, 0);
+    }
+</style>
