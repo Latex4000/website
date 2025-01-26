@@ -2,6 +2,7 @@
     import type { MemberType } from "../../db/config";
 
     export let members: MemberType[] = [];
+    let columnCount = 5;
 
     function gridColumns(node: Node) {
         const containerWidth = (node as HTMLElement).clientWidth;
@@ -11,9 +12,10 @@
                     .getComputedStyle(node as HTMLElement)
                     .getPropertyValue("--line-height"),
             ) * 16; // rem to px
-        const gridColumnWidth = (containerWidth - (lineHeight / 2) * 4) / 5;
+        const gridColumnWidth =
+            (containerWidth - (lineHeight / 2) * 4) / columnCount;
         (node as HTMLElement).style.gridTemplateColumns =
-            `repeat(5, minmax(${gridColumnWidth}px, 1fr))`;
+            `repeat(${columnCount}, minmax(${gridColumnWidth}px, 1fr))`;
     }
 
     function gridSpan(node: Node) {
@@ -25,7 +27,8 @@
                     .getComputedStyle(node as HTMLElement)
                     .getPropertyValue("--line-height"),
             ) * 16; // rem to px
-        const gridColumnWidth = (containerWidth - (lineHeight / 2) * 4) / 5;
+        const gridColumnWidth =
+            (containerWidth - (lineHeight / 2) * 4) / columnCount;
 
         // Change span from more than 1 if text is too long
         const canvas = document.createElement("canvas");
@@ -37,9 +40,20 @@
             16 +
             7; // Fucking margin + marker size
 
-        const gridSpan = Math.min(Math.ceil(itemWidth / gridColumnWidth), 5);
+        const gridSpan = Math.min(
+            Math.ceil(itemWidth / gridColumnWidth),
+            columnCount,
+        );
         (node as HTMLElement).style.gridColumn = `span ${gridSpan}`;
     }
+
+    // on window resize
+    window.addEventListener("resize", () => {
+        columnCount = Math.floor(
+            Math.min(5, Math.max(2, 0.0332942 * window.innerWidth - 18.60778)),
+        ); // Dude idk look at this https://www.desmos.com/calculator/cvs8zridx4
+        gridColumns(document.getElementById("member-list")!);
+    });
 </script>
 
 <div>
@@ -68,11 +82,5 @@
     li {
         white-space: nowrap;
         list-style-position: inside;
-    }
-
-    @media only screen and (max-width: 600px) {
-        ul {
-            grid-template-columns: 1fr;
-        }
     }
 </style>
