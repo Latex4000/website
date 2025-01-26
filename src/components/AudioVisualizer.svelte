@@ -29,6 +29,7 @@
 
     let canvasSize = 1000;
     let hide = false;
+    let loop = false;
     let fftSize = 11; // 2048; // Number of bins in the FFT analysis; Must be a power of 2 between 5 and 15
     let blockSize = 5; // Size of each block in pixels
     let showLog = false;
@@ -352,6 +353,7 @@
                       .range([0, canvasSize - blockSize]);
         }
         if (event.key === "h") hide = !hide;
+        if (event.key === "l") loop = !loop;
         if (
             (event.key === "`" ||
                 event.key === "~" ||
@@ -442,7 +444,13 @@
                     (audioContext.currentTime - audioStartTime).toFixed(3),
                 )
             ) {
-                stopAudio();
+                if (loop)
+                    seekAudio(
+                        audioContext.currentTime -
+                            audioStartTime -
+                            audioBuffer.duration,
+                    );
+                else stopAudio();
                 return;
             }
 
@@ -548,8 +556,9 @@
     // Draw instructional notes on the canvas.
     const drawInstructionNote = (ctx: CanvasRenderingContext2D) => {
         setctxForText(ctx);
-        ctx.fillText("`   | x", 0, canvasSize - 88);
-        ctx.fillText("h   | h", 0, canvasSize - 78);
+        ctx.fillText("`   | x", 0, canvasSize - 98);
+        ctx.fillText("h   | h", 0, canvasSize - 88);
+        ctx.fillText(`l   | ${loop ? "o" : "s"}`, 0, canvasSize - 78);
         ctx.fillText(`<>  | ${fftSize}`, 0, canvasSize - 68);
         ctx.fillText(`[]  | ${blockSize}`, 0, canvasSize - 58);
         ctx.fillText(
