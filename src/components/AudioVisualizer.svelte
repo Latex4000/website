@@ -28,6 +28,7 @@
     let fileInput: HTMLInputElement;
 
     let canvasSize = 1000;
+    let hide = false;
     let fftSize = 11; // 2048; // Number of bins in the FFT analysis; Must be a power of 2 between 5 and 15
     let blockSize = 5; // Size of each block in pixels
     let showLog = false;
@@ -347,6 +348,7 @@
                       .domain([lowFrequency, highFrequency])
                       .range([0, canvasSize - blockSize]);
         }
+        if (event.key === "h") hide = !hide;
         if (
             (event.key === "`" ||
                 event.key === "~" ||
@@ -441,8 +443,10 @@
             ctx.fillStyle = backgroundColor;
             ctx.fillRect(0, 0, canvasSize, canvasSize);
 
-            drawAudioInformation(ctx);
-            drawMouseInformation(ctx);
+            if (!hide) {
+                drawAudioInformation(ctx);
+                drawMouseInformation(ctx);
+            }
 
             const bufferLength = analyserLeft.frequencyBinCount;
             for (let i = 0; i < bufferLength; i++) {
@@ -473,7 +477,7 @@
                 ctx.fillRect(x, y, blockSize, blockSize);
             }
 
-            drawInstructionNote(ctx);
+            if (!hide) drawInstructionNote(ctx);
 
             animationId = requestAnimationFrame(drawFrame);
         };
@@ -536,7 +540,8 @@
         ctx.textAlign = "left";
         ctx.font = "8px JetBrains Mono";
         ctx.textBaseline = "top";
-        ctx.fillText("`   | x", 0, canvasSize - 94);
+        ctx.fillText("`   | x", 0, canvasSize - 106);
+        ctx.fillText("h   | h", 0, canvasSize - 94);
         ctx.fillText(`<>  | ${fftSize}`, 0, canvasSize - 82);
         ctx.fillText(`[]  | ${blockSize}`, 0, canvasSize - 70);
         ctx.fillText(
