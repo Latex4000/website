@@ -1,5 +1,6 @@
 ---
 import "../styles/index.css";
+import LightDarkTheme from "../components/LightDarkTheme.astro";
 const { header, title } = Astro.props;
 ---
 
@@ -36,7 +37,9 @@ const { header, title } = Astro.props;
     </head>
     <body>
         <header>
-            <h1><a href="/" class="header">Latex 4000 / L4K</a></h1>
+            <h1>
+                <a href="/" class="header">Latex 4000 / L4K</a>
+            </h1><LightDarkTheme />
             <h2 class="header-nav">
                 <span class="header-nav-ch"><a href="/random">!ch</a>&#32;</span
                 >
