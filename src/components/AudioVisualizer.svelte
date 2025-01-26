@@ -39,9 +39,12 @@
     let frequencyScale: d3.ScaleLinear<number, number>;
     let panningScale: d3.ScaleLinear<number, number>;
 
-    let isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    let backgroundColor = isDarkMode ? "#000000" : "#FFFFFF";
-    let textColor = isDarkMode ? "#FFFFFF" : "#000000";
+    let backgroundColor = getComputedStyle(
+        document.documentElement,
+    ).getPropertyValue("--background-color");
+    let textColor = getComputedStyle(document.documentElement).getPropertyValue(
+        "--text-color",
+    );
 
     // Custom Color Scale: Black -> Orange -> White -> Purple
     let gradientChoice = 1;
@@ -426,6 +429,13 @@
         const ctx = canvas.getContext("2d")!;
 
         const drawFrame = () => {
+            textColor = getComputedStyle(
+                document.documentElement,
+            ).getPropertyValue("--text-color");
+            backgroundColor = getComputedStyle(
+                document.documentElement,
+            ).getPropertyValue("--background-color");
+
             if (
                 parseFloat(audioBuffer.duration.toFixed(3)) <=
                 parseFloat(
@@ -623,6 +633,12 @@
     let startTime: number;
     const duration = 500; // ms
     const mouseAnimation = (timestamp: number) => {
+        textColor = getComputedStyle(document.documentElement).getPropertyValue(
+            "--text-color",
+        );
+        backgroundColor = getComputedStyle(
+            document.documentElement,
+        ).getPropertyValue("--background-color");
         if (!startTime) startTime = timestamp;
 
         const elapsed = timestamp - startTime;
