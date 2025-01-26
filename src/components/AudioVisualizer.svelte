@@ -485,13 +485,17 @@
         drawFrame();
     };
 
-    // Draw audio information on the canvas.
-    const drawAudioInformation = (ctx: CanvasRenderingContext2D) => {
+    const setctxForText = (ctx: CanvasRenderingContext2D) => {
         ctx.fillStyle = textColor;
         ctx.textAlign = "left";
         ctx.font = "8px JetBrains Mono";
         ctx.textBaseline = "top";
-        ctx.fillText(fileName, canvasSize - ctx.measureText(fileName).width, 0);
+    };
+
+    // Draw audio information on the canvas.
+    const drawAudioInformation = (ctx: CanvasRenderingContext2D) => {
+        setctxForText(ctx);
+        ctx.fillText(fileName, canvasSize - ctx.measureText(fileName).width, 2);
         // Write current time/total time mm:ss/mm:ss
         const currentTime = audioContext.currentTime - audioStartTime;
         const duration = audioBuffer.duration;
@@ -512,17 +516,14 @@
 
     // Draw mouse position information on the canvas.
     const drawMouseInformation = (ctx: CanvasRenderingContext2D) => {
-        ctx.fillStyle = textColor;
-        ctx.textAlign = "left";
-        ctx.font = "8px JetBrains Mono";
-        ctx.textBaseline = "top";
+        setctxForText(ctx);
         if (mouseOnVisualizer) {
             ctx.fillText(
                 frequencyScale
                     .invert(canvasSize - mouseOnVisualizer[1])
                     .toFixed(0),
                 0,
-                0,
+                2,
             );
             const pan = panningScale.invert(mouseOnVisualizer[0]);
             const panText = (Math.floor(Math.abs(pan) * 100) / 100).toFixed(2);
@@ -536,27 +537,24 @@
 
     // Draw instructional notes on the canvas.
     const drawInstructionNote = (ctx: CanvasRenderingContext2D) => {
-        ctx.fillStyle = textColor;
-        ctx.textAlign = "left";
-        ctx.font = "8px JetBrains Mono";
-        ctx.textBaseline = "top";
-        ctx.fillText("`   | x", 0, canvasSize - 106);
-        ctx.fillText("h   | h", 0, canvasSize - 94);
-        ctx.fillText(`<>  | ${fftSize}`, 0, canvasSize - 82);
-        ctx.fillText(`[]  | ${blockSize}`, 0, canvasSize - 70);
+        setctxForText(ctx);
+        ctx.fillText("`   | x", 0, canvasSize - 88);
+        ctx.fillText("h   | h", 0, canvasSize - 78);
+        ctx.fillText(`<>  | ${fftSize}`, 0, canvasSize - 68);
+        ctx.fillText(`[]  | ${blockSize}`, 0, canvasSize - 58);
         ctx.fillText(
             `1-${gradientChoices.length} | ${gradientChoice}`,
             0,
-            canvasSize - 58,
+            canvasSize - 48,
         );
         ctx.fillText(
             `+/- | ${gainNode.gain.value.toFixed(2)}`,
             0,
-            canvasSize - 46,
+            canvasSize - 38,
         );
-        ctx.fillText(`s   | ${showLog ? "lo" : "li"}`, 0, canvasSize - 34);
-        ctx.fillText(`?   | ${volumeAffects ? "o" : "s"}`, 0, canvasSize - 22);
-        ctx.fillText(`' ' | ${!isPaused ? "o" : "s"}`, 0, canvasSize - 10);
+        ctx.fillText(`s   | ${showLog ? "lo" : "li"}`, 0, canvasSize - 28);
+        ctx.fillText(`?   | ${volumeAffects ? "o" : "s"}`, 0, canvasSize - 18);
+        ctx.fillText(`' ' | ${!isPaused ? "o" : "s"}`, 0, canvasSize - 8);
     };
 
     const handleCanvasClick = () => fileInput.click();
