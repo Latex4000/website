@@ -24,7 +24,7 @@ export default function AudioPlayer({ durationGuess, src }: AudioPlayerProps) {
 	const [duration, setDuration] = useState(durationGuess);
 	const [muted, setMuted] = useState(false);
 	const [playing, setPlaying] = useState(false);
-	const [volume, setVolume] = useState(0);
+	// const [volume, setVolume] = useState(0);
 
 	// The typing here is safe as long as all usage of audioRef happens in event handlers
 	const audioRef = useRef<HTMLAudioElement>(null) as RefObject<HTMLAudioElement>;
@@ -99,7 +99,7 @@ export default function AudioPlayer({ durationGuess, src }: AudioPlayerProps) {
 
 	const onVolumeChange = () => {
 		setMuted(audioRef.current.muted);
-		setVolume(audioRef.current.volume);
+		// setVolume(audioRef.current.volume);
 	};
 
 	// Render
