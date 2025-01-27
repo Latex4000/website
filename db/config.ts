@@ -23,7 +23,7 @@ export const Sound = defineTable({
         id: column.number({ primaryKey: true }),
         title: column.text(),
         youtubeUrl: column.text(),
-        soundcloudUrl: column.text(),
+        soundcloudUrl: column.text({ optional: true }),
         date: column.date({ default: NOW }),
         tags: column.json({ default: [] }),
         trackType: column.text(),
@@ -35,7 +35,7 @@ export interface SoundType {
     id: number;
     title: string;
     youtubeUrl: string;
-    soundcloudUrl: string;
+    soundcloudUrl: string | null;
     date: Date;
     tags: string[];
     trackType: "mp3" | "wav";

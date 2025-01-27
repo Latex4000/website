@@ -34,8 +34,6 @@ export const POST: APIRoute = async ({ request }) => {
     // Form validation
     if (
         typeof title !== "string" ||
-        typeof soundcloudUrl !== "string" ||
-        !URL.canParse(soundcloudUrl) ||
         typeof youtubeUrl !== "string" ||
         !URL.canParse(youtubeUrl) ||
         !(track instanceof File) ||
@@ -43,6 +41,12 @@ export const POST: APIRoute = async ({ request }) => {
         typeof tags !== "string"
     ) {
         return jsonError("Invalid form params");
+    }
+
+    if (soundcloudUrl && (
+        typeof soundcloudUrl !== "string" ||
+        !URL.canParse(soundcloudUrl))) {
+        return jsonError("Invalid SoundCloud URL");
     }
 
     if (tags.length > 2 ** 10) {

@@ -187,7 +187,6 @@ export default async function seed() {
         {
             title: "unknown",
             youtubeUrl: "https://www.youtube.com/watch?v=yhLEwAjcJZc",
-            soundcloudUrl: "https://soundcloud.com/latex4000/unknown",
             date: new Date("2025-01-18T18:22:38.986Z"),
             trackType: "mp3",
             coverType: "jpg",
