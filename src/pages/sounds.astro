@@ -98,13 +98,7 @@ const sounds = (await db.select().from(Sound))
     }
 
     .y {
-        color: rgb(40, 40, 40);
-    }
-
-    @media (prefers-color-scheme: dark) {
-        .y {
-            color: rgb(205, 205, 205);
-        }
+        color: var(--text-color-alt);
     }
 
     .t {

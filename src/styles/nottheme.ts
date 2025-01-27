@@ -14,7 +14,7 @@ export default {
                 },
                 dark: {
                     "--text-color": "#fff",
-                    "--text-color-alt": "#aaa",
+                    "--text-color-alt": "#ccc",
                     "--background-color": "#000",
                     "--background-color-alt": "#111",
                 },
@@ -23,6 +23,6 @@ export default {
                 { query: "(prefers-color-scheme: dark)", choice: "dark" },
                 "light",
             ]
-        }
+        },
     }
 } satisfies Settings;
