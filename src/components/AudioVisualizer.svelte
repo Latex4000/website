@@ -40,13 +40,16 @@
     let frequencyScale: d3.ScaleLinear<number, number>;
     let panningScale: d3.ScaleLinear<number, number>;
 
-    let backgroundColor = getComputedStyle(
-        document.documentElement,
-    ).getPropertyValue("--background-color");
-    let textColor = getComputedStyle(document.documentElement).getPropertyValue(
-        "--text-color",
-    );
-
+    const fetchCSSColors = () => {
+        const backgroundColor = getComputedStyle(
+            document.body,
+        ).getPropertyValue("--background-color");
+        const textColor = getComputedStyle(document.body).getPropertyValue(
+            "--text-color",
+        );
+        return { backgroundColor, textColor };
+    };
+    let { backgroundColor, textColor } = fetchCSSColors();
     // Custom Color Scale: Black -> Orange -> White -> Purple
     let gradientChoice = 1;
     const gradientChoices = [
@@ -130,14 +133,25 @@
             "#053061",
         ],
     ].map((g) => [backgroundColor, ...g]); // All gradients start with black and then go to the specified colors
-    let customColorScale = d3
-        .scaleLinear<string>()
-        .domain(
-            gradientChoices[gradientChoice - 1]!.map(
-                (_, i) => i / (gradientChoices[gradientChoice - 1]!.length - 1),
-            ),
-        )
-        .range(gradientChoices[gradientChoice - 1]!);
+    const updateColourScale = () => {
+        return d3
+            .scaleLinear<string>()
+            .domain(
+                gradientChoices[gradientChoice - 1]!.map(
+                    (_, i) =>
+                        i / (gradientChoices[gradientChoice - 1]!.length - 1),
+                ),
+            )
+            .range(gradientChoices[gradientChoice - 1]!);
+    };
+    let customColorScale = updateColourScale();
+
+    const updateColours = () => {
+        ({ backgroundColor, textColor } = fetchCSSColors());
+        gradientChoices[0] = [backgroundColor, textColor];
+        gradientChoices.forEach((g) => (g[0] = backgroundColor));
+        customColorScale = updateColourScale();
+    };
 
     function resizeCanvas() {
         const rect = chartRef.getBoundingClientRect();
@@ -169,17 +183,7 @@
         window.addEventListener("touchstart", (event) => {
             if (!canvas.contains(event.target as Node)) {
                 gradientChoice = (gradientChoice + 1) % gradientChoices.length;
-                customColorScale = d3
-                    .scaleLinear<string>()
-                    .domain(
-                        gradientChoices[gradientChoice - 1]!.map(
-                            (_, i) =>
-                                i /
-                                (gradientChoices[gradientChoice - 1]!.length -
-                                    1),
-                        ),
-                    )
-                    .range(gradientChoices[gradientChoice - 1]!);
+                customColorScale = updateColourScale();
             }
         });
         window.addEventListener("resize", resizeCanvas);
@@ -380,16 +384,7 @@
             parseInt(event.key) <= gradientChoices.length
         ) {
             gradientChoice = parseInt(event.key);
-            customColorScale = d3
-                .scaleLinear<string>()
-                .domain(
-                    gradientChoices[gradientChoice - 1]!.map(
-                        (_, i) =>
-                            i /
-                            (gradientChoices[gradientChoice - 1]!.length - 1),
-                    ),
-                )
-                .range(gradientChoices[gradientChoice - 1]!);
+            customColorScale = updateColourScale();
         }
         if ((event.key === "<" || event.key === ",") && fftSize > 5) {
             fftSize--;
@@ -431,13 +426,7 @@
         const ctx = canvas.getContext("2d")!;
 
         const drawFrame = () => {
-            textColor = getComputedStyle(
-                document.documentElement,
-            ).getPropertyValue("--text-color");
-            backgroundColor = getComputedStyle(
-                document.documentElement,
-            ).getPropertyValue("--background-color");
-
+            updateColours();
             if (
                 parseFloat(audioBuffer.duration.toFixed(3)) <=
                 parseFloat(
@@ -642,12 +631,7 @@
     let startTime: number;
     const duration = 500; // ms
     const mouseAnimation = (timestamp: number) => {
-        textColor = getComputedStyle(document.documentElement).getPropertyValue(
-            "--text-color",
-        );
-        backgroundColor = getComputedStyle(
-            document.documentElement,
-        ).getPropertyValue("--background-color");
+        updateColours();
         if (!startTime) startTime = timestamp;
 
         const elapsed = timestamp - startTime;

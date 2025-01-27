@@ -1,6 +1,7 @@
 ---
+import { ThemeLoader, ThemeSelect, ThemeStyling } from "nottheme";
+import settings from "../styles/nottheme";
 import "../styles/index.css";
-import LightDarkTheme from "../components/LightDarkTheme.astro";
 const { header, title } = Astro.props;
 ---
 
@@ -34,12 +35,15 @@ const { header, title } = Astro.props;
         <meta property="og:description" content="Latex 4000 Collective" />
         <meta property="og:site_name" content="Latex 4000" />
         <meta property="og:locale" content="en_US" />
+        <ThemeStyling settings={settings} />
     </head>
     <body>
+        <ThemeLoader settings={settings} />
         <header>
-            <h1>
-                <a href="/" class="header">Latex 4000 / L4K</a>
-            </h1><LightDarkTheme />
+            <div class="main-header">
+                <h1><a href="/" class="header">Latex 4000 / L4K</a></h1>
+                <ThemeSelect settings={settings} />
+            </div>
             <h2 class="header-nav">
                 <span class="header-nav-ch"><a href="/random">!ch</a>&#32;</span
                 >
@@ -93,6 +97,12 @@ const { header, title } = Astro.props;
 </html>
 
 <style>
+    .main-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
     .header-nav {
         position: relative;
     }

@@ -20,13 +20,7 @@
 }
 
 .audio-player-bar-fill-buffered {
-	background-color: #ddd;
-}
-
-@media (prefers-color-scheme: dark) {
-	.audio-player-bar-fill-buffered {
-		background-color: #222;
-	}
+	background-color: var(--background-color-alt);
 }
 
 .audio-player-timestamps {

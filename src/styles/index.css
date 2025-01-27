@@ -3,15 +3,9 @@
 @import url("https://fonts.cdnfonts.com/css/jetbrains-mono-2");
 
 :root {
-    color-scheme: var(--color-scheme, light);
-
     --font-family: "JetBrains Mono", monospace;
     --line-height: 1.2rem;
     --border-thickness: 2px;
-    --text-color: #000;
-    --text-color-alt: #666;
-    --background-color: #fff;
-    --background-color-alt: #eee;
 
     --font-weight-normal: 500;
     --font-weight-medium: 600;
@@ -23,24 +17,6 @@
     font-style: normal;
     font-variant-numeric: tabular-nums lining-nums;
     font-size: 16px;
-
-    &:has(#color-scheme option[value="dark"]:checked) {
-        --color-scheme: dark;
-        --text-color: #fff;
-        --text-color-alt: #aaa;
-        --background-color: #000;
-        --background-color-alt: #111;
-    }
-
-    @media (prefers-color-scheme: dark) {
-        &:has(#color-scheme option[value="system"]:checked) {
-            --color-scheme: dark;
-            --text-color: #fff;
-            --text-color-alt: #aaa;
-            --background-color: #000;
-            --background-color-alt: #111;
-        }
-    }
 }
 
 * {
@@ -55,8 +31,6 @@ html {
     padding: 0;
     flex-direction: column;
     align-items: center;
-    background: var(--background-color);
-    color: var(--text-color);
 }
 
 body {
@@ -70,6 +44,10 @@ body {
     overflow-x: hidden;
     display: flex;
     flex-direction: column;
+
+    /* Originally in html's tag, moved for nottheme to be functional */
+    background: var(--background-color);
+    color: var(--text-color);
 }
 
 @media screen and (max-width: 480px) {
