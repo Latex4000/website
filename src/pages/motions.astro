@@ -1,0 +1,89 @@
+---
+import { motionFromDb } from "../../db/config";
+import Layout from "../layouts/Layout.astro";
+import { db, Motion } from "astro:db";
+
+export const prerender = false;
+
+const motions = (await db.select().from(Motion))
+    .sort((a, b) => b.date.getTime() - a.date.getTime())
+    .map(motionFromDb);
+---
+
+<Layout header="Motions">
+    Some of us are REALLY bored. This is some random vids we have released under
+    the collective's name instead of our own:
+    <div class="motions">
+        {
+            motions.map((motion) => (
+                <div class="motion">
+                    <div class="details">
+                        <h2>{motion.title}</h2>
+                        {/* prettier-ignore */}
+                        <div>
+                            <a href={motion.youtubeUrl}>{/* prettier-ignore */}<span class="y">You</span><span class="t">Tube</span></a>
+                            |
+                            <span>{motion.date.toLocaleString()}</span>
+                        </div>
+                        <div class="tags">
+                            {motion.tags.map((tag) => (
+                                <span>{tag}</span>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            ))
+        }
+    </div>
+</Layout>
+
+<style>
+    /* This is straightup copypasted and barely edited from sounds.astro... probably should just make a component that works for both */
+    .motions {
+        margin: 1lh 0;
+        display: flex;
+        flex-direction: column;
+        gap: 1lh;
+    }
+
+    .motion {
+        display: flex;
+        gap: 2ch;
+        flex: 0 0 round(11lh, 1ch);
+    }
+
+    .details {
+        display: flex;
+        flex-direction: column;
+        gap: 1lh;
+        flex-grow: 1;
+        min-width: 0;
+    }
+
+    h2 {
+        height: 2lh;
+        margin: 0;
+        text-transform: none;
+    }
+
+    .tags {
+        display: flex;
+        gap: 2ch;
+        overflow-x: auto;
+    }
+
+    .tags > span {
+        border: var(--border-thickness) solid white;
+        padding: calc(0.5lh - var(--border-thickness))
+            calc(2ch - var(--border-thickness));
+        text-wrap: nowrap;
+    }
+
+    .y {
+        color: var(--text-color-alt);
+    }
+
+    .t {
+        color: rgb(255, 0, 0);
+    }
+</style>
