@@ -1,0 +1,38 @@
+---
+import { motionFromDb } from "../../db/config";
+import Layout from "../layouts/Layout.astro";
+import { db, Motion } from "astro:db";
+
+export const prerender = false;
+
+const motions = (await db.select().from(Motion))
+    .sort((a, b) => b.date.getTime() - a.date.getTime())
+    .map(motionFromDb);
+---
+
+<Layout header="Motions">
+    Some of us are REALLY bored. This is some random vids we have released under
+    the collective's name instead of our own:
+    <div class="motions">
+        {
+            motions.map((motion) => (
+                <div class="motion">
+                    <div class="details">
+                        <h2>{motion.title}</h2>
+                        {/* prettier-ignore */}
+                        <div>
+                            <a href={motion.youtubeUrl}>{/* prettier-ignore */}<span class="y">You</span><span class="t">Tube</span></a>
+                            |
+                            <span>{motion.date.toLocaleString()}</span>
+                        </div>
+                        <div class="tags">
+                            {motion.tags.map((tag) => (
+                                <span>{tag}</span>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            ))
+        }
+    </div>
+</Layout>

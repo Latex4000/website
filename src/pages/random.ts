@@ -7,6 +7,9 @@ const urls = [
     "/sounds",
     "/words",
     // "/actions",
+    "/motions",
+    // "/sights",
+    // "/things",
 ];
 
 export const GET: APIRoute = (context) => {
