@@ -156,6 +156,7 @@
     function drawLines(channelsArray: MessageData[][]) {
         if (!context) return;
         context.clearRect(0, 0, width, height);
+        context.font = `${parseFloat(getComputedStyle(document.body).fontSize) / 2}px ${getComputedStyle(document.body).fontFamily}`;
 
         const xTicks = xScale.ticks(5);
         const yTicks = yScale.ticks(6);
