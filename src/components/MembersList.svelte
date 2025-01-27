@@ -54,6 +54,10 @@
         ); // Dude idk look at this https://www.desmos.com/calculator/cvs8zridx4
         gridColumns(document.getElementById("member-list")!);
     });
+    const bodyResizeObserver = new ResizeObserver(() => {
+        gridColumns(document.getElementById("member-list")!);
+    });
+    bodyResizeObserver.observe(document.body);
 </script>
 
 <div>
@@ -74,7 +78,7 @@
         margin-top: calc(var(--line-height) / 2);
         padding: 0;
         display: grid;
-        row-gap: var(--line-height);
+        row-gap: calc(var(--line-height) / 2);
         column-gap: calc(var(--line-height) / 2);
         width: 100%;
     }

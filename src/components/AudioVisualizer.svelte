@@ -187,6 +187,10 @@
             }
         });
         window.addEventListener("resize", resizeCanvas);
+        const chartRefObserver = new ResizeObserver(() => {
+            resizeCanvas();
+        });
+        chartRefObserver.observe(chartRef);
         resizeCanvas();
 
         audioContext = new (window.AudioContext ||
@@ -495,7 +499,7 @@
     const setctxForText = (ctx: CanvasRenderingContext2D) => {
         ctx.fillStyle = textColor;
         ctx.textAlign = "left";
-        ctx.font = "8px JetBrains Mono";
+        ctx.font = `${parseFloat(getComputedStyle(document.body).fontSize) / 2}px ${getComputedStyle(document.body).fontFamily}`;
         ctx.textBaseline = "top";
     };
 

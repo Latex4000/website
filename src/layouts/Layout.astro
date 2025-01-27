@@ -35,7 +35,26 @@ const { header, title } = Astro.props;
         <meta property="og:description" content="Latex 4000 Collective" />
         <meta property="og:site_name" content="Latex 4000" />
         <meta property="og:locale" content="en_US" />
+        <link id="theme-link" rel="stylesheet" href="/styles/mono.css" />
         <ThemeStyling settings={settings} />
+        <script>
+            window.__nottheme_onChange = (key: string, value: string) => {
+                if (key === "style") {
+                    (
+                        document.getElementById("theme-link") as HTMLLinkElement
+                    ).href = `/styles/${value}.css`;
+                    const styleSource = document.getElementById(
+                        "style-source"
+                    ) as HTMLLinkElement;
+                    styleSource.textContent = getComputedStyle(
+                        document.body
+                    ).getPropertyValue("--srctext");
+                    styleSource.href = getComputedStyle(
+                        document.body
+                    ).getPropertyValue("--srclink");
+                }
+            };
+        </script>
     </head>
     <body>
         <ThemeLoader settings={settings} />
@@ -90,7 +109,7 @@ const { header, title } = Astro.props;
             <a
                 href="https://owickstrom.github.io/the-monospace-web/"
                 target="_blank"
-                id="monospace-web">Design implemented from The Monospace Web</a
+                id="style-source">Design implemented from The Monospace Web</a
             >
         </footer>
     </body>
@@ -118,8 +137,8 @@ const { header, title } = Astro.props;
         margin-block: var(--line-height);
     }
 
-    #monospace-web {
-        opacity: 0.5;
+    #style-source {
+        opacity: var(--srcopacity);
     }
     main {
         display: flex;

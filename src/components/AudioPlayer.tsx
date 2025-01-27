@@ -118,10 +118,7 @@ export default function AudioPlayer({ durationGuess, src }: AudioPlayerProps) {
 					<span>{formatTimestamp(duration)}</span>
 				</div>
 			</div>
-			<div>
-				<button onClick={onMuteClick} className="audio-player-mute">{muted ? "U" : "M"}</button>
-				<div />
-			</div>
+			<button onClick={onMuteClick} className="audio-player-mute">{muted ? "U" : "M"}</button>
 			<audio
 				src={src}
 				preload="none"
