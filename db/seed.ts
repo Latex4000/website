@@ -177,8 +177,6 @@ export default async function seed() {
         {
             title: "fake feeling type beat",
             youtubeUrl: "https://www.youtube.com/watch?v=bTFUeY6_7Kk",
-            soundcloudUrl:
-                "https://soundcloud.com/latex4000/fake-feeling-type-beat",
             date: new Date("2025-01-18T01:17:52.000Z"),
             tags: ["my awesome tag", "tag2"],
             trackType: "mp3",

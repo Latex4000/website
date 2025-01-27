@@ -28,14 +28,20 @@ const sounds = (await db.select().from(Sound))
                         <div>
                             <a href={sound.youtubeUrl}>{/* prettier-ignore */}<span class="y">You</span><span class="t">Tube</span></a>
                             |
-                            <a href={sound.soundcloudUrl}>{/* prettier-ignore */}<span class="s">Sound</span><span class="c">Cloud</span></a>
-                            |
+                            {sound.soundcloudUrl &&
+                                <>
+                                    <a href={sound.soundcloudUrl}>{/* prettier-ignore */}<span class="s">Sound</span><span class="c">Cloud</span></a>
+                                    |
+                                </>
+                            }
                             <span>{sound.date.toLocaleString()}</span>
                         </div>
-                        <AudioPlayer
-                            client:only="react"
-                            src={`/sounds-uploads/${sound.id}/track.${sound.trackType}`}
-                        />
+                        {sound.soundcloudUrl && (
+                            <AudioPlayer
+                                client:only="react"
+                                src={`/sounds-uploads/${sound.id}/track.${sound.trackType}`}
+                            />
+                        )}
                         <div class="tags">
                             {sound.tags.map((tag) => (
                                 <span>{tag}</span>
