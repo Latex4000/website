@@ -98,9 +98,46 @@ export function wordId(word: Pick<WordType, "date">): string {
     return Math.floor(word.date.getTime() / 1000).toString(10);
 }
 
+export const Motion = defineTable({
+    columns: {
+        id: column.number({ primaryKey: true }),
+        title: column.text(),
+        youtubeUrl: column.text(),
+        memberDiscord: column.text({
+            references: () => Member.columns.discord,
+        }),
+        date: column.date({ default: NOW }),
+        tags: column.json({ default: [] }),
+    },
+});
+
+export interface MotionType {
+    id: number;
+    title: string;
+    youtubeUrl: string;
+    memberDiscord: MemberType["discord"];
+    date: Date;
+    tags: string[];
+}
+
+type MotionTypeInDb = Omit<MotionType, "tags"> & {
+    tags: unknown;
+};
+
+export function motionFromDb(motion: MotionTypeInDb): MotionType {
+    if (
+        Array.isArray(motion.tags) &&
+        motion.tags.every((tag) => typeof tag === "string")
+    ) {
+        return motion as MotionType;
+    }
+
+    throw new TypeError();
+}
+
 // https://astro.build/db/config
 export default defineDb({
-    tables: { Member, Sound, Word },
+    tables: { Member, Sound, Word, Motion },
 });
 
 export function encodeSqlDate(date: Date): ReturnType<typeof sql.raw> {
