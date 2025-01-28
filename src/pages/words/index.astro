@@ -28,7 +28,7 @@ const wordResults = (
                 const memberColor = wordResult.memberColor;
 
                 return (
-                    <li style={`--marker-color: ${memberColor}`}>
+                    <li title={memberColor} style={`--marker-color: ${memberColor}`}>
                         <a href={`/words/${wordId(word)}`}>{word.title}<br>{word.date.toLocaleString()}</a>
                     </li>
                 );
