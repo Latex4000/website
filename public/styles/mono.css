@@ -241,6 +241,10 @@ code {
 
 code {
     font-weight: var(--font-weight-medium);
+    opacity: 0.75;
+    word-break: break-all;
+    white-space: normal;
+    background-color: var(--background-color-alt);
 }
 
 figure {
