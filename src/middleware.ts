@@ -1,6 +1,6 @@
 import { validateHmac } from "@latex4000/fetch-hmac";
 import { defineMiddleware, sequence } from "astro:middleware";
-import { jsonError } from "./server/responses";
+import { jsonError, ResponseError } from "./server/responses";
 import { openAsBlob } from "fs";
 
 const checkHmacForApi = defineMiddleware((context, next) => {
@@ -18,6 +18,18 @@ const checkHmacForApi = defineMiddleware((context, next) => {
             console.error(error);
             return jsonError("Internal error when validating HMAC", 500);
         });
+});
+
+const handleResponseErrors = defineMiddleware(async (_, next) => {
+    try {
+        return await next();
+    } catch (error) {
+        if (error instanceof ResponseError) {
+            return error.response;
+        }
+
+        throw error;
+    }
 });
 
 const serveUploadedFilesInDev = defineMiddleware(async (context, next) => {
@@ -51,7 +63,10 @@ const serveUploadedFilesInDev = defineMiddleware(async (context, next) => {
     return next();
 });
 
-export const onRequest =
-    process.env.NODE_ENV === "development"
-        ? sequence(serveUploadedFilesInDev, checkHmacForApi)
-        : checkHmacForApi;
+const handlers = [handleResponseErrors, checkHmacForApi];
+
+if (process.env.NODE_ENV === "development") {
+    handlers.push(serveUploadedFilesInDev);
+}
+
+export const onRequest = sequence(...handlers);
