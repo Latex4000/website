@@ -7,6 +7,7 @@ import { createWriteStream, ReadStream } from "fs";
 import { execFileSync } from "child_process";
 import { finished } from "stream/promises";
 import { extname } from "path";
+import { getFileOrDiscordAttachment, getTags } from "../../server/validation";
 
 export const prerender = false;
 
@@ -27,8 +28,8 @@ export const POST: APIRoute = async ({ request }) => {
     const title = formData.get("title");
     const soundcloudUrl = formData.get("soundcloudUrl");
     const youtubeUrl = formData.get("youtubeUrl");
-    const track = formData.get("track");
-    const cover = formData.get("cover");
+    const track = await getFileOrDiscordAttachment(formData.get("track"));
+    const cover = await getFileOrDiscordAttachment(formData.get("cover"));
     const tags = formData.get("tags") ?? "";
 
     // Form validation
@@ -38,8 +39,6 @@ export const POST: APIRoute = async ({ request }) => {
         !URL.canParse(soundcloudUrl) ||
         typeof youtubeUrl !== "string" ||
         !URL.canParse(youtubeUrl) ||
-        !(track instanceof File) ||
-        !(cover instanceof File) ||
         typeof tags !== "string"
     ) {
         return jsonError("Invalid form params");
@@ -68,10 +67,7 @@ export const POST: APIRoute = async ({ request }) => {
                     title,
                     soundcloudUrl,
                     youtubeUrl,
-                    tags:
-                        tags.length === 0
-                            ? []
-                            : tags.split(",").map((tag) => tag.trim()),
+                    tags: getTags(tags),
                     trackType: extname(track.name).slice(1),
                     coverType: extname(cover.name).slice(1),
                 })
