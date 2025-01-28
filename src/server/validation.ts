@@ -31,11 +31,7 @@ export async function getFileOrDiscordAttachment(param: FormDataEntryValue | nul
 
 	const response = await fetch(param).catch(() => null);
 
-	if (
-		response?.body == null ||
-		response.headers.get("Content-Disposition") !== "attachment" ||
-		response.status !== 200
-	) {
+	if (response?.body == null || response.status !== 200) {
 		throw new responseErrorType("Failed to fetch Discord attachment", 500);
 	}
 
