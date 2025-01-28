@@ -14,7 +14,7 @@ export const prerender = false;
 const fileSizeLimit = 2 ** 20;
 
 export const POST: APIRoute = async (context) => {
-    if (process.env.WORDS_UPLOAD_DIRECTORY == null) {
+    if (!process.env.WORDS_UPLOAD_DIRECTORY) {
         return jsonError("WORDS_UPLOAD_DIRECTORY not set", 500);
     }
 
@@ -127,7 +127,7 @@ export const POST: APIRoute = async (context) => {
 
     await writeFile(`${directory}/words.html`, html, "utf8");
 
-    if (process.env.WORDS_RUN_AFTER_UPLOAD != null) {
+    if (process.env.WORDS_RUN_AFTER_UPLOAD) {
         execFileSync(process.env.WORDS_RUN_AFTER_UPLOAD, [directory], {
             stdio: "ignore",
         });

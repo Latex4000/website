@@ -11,7 +11,7 @@ import { writeBlobToFile } from "../../server/webApi";
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request }) => {
-    if (process.env.SOUNDS_UPLOAD_DIRECTORY == null) {
+    if (!process.env.SOUNDS_UPLOAD_DIRECTORY) {
         return jsonError("SOUNDS_UPLOAD_DIRECTORY not set", 500);
     }
 
@@ -93,7 +93,7 @@ export const POST: APIRoute = async ({ request }) => {
     await writeBlobToFile(`${directory}/track.${trackType}`, track);
     await writeBlobToFile(`${directory}/cover.${coverType}`, cover);
 
-    if (process.env.SOUNDS_RUN_AFTER_UPLOAD != null) {
+    if (process.env.SOUNDS_RUN_AFTER_UPLOAD) {
         execFileSync(process.env.SOUNDS_RUN_AFTER_UPLOAD, [directory], {
             stdio: "ignore",
         });
