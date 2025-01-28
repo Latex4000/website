@@ -3,7 +3,7 @@ import { defineMiddleware, sequence } from "astro:middleware";
 import { jsonError, ResponseError } from "./server/responses";
 import { openAsBlob } from "fs";
 
-const checkHmacForApi = defineMiddleware((context, next) => {
+const checkHmacForApi = defineMiddleware(async (context, next) => {
     if (!context.url.pathname.startsWith("/api/")) {
         return next();
     }
@@ -12,12 +12,19 @@ const checkHmacForApi = defineMiddleware((context, next) => {
         return jsonError("SECRET_HMAC_KEY not set", 500);
     }
 
-    return validateHmac(process.env.SECRET_HMAC_KEY, context.request)
-        .then((valid) => (valid ? next() : jsonError("Invalid HMAC", 401)))
-        .catch((error) => {
-            console.error(error);
-            return jsonError("Internal error when validating HMAC", 500);
-        });
+    let valid: boolean;
+    try {
+        valid = await validateHmac(process.env.SECRET_HMAC_KEY, context.request);
+    } catch (error) {
+        console.error(error);
+        return jsonError("Internal error when validating HMAC", 500);
+    }
+
+    if (!valid) {
+        return jsonError("Invalid HMAC", 401);
+    }
+
+    return next();
 });
 
 const handleResponseErrors = defineMiddleware(async (_, next) => {
