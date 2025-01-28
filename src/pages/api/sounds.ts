@@ -6,7 +6,7 @@ import { mkdir } from "fs/promises";
 import { execFileSync } from "child_process";
 import { extname } from "path";
 import { getFileOrDiscordAttachment, getTags } from "../../server/validation";
-import { writeWebFile } from "../../server/webApi";
+import { writeBlobToFile } from "../../server/webApi";
 
 export const prerender = false;
 
@@ -90,8 +90,8 @@ export const POST: APIRoute = async ({ request }) => {
 
     await mkdir(directory);
 
-    await writeWebFile(`${directory}/track.${trackType}`, track);
-    await writeWebFile(`${directory}/cover.${coverType}`, cover);
+    await writeBlobToFile(`${directory}/track.${trackType}`, track);
+    await writeBlobToFile(`${directory}/cover.${coverType}`, cover);
 
     if (process.env.SOUNDS_RUN_AFTER_UPLOAD != null) {
         execFileSync(process.env.SOUNDS_RUN_AFTER_UPLOAD, [directory], {
