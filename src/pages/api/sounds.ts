@@ -3,11 +3,10 @@ import { jsonError, jsonResponse } from "../../server/responses";
 import { db, Sound } from "astro:db";
 import { soundFromDb, type SoundType } from "../../../db/config";
 import { mkdir } from "fs/promises";
-import { createWriteStream, ReadStream } from "fs";
 import { execFileSync } from "child_process";
-import { finished } from "stream/promises";
 import { extname } from "path";
 import { getFileOrDiscordAttachment, getTags } from "../../server/validation";
+import { writeWebFile } from "../../server/webApi";
 
 export const prerender = false;
 
@@ -49,12 +48,15 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     // File validation
-    if (track.name !== "track.mp3" && track.name !== "track.wav") {
-        return jsonError("Invalid track name or extension");
+    const trackType = extname(track.name).slice(1);
+    const coverType = extname(cover.name).slice(1);
+
+    if (trackType !== "mp3" && trackType !== "wav") {
+        return jsonError("Invalid track file extension");
     }
 
-    if (cover.name !== "cover.jpg" && cover.name !== "cover.png") {
-        return jsonError("Invalid cover name or extension");
+    if (coverType !== "jpg" && coverType !== "png") {
+        return jsonError("Invalid cover file extension");
     }
 
     // Store to DB
@@ -68,8 +70,8 @@ export const POST: APIRoute = async ({ request }) => {
                     soundcloudUrl,
                     youtubeUrl,
                     tags: getTags(tags),
-                    trackType: extname(track.name).slice(1),
-                    coverType: extname(cover.name).slice(1),
+                    trackType,
+                    coverType,
                 })
                 .returning()
                 .get(),
@@ -88,13 +90,8 @@ export const POST: APIRoute = async ({ request }) => {
 
     await mkdir(directory);
 
-    for (const file of [track, cover]) {
-        await finished(
-            ReadStream.fromWeb(file.stream()).pipe(
-                createWriteStream(`${directory}/${file.name}`),
-            ),
-        );
-    }
+    await writeWebFile(`${directory}/track.${trackType}`, track);
+    await writeWebFile(`${directory}/cover.${coverType}`, cover);
 
     if (process.env.SOUNDS_RUN_AFTER_UPLOAD != null) {
         execFileSync(process.env.SOUNDS_RUN_AFTER_UPLOAD, [directory], {
