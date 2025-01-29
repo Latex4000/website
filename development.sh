@@ -19,7 +19,7 @@ mkdir -p "$SOUNDS_UPLOAD_DIRECTORY"
 mkdir -p "$WORDS_UPLOAD_DIRECTORY"
 
 # Create database
-db/migrate.sh "$database"
+node db/migrate.mjs "$database"
 
 # Seed database
 astro db execute db/seed.ts --remote
