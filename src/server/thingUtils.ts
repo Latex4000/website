@@ -59,7 +59,6 @@ export async function thingGet({ url }: APIContext, thingType: ThingType) {
 
 export async function thingDeletion({ url }: APIContext, thingType: ThingType, isDeleted: boolean) {
     const params = url.searchParams;
-    console.log(params);
     const discordID = params.get("discord");
     if (!discordID || typeof discordID !== "string")
         return jsonError("Invalid Discord ID");
@@ -71,11 +70,10 @@ export async function thingDeletion({ url }: APIContext, thingType: ThingType, i
     const table = thingTypeToTable[thingType];
 
     const thing = await db
-        .delete(table)
+        .select()
+        .from(table)
         .where(and(eq(table.id, parseInt(id)), eq(table.memberDiscord, discordID)))
-        .returning()
         .get();
-
     if (!thing)
         return jsonError(`${thingType} not found`);
 
