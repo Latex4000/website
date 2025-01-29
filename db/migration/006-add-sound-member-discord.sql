@@ -11,8 +11,8 @@ CREATE TABLE "_tmp_Sound" (
 	FOREIGN KEY ("memberDiscord") REFERENCES "Member" ("discord")
 );
 
-INSERT INTO "_tmp_Sound" ("id", "title", "memberDiscord", "youtubeUrl", "soundcloudUrl", "date", "trackType", "coverType")
-	SELECT "id", "title", (SELECT "discord" FROM "Member" LIMIT 1), "youtubeUrl", "soundcloudUrl", "date", "trackType", "coverType"
+INSERT INTO "_tmp_Sound" ("id", "title", "memberDiscord", "youtubeUrl", "soundcloudUrl", "date", "tags", "trackType", "coverType")
+	SELECT "id", "title", (SELECT "discord" FROM "Member" LIMIT 1), "youtubeUrl", "soundcloudUrl", "date", "tags", "trackType", "coverType"
 	FROM "Sound";
 
 DROP TABLE "Sound";
