@@ -39,9 +39,13 @@ const { header, title } = Astro.props;
         <ThemeStyling settings={settings} />
         <script>
             window.__nottheme_onChange = (_: string, value: string) => {
-                (
-                    document.getElementById("theme-link") as HTMLLinkElement
-                ).href = `/styles/${value.split("-")[0]}.css`;
+                const newcss = value.split("-")[0]!;
+                const themeLinkTag = document.getElementById(
+                    "theme-link"
+                ) as HTMLLinkElement;
+                if (themeLinkTag.href.includes(newcss)) return;
+
+                themeLinkTag.href = `/styles/${newcss}.css`;
                 const styleSource = document.getElementById(
                     "style-source"
                 ) as HTMLLinkElement;
