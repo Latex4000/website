@@ -92,7 +92,8 @@ export default function AudioPlayer({ durationGuess, src, title, trackType }: Au
 	const onVolumeWheel = (event: WheelEvent) => {
 		event.preventDefault();
 
-		const step = 0.05;
+		const step = event.ctrlKey || event.shiftKey ? 0.01 : 0.05;
+
 		audioRef.current.volume = Math.min(Math.max((event.deltaY < 0 ? 1 : -1) * step + audioRef.current.volume, 0), 1);
 	};
 
