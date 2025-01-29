@@ -1,5 +1,5 @@
 import "./AudioPlayer.css";
-import { useRef, useState, type MouseEventHandler, type RefObject } from "react";
+import { useEffect, useRef, useState, type MouseEventHandler, type RefObject } from "react";
 
 function formatTimestamp(seconds?: number): string {
 	if (seconds == null) {
@@ -29,6 +29,10 @@ export default function AudioPlayer({ durationGuess, src }: AudioPlayerProps) {
 	// The typing here is safe as long as all usage of audioRef happens in event handlers
 	const audioRef = useRef<HTMLAudioElement>(null) as RefObject<HTMLAudioElement>;
 
+	const syncCurrentTime = () => setCurrentTime(audioRef.current.currentTime);
+
+	useRequestAnimationFrame(syncCurrentTime, playing);
+
 	// UI event handlers
 	const onBarMouseUp: MouseEventHandler<HTMLDivElement> = (event) => {
 		event.preventDefault();
@@ -38,6 +42,7 @@ export default function AudioPlayer({ durationGuess, src }: AudioPlayerProps) {
 		const xRelative = x / targetRect.width;
 
 		audioRef.current.currentTime = xRelative * audioRef.current.duration;
+		syncCurrentTime();
 	};
 
 	const onMuteClick: MouseEventHandler<HTMLButtonElement> = (event) => {
@@ -68,6 +73,7 @@ export default function AudioPlayer({ durationGuess, src }: AudioPlayerProps) {
 	const onEnded = () => {
 		audioRef.current.pause();
 		audioRef.current.currentTime = 0;
+		syncCurrentTime();
 	};
 
 	const onPause = () => {
@@ -91,10 +97,6 @@ export default function AudioPlayer({ durationGuess, src }: AudioPlayerProps) {
 				return;
 			}
 		}
-	};
-
-	const onTimeUpdate = () => {
-		setCurrentTime(audioRef.current.currentTime);
 	};
 
 	const onVolumeChange = () => {
@@ -127,12 +129,35 @@ export default function AudioPlayer({ durationGuess, src }: AudioPlayerProps) {
 				onCanPlayThrough={onCanPlayThrough}
 				onDurationChange={onDurationChange}
 				onEnded={onEnded}
+				onError={onEnded}
 				onPause={onPause}
 				onPlay={onPlay}
 				onProgress={onProgress}
-				onTimeUpdate={onTimeUpdate}
 				onVolumeChange={onVolumeChange}
 			/>
 		</div>
 	);
+}
+
+function useRequestAnimationFrame(callback: FrameRequestCallback, active: boolean): void {
+	const requestIdRef = useRef<number>(null);
+
+	useEffect(() => {
+		if (!active) {
+			return;
+		}
+
+		const internalCallback: FrameRequestCallback = (time) => {
+			callback(time);
+			requestIdRef.current = requestAnimationFrame(internalCallback);
+		};
+
+		requestIdRef.current = requestAnimationFrame(internalCallback);
+
+		return () => {
+			if (requestIdRef.current != null) {
+				cancelAnimationFrame(requestIdRef.current);
+			}
+		};
+	}, [active]);
 }
