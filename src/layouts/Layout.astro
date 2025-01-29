@@ -38,21 +38,19 @@ const { header, title } = Astro.props;
         <link id="theme-link" rel="stylesheet" href="/styles/mono.css" />
         <ThemeStyling settings={settings} />
         <script>
-            window.__nottheme_onChange = (key: string, value: string) => {
-                if (key === "style") {
-                    (
-                        document.getElementById("theme-link") as HTMLLinkElement
-                    ).href = `/styles/${value}.css`;
-                    const styleSource = document.getElementById(
-                        "style-source"
-                    ) as HTMLLinkElement;
-                    styleSource.textContent = getComputedStyle(
-                        document.body
-                    ).getPropertyValue("--srctext");
-                    styleSource.href = getComputedStyle(
-                        document.body
-                    ).getPropertyValue("--srclink");
-                }
+            window.__nottheme_onChange = (_: string, value: string) => {
+                (
+                    document.getElementById("theme-link") as HTMLLinkElement
+                ).href = `/styles/${value.split("-")[0]}.css`;
+                const styleSource = document.getElementById(
+                    "style-source"
+                ) as HTMLLinkElement;
+                styleSource.textContent = getComputedStyle(
+                    document.body
+                ).getPropertyValue("--srctext");
+                styleSource.href = getComputedStyle(
+                    document.body
+                ).getPropertyValue("--srclink");
             };
         </script>
     </head>
