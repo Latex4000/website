@@ -16,10 +16,6 @@ Deploying site:
 
 - Run `npm run deploy`
 
-Prod. Migrations:
-
-- Run `npm run db:pull` to bring prod data locally
-- Run `node db/migrate.mjs latex.db <MIGRATIONNUMBER>` to migrate db
-- Run `npm run db:push-evil` to push local data to prod
+During the deploy, new migrations will be applied to the production db
 
 Yay
