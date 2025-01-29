@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { jsonError, jsonResponse } from "../../server/responses";
-import { db, Sound } from "astro:db";
+import { db, isDbError, Sound } from "astro:db";
 import { soundFromDb, type SoundType } from "../../../db/config";
 import { mkdir } from "fs/promises";
 import { execFileSync } from "child_process";
@@ -22,8 +22,7 @@ export const POST: APIRoute = async ({ request }) => {
         return jsonError("Request body must be form data");
     }
 
-    // TODO
-    // const discord = formData.get("discord");
+    const discord = formData.get("discord");
     const title = formData.get("title");
     const soundcloudUrl = formData.get("soundcloudUrl");
     const youtubeUrl = formData.get("youtubeUrl");
@@ -33,6 +32,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     // Form validation
     if (
+        typeof discord !== "string" ||
         typeof title !== "string" ||
         typeof soundcloudUrl !== "string" ||
         !URL.canParse(soundcloudUrl) ||
@@ -67,6 +67,7 @@ export const POST: APIRoute = async ({ request }) => {
                 .insert(Sound)
                 .values({
                     title,
+                    memberDiscord: discord,
                     soundcloudUrl,
                     youtubeUrl,
                     tags: getTags(tags),
@@ -77,10 +78,9 @@ export const POST: APIRoute = async ({ request }) => {
                 .get(),
         );
     } catch (error) {
-        // TODO
-        // if (isDbError(error) && error.code === "SQLITE_CONSTRAINT_FOREIGNKEY") {
-        // 	return jsonError("Invalid Discord ID");
-        // }
+        if (isDbError(error) && error.code === "SQLITE_CONSTRAINT_FOREIGNKEY") {
+            return jsonError("Invalid Discord ID");
+        }
 
         throw error;
     }
