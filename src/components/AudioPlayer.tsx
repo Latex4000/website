@@ -24,14 +24,25 @@ export default function AudioPlayer({ durationGuess, src }: AudioPlayerProps) {
 	const [duration, setDuration] = useState(durationGuess);
 	const [muted, setMuted] = useState(false);
 	const [playing, setPlaying] = useState(false);
-	// const [volume, setVolume] = useState(0);
+	const [volume, setVolume] = useState(1);
 
 	// The typing here is safe as long as all usage of audioRef happens in event handlers
 	const audioRef = useRef<HTMLAudioElement>(null) as RefObject<HTMLAudioElement>;
+	const volumeRef = useRef<HTMLDivElement>(null);
 
 	const syncCurrentTime = () => setCurrentTime(audioRef.current.currentTime);
 
 	useRequestAnimationFrame(syncCurrentTime, playing);
+
+	useEffect(() => {
+		if (volumeRef.current == null) {
+			return;
+		}
+
+		volumeRef.current.addEventListener("wheel", onVolumeWheel, { passive: false });
+
+		return () => volumeRef.current?.removeEventListener("wheel", onVolumeWheel);
+	}, [volumeRef.current]);
 
 	// UI event handlers
 	const onBarMouseUp: MouseEventHandler<HTMLDivElement> = (event) => {
@@ -59,6 +70,12 @@ export default function AudioPlayer({ durationGuess, src }: AudioPlayerProps) {
 		} else {
 			audioRef.current.play().catch();
 		}
+	};
+
+	const onVolumeWheel = (event: WheelEvent) => {
+		event.preventDefault();
+
+		audioRef.current.volume = Math.min(Math.max((event.deltaY < 0 ? 1 : -1) * 0.1 + audioRef.current.volume, 0), 1);
 	};
 
 	// Audio event handlers
@@ -101,7 +118,7 @@ export default function AudioPlayer({ durationGuess, src }: AudioPlayerProps) {
 
 	const onVolumeChange = () => {
 		setMuted(audioRef.current.muted);
-		// setVolume(audioRef.current.volume);
+		setVolume(audioRef.current.volume);
 	};
 
 	// Render
@@ -121,6 +138,12 @@ export default function AudioPlayer({ durationGuess, src }: AudioPlayerProps) {
 				</div>
 			</div>
 			<button onClick={onMuteClick} className="audio-player-mute">{muted ? "U" : "M"}</button>
+			<div
+				className={`audio-player-volume-control ${muted ? "audio-player-volume-control-muted" : ""}`}
+				ref={volumeRef}
+			>
+				{Math.round(volume * 100)}%
+			</div>
 			<audio
 				src={src}
 				preload="none"

@@ -38,3 +38,15 @@
 .audio-player-mute {
     width: 4ch;
 }
+
+.audio-player-volume-control {
+    width: 5ch;
+    display: flex;
+    align-items: center;
+    justify-content: end;
+}
+
+.audio-player-volume-control-muted {
+    color: var(--text-color-alt);
+    text-decoration: line-through 2px var(--text-color-alt);
+}
