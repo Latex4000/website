@@ -22,6 +22,9 @@ export const Sound = defineTable({
     columns: {
         id: column.number({ primaryKey: true }),
         title: column.text(),
+        memberDiscord: column.text({
+            references: () => Member.columns.discord,
+        }),
         youtubeUrl: column.text(),
         soundcloudUrl: column.text(),
         date: column.date({ default: NOW }),
@@ -34,6 +37,7 @@ export const Sound = defineTable({
 export interface SoundType {
     id: number;
     title: string;
+    memberDiscord: MemberType["discord"];
     youtubeUrl: string;
     soundcloudUrl: string;
     date: Date;

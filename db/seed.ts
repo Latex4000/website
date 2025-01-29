@@ -71,6 +71,7 @@ export default async function seed() {
     await db.insert(Sound).values([
         {
             title: "Born In An Underground River... Gg",
+            memberDiscord: "352605625869402123",
             youtubeUrl: "https://www.youtube.com/watch?v=gzMRgTtMkQY",
             soundcloudUrl:
                 "https://soundcloud.com/latex4000/born-in-an-underground-river",
@@ -80,6 +81,7 @@ export default async function seed() {
         },
         {
             title: "my soul your beat (off)",
+            memberDiscord: "352605625869402123",
             youtubeUrl: "https://www.youtube.com/watch?v=KAxIejR6k94",
             soundcloudUrl:
                 "https://soundcloud.com/latex4000/my-soul-your-beat-off",
@@ -89,6 +91,7 @@ export default async function seed() {
         },
         {
             title: "had a schizo moment from hearing megalovania",
+            memberDiscord: "352605625869402123",
             youtubeUrl: "https://www.youtube.com/watch?v=S1lMku7VBdM",
             soundcloudUrl:
                 "https://soundcloud.com/latex4000/had-a-schizo-moment-from",
@@ -98,6 +101,7 @@ export default async function seed() {
         },
         {
             title: "camera angel blues",
+            memberDiscord: "352605625869402123",
             youtubeUrl: "https://www.youtube.com/watch?v=KhbtiN1rdow",
             soundcloudUrl:
                 "https://soundcloud.com/latex4000/camera-angel-blues",
@@ -107,6 +111,7 @@ export default async function seed() {
         },
         {
             title: "hayley williams crashes out in new jersey (LilB type beat)",
+            memberDiscord: "352605625869402123",
             youtubeUrl: "https://www.youtube.com/watch?v=KWfnWe1DVv4",
             soundcloudUrl:
                 "https://soundcloud.com/latex4000/hayley-williams-crashes-out-in",
@@ -116,6 +121,7 @@ export default async function seed() {
         },
         {
             title: "Elect Yo Floop",
+            memberDiscord: "352605625869402123",
             youtubeUrl: "https://www.youtube.com/watch?v=Hk4AVZMfGfo",
             soundcloudUrl: "https://soundcloud.com/latex4000/elect-yo-floop",
             date: new Date("2025-01-17T04:26:45.000Z"),
@@ -124,6 +130,7 @@ export default async function seed() {
         },
         {
             title: "astrobot_ost_14_REMIX",
+            memberDiscord: "352605625869402123",
             youtubeUrl: "https://www.youtube.com/watch?v=UkRmIKQzUL8",
             soundcloudUrl:
                 "https://soundcloud.com/latex4000/astrobot_ost_14_remix",
@@ -133,6 +140,7 @@ export default async function seed() {
         },
         {
             title: "Person of Interest (2003) Title Theme",
+            memberDiscord: "352605625869402123",
             youtubeUrl: "https://www.youtube.com/watch?v=UMuu8vRH_6Y",
             soundcloudUrl:
                 "https://soundcloud.com/latex4000/person-of-interest-2003-title",
@@ -142,6 +150,7 @@ export default async function seed() {
         },
         {
             title: "monkey",
+            memberDiscord: "352605625869402123",
             youtubeUrl: "https://www.youtube.com/watch?v=hqPXlrOIC0s",
             soundcloudUrl: "https://soundcloud.com/latex4000/monkey",
             date: new Date("2025-01-17T06:37:46.000Z"),
@@ -150,6 +159,7 @@ export default async function seed() {
         },
         {
             title: "Drake Sampled sonic the hedgehog to make this song....",
+            memberDiscord: "352605625869402123",
             youtubeUrl: "https://www.youtube.com/watch?v=V2oSHweiRgI",
             soundcloudUrl:
                 "https://soundcloud.com/latex4000/drake-sampled-sonic-the",
@@ -159,6 +169,7 @@ export default async function seed() {
         },
         {
             title: "not your bestie anymore",
+            memberDiscord: "352605625869402123",
             youtubeUrl: "https://www.youtube.com/watch?v=HXefOA4MPZQ",
             soundcloudUrl:
                 "https://soundcloud.com/latex4000/not-your-bestie-anymore",
@@ -168,6 +179,7 @@ export default async function seed() {
         },
         {
             title: "unsaved",
+            memberDiscord: "352605625869402123",
             youtubeUrl: "https://www.youtube.com/watch?v=jd9pqCo3ZcA",
             soundcloudUrl: "https://soundcloud.com/latex4000/unsaved",
             date: new Date("2025-01-17T22:47:52.000Z"),
@@ -176,6 +188,7 @@ export default async function seed() {
         },
         {
             title: "fake feeling type beat",
+            memberDiscord: "352605625869402123",
             youtubeUrl: "https://www.youtube.com/watch?v=bTFUeY6_7Kk",
             soundcloudUrl:
                 "https://soundcloud.com/latex4000/fake-feeling-type-beat",
@@ -186,6 +199,7 @@ export default async function seed() {
         },
         {
             title: "unknown",
+            memberDiscord: "352605625869402123",
             youtubeUrl: "https://www.youtube.com/watch?v=yhLEwAjcJZc",
             soundcloudUrl: "https://soundcloud.com/latex4000/unknown",
             date: new Date("2025-01-18T18:22:38.986Z"),
