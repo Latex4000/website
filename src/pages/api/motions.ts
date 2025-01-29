@@ -2,8 +2,11 @@ import type { APIRoute } from "astro";
 import { jsonError, jsonResponse } from "../../server/responses";
 import { db, isDbError, Motion } from "astro:db";
 import { motionFromDb, type MotionType } from "../../../db/config";
+import { thingDeletion, thingGet } from "../../server/thingUtils";
 
 export const prerender = false;
+
+export const GET: APIRoute = async (context) => thingGet(context, "motions");
 
 export const POST: APIRoute = async ({ request }) => {
     if (request.headers.get("content-type") !== "application/json")
@@ -54,3 +57,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     return jsonResponse(motion);
 };
+
+export const PUT: APIRoute = async (context) => thingDeletion(context, "motions", false);
+
+export const DELETE: APIRoute = async (context) => thingDeletion(context, "motions", true);

@@ -8,10 +8,13 @@ import { Marked } from "marked";
 import { baseUrl } from "marked-base-url";
 import { execFileSync } from "child_process";
 import { finished } from "stream/promises";
+import { thingDeletion, thingGet } from "../../server/thingUtils";
 
 export const prerender = false;
 
 const fileSizeLimit = 2 ** 20;
+
+export const GET: APIRoute = async (context) => thingGet(context, "words");
 
 export const POST: APIRoute = async (context) => {
     if (!process.env.WORDS_UPLOAD_DIRECTORY) {
@@ -135,3 +138,7 @@ export const POST: APIRoute = async (context) => {
 
     return jsonResponse(word);
 };
+
+export const PUT: APIRoute = async (context) => thingDeletion(context, "words", false);
+
+export const DELETE: APIRoute = async (context) => thingDeletion(context, "words", true);

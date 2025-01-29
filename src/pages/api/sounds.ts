@@ -7,8 +7,11 @@ import { execFileSync } from "child_process";
 import { extname } from "path";
 import { getFileOrDiscordAttachment, getTags } from "../../server/validation";
 import { writeBlobToFile } from "../../server/webApi";
+import { thingDeletion, thingGet } from "../../server/thingUtils";
 
 export const prerender = false;
+
+export const GET: APIRoute = async (context) => thingGet(context, "sounds");
 
 export const POST: APIRoute = async ({ request }) => {
     if (!process.env.SOUNDS_UPLOAD_DIRECTORY) {
@@ -101,3 +104,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     return jsonResponse(sound);
 };
+
+export const PUT: APIRoute = async (context) => thingDeletion(context, "sounds", false);
+
+export const DELETE: APIRoute = async (context) => thingDeletion(context, "sounds", true);
