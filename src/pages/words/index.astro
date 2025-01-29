@@ -15,6 +15,7 @@ const wordResults = (
             memberColor: Member.color,
         })
         .from(Word)
+        .where(eq(Word.deleted, false))
         .innerJoin(Member, eq(Word.memberDiscord, Member.discord))
     ).sort((a, b) => b.word.date.getTime() - a.word.date.getTime());
 ---

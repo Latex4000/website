@@ -6,6 +6,7 @@ import { eq } from "astro:db";
 import { readFile } from "fs/promises";
 import { Member } from "astro:db";
 import { encodeSqlDate, wordFromDb, wordId } from "../../../db/config";
+import { and } from "astro:db";
 
 export const prerender = false;
 
@@ -21,11 +22,16 @@ const wordResult = await db
     .from(Word)
     .innerJoin(Member, eq(Word.memberDiscord, Member.discord))
     .where(
-        eq(
-            Word.date,
-            encodeSqlDate(
-                new Date(Number.parseInt(Astro.params.timestamp!, 10) * 1000)
-            )
+        and(
+            eq(
+                Word.date,
+                encodeSqlDate(
+                    new Date(
+                        Number.parseInt(Astro.params.timestamp!, 10) * 1000
+                    )
+                )
+            ),
+            eq(Word.deleted, false)
         )
     )
     .get();
