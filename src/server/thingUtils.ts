@@ -22,6 +22,7 @@ export async function thingGet({ url }: APIContext, thingType: ThingType) {
     const direction = params.get("direction") ?? "next";
     const cursor = parseInt(params.get("cursor") ?? (direction === "next" ? "0" : "999999999999"));
     const pageSize = parseInt(params.get("pageSize") ?? "10");
+
     if (isNaN(cursor) || isNaN(pageSize))
         return jsonError("Invalid cursor or pageSize");
     if (direction !== "next" && direction !== "prev")
@@ -33,13 +34,8 @@ export async function thingGet({ url }: APIContext, thingType: ThingType) {
 
     const table = thingTypeToTable[thingType];
 
-    console.log(direction, cursor, pageSize);
-
     const things = await db
-        .select({
-            id: table.id,
-            title: table.title,
-        })
+        .select()
         .from(table)
         .where(
             and(
