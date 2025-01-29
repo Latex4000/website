@@ -12,7 +12,7 @@ CREATE TABLE "_tmp_Sound" (
 );
 
 INSERT INTO "_tmp_Sound" ("id", "title", "memberDiscord", "youtubeUrl", "soundcloudUrl", "date", "trackType", "coverType")
-	SELECT "id", "title", (SELECT "discord" FROM "Member" LIMIT 1), "youtubeUrl", "soundcloudUrl", "date", 'mp3', 'jpg'
+	SELECT "id", "title", (SELECT "discord" FROM "Member" LIMIT 1), "youtubeUrl", "soundcloudUrl", "date", "trackType", "coverType"
 	FROM "Sound";
 
 DROP TABLE "Sound";
