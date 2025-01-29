@@ -30,6 +30,7 @@ export const Sound = defineTable({
         date: column.date({ default: NOW }),
         tags: column.json({ default: [] }),
         trackType: column.text(),
+        deleted: column.boolean({ default: false }),
         coverType: column.text(),
     },
 });
@@ -42,6 +43,7 @@ export interface SoundType {
     soundcloudUrl: string;
     date: Date;
     tags: string[];
+    deleted: boolean;
     trackType: "mp3" | "wav";
     coverType: "jpg" | "png";
 }
@@ -68,6 +70,7 @@ export function soundFromDb(sound: SoundTypeInDb): SoundType {
 export const Word = defineTable({
     columns: {
         id: column.number({ primaryKey: true }),
+        deleted: column.boolean({ default: false }),
         date: column.date({ default: NOW, unique: true }),
         memberDiscord: column.text({
             references: () => Member.columns.discord,
@@ -79,6 +82,7 @@ export const Word = defineTable({
 
 export interface WordType {
     id: number;
+    deleted: boolean;
     date: Date;
     memberDiscord: MemberType["discord"];
     tags: string[];
@@ -112,6 +116,7 @@ export const Motion = defineTable({
         }),
         date: column.date({ default: NOW }),
         tags: column.json({ default: [] }),
+        deleted: column.boolean({ default: false }),
     },
 });
 
@@ -122,6 +127,7 @@ export interface MotionType {
     memberDiscord: MemberType["discord"];
     date: Date;
     tags: string[];
+    deleted: boolean;
 }
 
 type MotionTypeInDb = Omit<MotionType, "tags"> & {
