@@ -47,6 +47,8 @@ const sounds = (
                         <AudioPlayer
                             client:only="react"
                             src={`/sounds-uploads/${sound.Sound.id}/track.${sound.Sound.trackType}`}
+                            title={sound.Sound.title}
+                            trackType={sound.Sound.trackType}
                         />
                         <div class="tags">
                             {sound.Sound.tags.map((tag) => (

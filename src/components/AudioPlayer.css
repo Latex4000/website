@@ -35,15 +35,15 @@
     pointer-events: none;
 }
 
-.audio-player-mute {
+.audio-player-mute, .audio-player-download {
     width: 4ch;
 }
 
 .audio-player-volume-control {
-    width: 5ch;
+    width: 6ch;
     display: flex;
     align-items: center;
-    justify-content: end;
+    justify-content: center;
 }
 
 .audio-player-volume-control-muted {

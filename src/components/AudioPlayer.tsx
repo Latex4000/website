@@ -13,12 +13,18 @@ function formatTimestamp(seconds?: number): string {
 	);
 }
 
+function sanitizeFilename(filename: string): string {
+	return filename.replaceAll(/[^a-z0-9\.()\[\] _-]+/gi, "_");
+}
+
 interface AudioPlayerProps {
 	durationGuess?: number;
 	src: string;
+	title: string;
+	trackType: string;
 }
 
-export default function AudioPlayer({ durationGuess, src }: AudioPlayerProps) {
+export default function AudioPlayer({ durationGuess, src, title, trackType }: AudioPlayerProps) {
 	const [buffered, setBuffered] = useState(0);
 	const [currentTime, setCurrentTime] = useState(0);
 	const [duration, setDuration] = useState(durationGuess);
@@ -54,6 +60,17 @@ export default function AudioPlayer({ durationGuess, src }: AudioPlayerProps) {
 
 		audioRef.current.currentTime = xRelative * audioRef.current.duration;
 		syncCurrentTime();
+	};
+
+	const onDownloadClick: MouseEventHandler<HTMLButtonElement> = (event) => {
+		event.preventDefault();
+
+		const downloadLink = document.createElement("a");
+		downloadLink.href = src;
+		downloadLink.download = sanitizeFilename(`${title}.${trackType}`);
+		document.body.appendChild(downloadLink);
+		downloadLink.click();
+		downloadLink.remove();
 	};
 
 	const onMuteClick: MouseEventHandler<HTMLButtonElement> = (event) => {
@@ -138,13 +155,14 @@ export default function AudioPlayer({ durationGuess, src }: AudioPlayerProps) {
 					<span>{formatTimestamp(duration)}</span>
 				</div>
 			</div>
-			<button onClick={onMuteClick} className="audio-player-mute">{muted ? "U" : "M"}</button>
 			<div
 				className={`audio-player-volume-control ${muted ? "audio-player-volume-control-muted" : ""}`}
 				ref={volumeRef}
 			>
 				{Math.round(volume * 100)}%
 			</div>
+			<button onClick={onMuteClick} className="audio-player-mute">{muted ? "U" : "M"}</button>
+			<button onClick={onDownloadClick} className="audio-player-download">↓</button>
 			<audio
 				src={src}
 				preload="none"
