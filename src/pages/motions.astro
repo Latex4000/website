@@ -9,6 +9,7 @@ const motions = (
     await db
         .select()
         .from(Motion)
+        .where(eq(Motion.deleted, false))
         .innerJoin(Member, eq(Motion.memberDiscord, Member.discord))
 )
     .sort((a, b) => b.Motion.date.getTime() - a.Motion.date.getTime())

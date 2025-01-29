@@ -10,6 +10,7 @@ const sounds = (
     await db
         .select()
         .from(Sound)
+        .where(eq(Sound.deleted, false))
         .innerJoin(Member, eq(Sound.memberDiscord, Member.discord))
 )
     .sort((a, b) => b.Sound.date.getTime() - a.Sound.date.getTime())
