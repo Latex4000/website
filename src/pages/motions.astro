@@ -1,13 +1,21 @@
 ---
 import { motionFromDb } from "../../db/config";
 import Layout from "../layouts/Layout.astro";
-import { db, Motion } from "astro:db";
+import { db, Motion, Member, eq } from "astro:db";
 
 export const prerender = false;
 
-const motions = (await db.select().from(Motion))
-    .sort((a, b) => b.date.getTime() - a.date.getTime())
-    .map(motionFromDb);
+const motions = (
+    await db
+        .select()
+        .from(Motion)
+        .innerJoin(Member, eq(Motion.memberDiscord, Member.discord))
+)
+    .sort((a, b) => b.Motion.date.getTime() - a.Motion.date.getTime())
+    .map((motion) => ({
+        Motion: motionFromDb(motion.Motion),
+        Member: motion.Member,
+    }));
 ---
 
 <Layout header="Motions">
@@ -18,22 +26,28 @@ const motions = (await db.select().from(Motion))
             motions.map((motion) => (
                 <div class="motion">
                     <iframe
-                        src={motion.youtubeUrl.replace(/watch\?v=/, "embed/")}
+                        src={motion.Motion.youtubeUrl.replace(
+                            /watch\?v=/,
+                            "embed/"
+                        )}
+                        style={{
+                            border: `var(--border-thickness) solid ${motion.Member.color}`,
+                        }}
                         title="YouTube video player"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                         referrerpolicy="strict-origin-when-cross-origin"
                         allowfullscreen
                     />
                     <div class="details">
-                        <h2>{motion.title}</h2>
+                        <h2>{motion.Motion.title}</h2>
                         {/* prettier-ignore */}
                         <div>
-                            <a href={motion.youtubeUrl}>{/* prettier-ignore */}<span class="y">You</span><span class="t">Tube</span></a>
+                            <a href={motion.Motion.youtubeUrl}>{/* prettier-ignore */}<span class="y">You</span><span class="t">Tube</span></a>
                             |
-                            <span>{motion.date.toLocaleString()}</span>
+                            <span>{motion.Motion.date.toLocaleString()}</span>
                         </div>
                         <div class="tags">
-                            {motion.tags.map((tag) => (
+                            {motion.Motion.tags.map((tag) => (
                                 <span>{tag}</span>
                             ))}
                         </div>

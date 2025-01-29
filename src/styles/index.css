@@ -1,4 +1,7 @@
 /* Styling that stays for all themes regardless */
+:root {
+    --border-thickness: 2px;
+}
 
 html {
     display: flex;

@@ -1,14 +1,22 @@
 ---
 import { soundFromDb } from "../../db/config";
 import Layout from "../layouts/Layout.astro";
-import { db, Sound } from "astro:db";
+import { db, Sound, Member, eq } from "astro:db";
 import AudioPlayer from "../components/AudioPlayer";
 
 export const prerender = false;
 
-const sounds = (await db.select().from(Sound))
-    .sort((a, b) => b.date.getTime() - a.date.getTime())
-    .map(soundFromDb);
+const sounds = (
+    await db
+        .select()
+        .from(Sound)
+        .innerJoin(Member, eq(Sound.memberDiscord, Member.discord))
+)
+    .sort((a, b) => b.Sound.date.getTime() - a.Sound.date.getTime())
+    .map((sound) => ({
+        Sound: soundFromDb(sound.Sound),
+        Member: sound.Member,
+    }));
 ---
 
 <Layout header="Sounds">
@@ -20,24 +28,27 @@ const sounds = (await db.select().from(Sound))
                 <div class="sound">
                     <img
                         alt=""
-                        src={`/sounds-uploads/${sound.id}/cover.${sound.coverType}`}
+                        src={`/sounds-uploads/${sound.Sound.id}/cover.${sound.Sound.coverType}`}
+                        style={{
+                            border: `var(--border-thickness) solid ${sound.Member.color}`,
+                        }}
                     />
                     <div class="details">
-                        <h2>{sound.title}</h2>
+                        <h2>{sound.Sound.title}</h2>
                         {/* prettier-ignore */}
                         <div>
-                            <a href={sound.youtubeUrl}>{/* prettier-ignore */}<span class="y">You</span><span class="t">Tube</span></a>
+                            <a href={sound.Sound.youtubeUrl}>{/* prettier-ignore */}<span class="y">You</span><span class="t">Tube</span></a>
                             |
-                            <a href={sound.soundcloudUrl}>{/* prettier-ignore */}<span class="s">Sound</span><span class="c">Cloud</span></a>
+                            <a href={sound.Sound.soundcloudUrl}>{/* prettier-ignore */}<span class="s">Sound</span><span class="c">Cloud</span></a>
                             |
-                            <span>{sound.date.toLocaleString()}</span>
+                            <span>{sound.Sound.date.toLocaleString()}</span>
                         </div>
                         <AudioPlayer
                             client:only="react"
-                            src={`/sounds-uploads/${sound.id}/track.${sound.trackType}`}
+                            src={`/sounds-uploads/${sound.Sound.id}/track.${sound.Sound.trackType}`}
                         />
                         <div class="tags">
-                            {sound.tags.map((tag) => (
+                            {sound.Sound.tags.map((tag) => (
                                 <span>{tag}</span>
                             ))}
                         </div>
