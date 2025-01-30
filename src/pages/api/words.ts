@@ -132,7 +132,7 @@ export const POST: APIRoute = async (context) => {
         ),
         markedEmoji({
             emojis,
-            renderer: (token) => `<img src="${emptyGif}" title=":${token.name}:" class="emoji">`,
+            renderer: (token) => `<img alt="" src="${emptyGif}" title=":${token.name}:" class="emoji">`,
         }),
     ).parse(md, { async: false, breaks: true, silent: true });
 
