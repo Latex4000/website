@@ -5,10 +5,22 @@ import { createWriteStream, ReadStream } from "fs";
 import { db, isDbError, Word } from "astro:db";
 import { wordFromDb, wordId, type WordType } from "../../../db/config";
 import { Marked } from "marked";
-import { baseUrl } from "marked-base-url";
+import { baseUrl as markedBaseUrl } from "marked-base-url";
+import { markedEmoji } from "marked-emoji";
 import { execFileSync } from "child_process";
 import { finished } from "stream/promises";
 import { thingDeletion, thingGet } from "../../server/thingUtils";
+import { basename } from "path";
+
+const emojiImports = import.meta.glob('../../discord/emojis/*.{gif,png}', { eager: true, query: "?inline" });
+const emojis: Record<string, string> = {};
+
+for (const [importPath, importModule] of Object.entries(emojiImports)) {
+    const importBasename = basename(importPath);
+    const emojiName = importBasename.slice(0, importBasename.lastIndexOf("."));
+
+    emojis[emojiName] = (importModule as { default: string }).default;
+}
 
 export const prerender = false;
 
@@ -123,10 +135,14 @@ export const POST: APIRoute = async (context) => {
 
     // Upload compiled HTML file
     const html = new Marked(
-        baseUrl(
+        markedBaseUrl(
             new URL(`/words-uploads/${wordId(word)}/`, context.url).toString(),
         ),
-    ).parse(md, { async: false, silent: true });
+        markedEmoji({
+            emojis,
+            renderer: (token) => `<img alt=":${token.name}:" title=":${token.name}:" src="${token.emoji}" class="emoji">`,
+        }),
+    ).parse(md, { async: false, breaks: true, silent: true });
 
     await writeFile(`${directory}/words.html`, html, "utf8");
 

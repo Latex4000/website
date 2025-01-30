@@ -51,17 +51,30 @@ const wordHtml = await readFile(
 
 <Layout title={word.title}>
     <small>{word.date.toLocaleString()}</small>
-    <Fragment set:html={wordHtml} />
+    <div class="word-markdown" set:html={wordHtml} />
     <p style={{ color: memberColor }}>-L</p>
     <div class="tags">
         {word.tags.map((tag) => <small>{tag}</small>)}
     </div>
 </Layout>
 
-<style is:inline>
-    p {
-        line-height: 1.5;
+<style is:global>
+    .word-markdown img {
+        display: initial;
     }
+
+    .word-markdown .emoji {
+        object-fit: contain;
+        width: 2ch;
+        height: 1lh;
+        vertical-align: bottom;
+    }
+</style>
+
+<style is:inline>
+    /* p {
+        line-height: 1.5;
+    } */
     .tags {
         display: flex;
         gap: var(--line-height);
