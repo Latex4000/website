@@ -1,4 +1,13 @@
+@font-face {
+    font-family: unifont;
+    src: url("../fonts/unifont/unifont-15.1.05.ttf");
+    font-weight: 400;
+    font-style: normal;
+}
+
 :root {
+    --font-family: "unifont", monospace;
+
     --accent: #c4b550;
     --secondary-accent: #958831;
 
@@ -46,19 +55,24 @@ h6 {
     font-weight: 400;
 }
 
-@font-face {
-    font-family: ArialPixel;
-    src: url("https://cdn.jsdelivr.net/gh/ekmas/cs16.css@main/ArialPixel.ttf")
-        format("truetype");
-    font-weight: 400;
-    font-style: normal;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    margin: var(--line-height) 0;
+}
+
+p {
+    margin: revert;
 }
 
 body {
     font-weight: 400;
     background-color: var(--background-color);
     color: var(--text-color);
-    font-family: ArialPixel, monospace;
+    font-family: var(--font-family);
     font-size: 16px;
 }
 
@@ -681,4 +695,28 @@ fieldset {
         display: block;
         position: relative;
     }
+}
+
+pre {
+    white-space: pre;
+    overflow-x: auto;
+    margin: var(--line-height) 0;
+    overflow-y: hidden;
+}
+
+figure pre {
+    margin: 0;
+}
+
+pre,
+code {
+    font-family: var(--font-family);
+}
+
+code {
+    font-weight: var(--font-weight-medium);
+    opacity: 0.75;
+    word-break: break-all;
+    white-space: normal;
+    background-color: var(--background-color-alt);
 }

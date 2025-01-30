@@ -8,6 +8,7 @@ export default {
             values: {
                 "mono-light": {
                     "--line-height": "1.2rem",
+                    "--border-thickness": "2px",
                     "--text-color": "#000",
                     "--text-color-alt": "#666",
                     "--background-color": "#fff",
@@ -18,6 +19,7 @@ export default {
                 },
                 "mono-dark": {
                     "--line-height": "1.2rem",
+                    "--border-thickness": "2px",
                     "--text-color": "#fff",
                     "--text-color-alt": "#ccc",
                     "--background-color": "#000",
@@ -27,13 +29,14 @@ export default {
                     "--srcopacity": "0.5",
                 },
                 "cs16": {
-                    "--line-height": "1.5rem",
+                    "--line-height": "1rem",
+                    "--border-thickness": "1px",
                     "--background-color": "#4a5942",
                     "--background-color-alt": "#3e4637",
                     "--text-color": "#dedfd6",
                     "--text-color-alt": "#d8ded3",
                     "--srclink": "https://cs16.samke.me/",
-                    "--srctext": "Design implemented from cs16.css",
+                    "--srctext": "Design implemented from cs16.css with font altered to Unifont",
                     "--srcopacity": "1",
                 },
             },
