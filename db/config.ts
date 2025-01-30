@@ -145,9 +145,49 @@ export function motionFromDb(motion: MotionTypeInDb): MotionType {
     throw new TypeError();
 }
 
+export const Action = defineTable({
+    columns: {
+        id: column.number({ primaryKey: true }),
+        memberDiscord: column.text({
+            references: () => Member.columns.discord,
+        }),
+        title: column.text(),
+        type: column.text(),
+        url: column.text(),
+    },
+});
+
+export interface ActionType {
+    id: number;
+    memberDiscord: MemberType["discord"];
+    title: string;
+    type: string;
+    url: string;
+}
+
+export const ActionItem = defineTable({
+    columns: {
+        id: column.number({ primaryKey: true }),
+        actionID: column.number({
+            references: () => Action.columns.id,
+        }),
+        title: column.text(),
+        link: column.text(),
+        date: column.date(),
+    },
+});
+
+export interface ActionType {
+    id: number;
+    actionID: ActionType["id"];
+    title: string;
+    link: string;
+    date: Date;
+}
+
 // https://astro.build/db/config
 export default defineDb({
-    tables: { Member, Sound, Word, Motion },
+    tables: { Member, Sound, Word, Motion, Action, ActionItem },
 });
 
 export function encodeSqlDate(date: Date): ReturnType<typeof sql.raw> {
