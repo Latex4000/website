@@ -164,7 +164,10 @@
         canvasSize = Math.floor(rect.width);
         canvas.width = canvasSize;
         canvas.height = canvasSize;
-        blockSize = Math.floor(canvasSize / originalBlockCount);
+        blockSize = Math.min(
+            Math.floor(canvasSize / 20),
+            Math.max(1, Math.floor(canvasSize / originalBlockCount)),
+        );
 
         // Update scales based on new canvas size
         frequencyScale = showLog
