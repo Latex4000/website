@@ -26,4 +26,4 @@ node db/migrate.mjs "$database"
 astro db execute db/seed.ts --remote
 
 # Run development environment
-astro dev --remote
+exec astro dev --remote
