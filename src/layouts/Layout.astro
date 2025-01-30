@@ -62,7 +62,11 @@ const { header, title } = Astro.props;
         <ThemeLoader settings={settings} />
         <header>
             <div class="main-header">
-                <h1><a href="/" class="header">Latex 4000 / L4K</a></h1>
+                <h1>
+                    <a href="/" class="header latex"
+                        >L<span>a</span>T<span>e</span>X 4000 / L4K</a
+                    >
+                </h1>
                 <ThemeSelect settings={settings} />
             </div>
             <h2 class="header-nav">
