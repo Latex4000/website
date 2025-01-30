@@ -36,6 +36,11 @@
     let lowFrequency = 20;
     let highFrequency = 20000;
 
+    let isRecording = false;
+    let mediaRecorder: MediaRecorder;
+    let recordedChunks: BlobPart[] = [];
+    let audioRecorderStream: MediaStreamAudioDestinationNode;
+
     // D3 Scales
     let frequencyScale: d3.ScaleLinear<number, number>;
     let panningScale: d3.ScaleLinear<number, number>;
@@ -210,6 +215,11 @@
         dataArrayLeft = new Uint8Array(bufferLength);
         dataArrayRight = new Uint8Array(bufferLength);
 
+        audioRecorderStream = audioContext.createMediaStreamDestination();
+
+        gainNode.connect(audioContext.destination);
+        gainNode.connect(audioRecorderStream);
+
         // Event listener for ESC key to stop playback
         window.addEventListener("keydown", handleKeyDown);
 
@@ -281,7 +291,6 @@
 
         // Connect GainNode to sourceNode
         sourceNode.connect(gainNode);
-        gainNode.connect(audioContext.destination);
 
         sourceNode.start();
         audioContext.resume();
@@ -333,10 +342,6 @@
             sourceNode.disconnect();
         }
 
-        if (gainNode) gainNode.disconnect();
-        if (analyserLeft) analyserLeft.disconnect();
-        if (analyserRight) analyserRight.disconnect();
-
         cancelAnimationFrame(animationId);
         fileName = "";
         const ctx = canvas.getContext("2d")!;
@@ -345,6 +350,51 @@
         isPlaying = false;
         isPaused = false;
         mouseOnVisualizer = undefined;
+    };
+
+    const startRecording = () => {
+        // Force the "hide" mode so no overlays are drawn
+        hide = true;
+
+        requestAnimationFrame(() => {
+            const fps = 60;
+            const canvasStream = canvas.captureStream(fps);
+
+            const combinedStream = new MediaStream([
+                ...canvasStream.getVideoTracks(),
+                ...audioRecorderStream.stream.getAudioTracks(),
+            ]);
+
+            // Some browsers may allow MP4 (H.264) if available, but WebM/VP9 is more standard
+            const options = { mimeType: "video/webm; codecs=vp9,opus" };
+            mediaRecorder = new MediaRecorder(combinedStream, options);
+
+            recordedChunks = [];
+            mediaRecorder.ondataavailable = (e) => {
+                if (e.data.size > 0) recordedChunks.push(e.data);
+            };
+
+            // When the audio ends OR the user stops
+            mediaRecorder.onstop = () => {
+                const blob = new Blob(recordedChunks, { type: "video/webm" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "recording.webm";
+                a.click();
+                URL.revokeObjectURL(url);
+            };
+
+            mediaRecorder.start();
+            isRecording = true;
+        });
+    };
+
+    const stopRecording = () => {
+        if (isRecording && mediaRecorder?.state === "recording")
+            mediaRecorder.stop();
+        isRecording = false;
+        hide = false;
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -414,6 +464,11 @@
 
         if (event.code === "Space") {
             event.preventDefault();
+            if (isRecording) {
+                stopRecording();
+                return;
+            }
+
             if (!isPlaying) return;
 
             if (isPaused) {
@@ -424,6 +479,16 @@
                 isPaused = true;
             }
         }
+
+        if (event.key === "v" || event.key === "V") {
+            if (!isRecording) {
+                // If we are playing, stop it first and restart it
+                if (isPlaying) stopAudio();
+
+                if (lastFile) playAudio(); // Ensures the audio starts at offset 0
+                startRecording();
+            } else stopRecording();
+        }
     };
 
     const draw = () => {
@@ -431,19 +496,16 @@
 
         const drawFrame = () => {
             updateColours();
+            const currenttime = audioContext.currentTime - audioStartTime;
             if (
                 parseFloat(audioBuffer.duration.toFixed(3)) <=
-                parseFloat(
-                    (audioContext.currentTime - audioStartTime).toFixed(3),
-                )
+                parseFloat(currenttime.toFixed(3))
             ) {
-                if (loop)
-                    seekAudio(
-                        audioContext.currentTime -
-                            audioStartTime -
-                            audioBuffer.duration,
-                    );
-                else stopAudio();
+                if (loop) seekAudio(currenttime - audioBuffer.duration);
+                else {
+                    if (isRecording) stopRecording();
+                    stopAudio();
+                }
                 return;
             }
 
@@ -454,7 +516,8 @@
             ctx.fillStyle = backgroundColor;
             ctx.fillRect(0, 0, canvasSize, canvasSize);
 
-            if (!hide) {
+            // Only draw overlays if not hidden AND not in recording mode
+            if (!hide && !isRecording) {
                 drawAudioInformation(ctx);
                 drawMouseInformation(ctx);
             }
@@ -509,7 +572,7 @@
         ctx.fillText(fileName, canvasSize - ctx.measureText(fileName).width, 2);
         // Write current time/total time mm:ss/mm:ss
         const currentTime = audioContext.currentTime - audioStartTime;
-        const duration = audioBuffer.duration;
+        const duration = audioBuffer?.duration || 0;
         const currentMinutes = Math.floor(currentTime / 60);
         const currentSeconds = Math.floor(currentTime % 60);
         const totalMinutes = Math.floor(duration / 60);
