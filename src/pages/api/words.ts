@@ -10,17 +10,7 @@ import { markedEmoji } from "marked-emoji";
 import { execFileSync } from "child_process";
 import { finished } from "stream/promises";
 import { thingDeletion, thingGet } from "../../server/thingUtils";
-import { basename } from "path";
-
-const emojiImports = import.meta.glob('../../discord/emojis/*.{gif,png}', { eager: true, query: "?inline" });
-const emojis: Record<string, string> = {};
-
-for (const [importPath, importModule] of Object.entries(emojiImports)) {
-    const importBasename = basename(importPath);
-    const emojiName = importBasename.slice(0, importBasename.lastIndexOf("."));
-
-    emojis[emojiName] = (importModule as { default: string }).default;
-}
+import { getMap } from "../../data/emoji";
 
 export const prerender = false;
 
@@ -134,13 +124,15 @@ export const POST: APIRoute = async (context) => {
     }
 
     // Upload compiled HTML file
+    const emojis = Object.fromEntries(Object.keys(await getMap()).map((emojiName) => [emojiName, ""]));
+    const emptyGif = "data:image/gif;base64,R0lGODlhAQABAIABAP///wAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
     const html = new Marked(
         markedBaseUrl(
             new URL(`/words-uploads/${wordId(word)}/`, context.url).toString(),
         ),
         markedEmoji({
             emojis,
-            renderer: (token) => `<img alt=":${token.name}:" title=":${token.name}:" src="${token.emoji}" class="emoji">`,
+            renderer: (token) => `<img src="${emptyGif}" title=":${token.name}:" class="emoji">`,
         }),
     ).parse(md, { async: false, breaks: true, silent: true });
 

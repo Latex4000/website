@@ -58,6 +58,25 @@ const wordHtml = await readFile(
     </div>
 </Layout>
 
+<script>
+    import { getDataUrl } from "../../data/emoji";
+
+    document.addEventListener("DOMContentLoaded", async () => {
+        const imgSrcPairs: [HTMLImageElement, string][] = [];
+
+        for (const img of document.querySelectorAll(
+            ".word-markdown img.emoji",
+            // eslint-disable-next-line no-undef
+        ) as NodeListOf<HTMLImageElement>) {
+            imgSrcPairs.push([img, await getDataUrl(img.title.slice(1, -1))]);
+        }
+
+        for (const [img, src] of imgSrcPairs) {
+            img.src = src;
+        }
+    });
+</script>
+
 <style is:global>
     .word-markdown img {
         display: initial;

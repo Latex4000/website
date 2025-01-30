@@ -10,6 +10,7 @@ export SOUNDS_RUN_AFTER_UPLOAD=
 export SOUNDS_UPLOAD_DIRECTORY='dev/sounds'
 export WORDS_RUN_AFTER_UPLOAD=
 export WORDS_UPLOAD_DIRECTORY='dev/words'
+export PUBLIC_DIRECTORY='public'
 
 # Clean up files from last run
 rm -rf "$database" "$SOUNDS_UPLOAD_DIRECTORY" "$WORDS_UPLOAD_DIRECTORY"

@@ -28,3 +28,9 @@ pnpm-debug.log*
 
 # development environment storage
 dev/
+
+# emoji storage
+emoji-tools/emoji
+
+# compiled emoji files
+public/emoji
