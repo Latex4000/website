@@ -70,6 +70,10 @@ export default function AudioPlayer({ durationGuess, src, title, trackType }: Au
 	const onBarMouseUp: MouseEventHandler<HTMLDivElement> = (event) => {
 		event.preventDefault();
 
+		if (isNaN(audioRef.current.duration)) {
+			return;
+		}
+
 		const targetRect = event.currentTarget.getBoundingClientRect();
 		const x = event.clientX - targetRect.x;
 		const xRelative = x / targetRect.width;
