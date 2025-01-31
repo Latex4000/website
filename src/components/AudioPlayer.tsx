@@ -1,6 +1,9 @@
 import "./AudioPlayer.css";
 import { useEffect, useRef, useState, type MouseEventHandler, type RefObject } from "react";
 
+import { useStore } from '@nanostores/react';
+import { prevAudioRef } from '../components/soundsState.ts';
+
 function formatTimestamp(seconds?: number): string {
 	if (seconds == null) {
 		return "--:--";
@@ -35,6 +38,9 @@ export default function AudioPlayer({ durationGuess, src, title, trackType }: Au
 	// The typing here is safe as long as all usage of audioRef happens in event handlers
 	const audioRef = useRef<HTMLAudioElement>(null) as RefObject<HTMLAudioElement>;
 	const volumeRef = useRef<HTMLDivElement>(null);
+
+	const prev = useStore(prevAudioRef) as RefObject<HTMLAudioElement>
+	const setPrev = (ref: RefObject<HTMLAudioElement>) => { prevAudioRef.set(ref) }
 
 	const syncCurrentTime = () => setCurrentTime(audioRef.current.currentTime);
 
@@ -86,6 +92,12 @@ export default function AudioPlayer({ durationGuess, src, title, trackType }: Au
 			audioRef.current.pause();
 		} else {
 			audioRef.current.play().catch();
+			if (prev === null) {
+				setPrev(audioRef);
+			} else if (prev !== audioRef) {
+				prev.current.pause();
+				setPrev(audioRef);
+			}
 		}
 	};
 
