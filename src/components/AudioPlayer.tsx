@@ -44,6 +44,16 @@ export default function AudioPlayer({ durationGuess, src, title, trackType }: Au
 
 	const syncCurrentTime = () => setCurrentTime(audioRef.current.currentTime);
 
+	const playTrack = () => {
+		audioRef.current.play().catch();
+		if (prev === null) {
+			setPrev(audioRef);
+		} else if (prev !== audioRef) {
+			prev.current.pause();
+			setPrev(audioRef);
+		}
+	}
+
 	useRequestAnimationFrame(syncCurrentTime, playing);
 
 	useEffect(() => {
@@ -66,6 +76,7 @@ export default function AudioPlayer({ durationGuess, src, title, trackType }: Au
 
 		audioRef.current.currentTime = xRelative * audioRef.current.duration;
 		syncCurrentTime();
+		playTrack();
 	};
 
 	const onDownloadClick: MouseEventHandler<HTMLButtonElement> = (event) => {
@@ -91,13 +102,7 @@ export default function AudioPlayer({ durationGuess, src, title, trackType }: Au
 		if (playing) {
 			audioRef.current.pause();
 		} else {
-			audioRef.current.play().catch();
-			if (prev === null) {
-				setPrev(audioRef);
-			} else if (prev !== audioRef) {
-				prev.current.pause();
-				setPrev(audioRef);
-			}
+			playTrack();
 		}
 	};
 
