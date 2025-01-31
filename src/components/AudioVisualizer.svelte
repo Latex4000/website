@@ -27,6 +27,7 @@
     let mouseOnVisualizer: [number, number] | undefined = undefined;
     let fileInput: HTMLInputElement;
 
+    const canvasScale = 2;
     let canvasSize = 1000;
     let hide = false;
     let loop = false;
@@ -161,7 +162,8 @@
     function resizeCanvas() {
         const rect = chartRef.getBoundingClientRect();
         const originalBlockCount = Math.floor(canvasSize / blockSize);
-        canvasSize = Math.floor(rect.width);
+        canvasSize = Math.floor(rect.width) * canvasScale;
+        canvas.style.width = `${Math.floor(rect.width)}px`;
         canvas.width = canvasSize;
         canvas.height = canvasSize;
         blockSize = Math.min(
@@ -368,8 +370,26 @@
                 ...audioRecorderStream.stream.getAudioTracks(),
             ]);
 
-            // Some browsers may allow MP4 (H.264) if available, but WebM/VP9 is more standard
-            const options = { mimeType: "video/webm; codecs=vp9,opus" };
+            const mimeTypes = [
+                "video/webm; codecs=vp9,opus",
+                "video/webm; codecs=vp8,opus",
+            ];
+
+            const options: { mimeType?: string } = {};
+            for (const mimeType of mimeTypes)
+                if (MediaRecorder.isTypeSupported(mimeType)) {
+                    options.mimeType = mimeType;
+                    break;
+                }
+
+            if (!options.mimeType) {
+                alert(
+                    "No supported MIME type found for recording in your browser",
+                );
+                console.error("No supported MIME type found for recording");
+                return;
+            }
+
             mediaRecorder = new MediaRecorder(combinedStream, options);
 
             recordedChunks = [];
@@ -565,14 +585,18 @@
     const setctxForText = (ctx: CanvasRenderingContext2D) => {
         ctx.fillStyle = textColor;
         ctx.textAlign = "left";
-        ctx.font = `${parseFloat(getComputedStyle(document.body).fontSize) / 2}px ${getComputedStyle(document.body).fontFamily}`;
+        ctx.font = `${(parseFloat(getComputedStyle(document.body).fontSize) / 2) * canvasScale}px ${getComputedStyle(document.body).fontFamily}`;
         ctx.textBaseline = "top";
     };
 
     // Draw audio information on the canvas.
     const drawAudioInformation = (ctx: CanvasRenderingContext2D) => {
         setctxForText(ctx);
-        ctx.fillText(fileName, canvasSize - ctx.measureText(fileName).width, 2);
+        ctx.fillText(
+            fileName,
+            canvasSize - ctx.measureText(fileName).width,
+            2 * canvasScale,
+        );
         // Write current time/total time mm:ss/mm:ss
         const currentTime = audioContext.currentTime - audioStartTime;
         const duration = audioBuffer?.duration || 0;
@@ -587,7 +611,7 @@
                 .toString()
                 .padStart(2, "0")}`,
             canvasSize - ctx.measureText("0:00/0:00").width,
-            12,
+            12 * canvasScale,
         );
     };
 
@@ -600,14 +624,14 @@
                     .invert(canvasSize - mouseOnVisualizer[1])
                     .toFixed(0),
                 0,
-                2,
+                2 * canvasScale,
             );
             const pan = panningScale.invert(mouseOnVisualizer[0]);
             const panText = (Math.floor(Math.abs(pan) * 100) / 100).toFixed(2);
             ctx.fillText(
                 `${panText === (0).toFixed(2) ? "C" : pan.toFixed(2)}`,
                 0,
-                12,
+                12 * canvasScale,
             );
         }
     };
@@ -615,24 +639,40 @@
     // Draw instructional notes on the canvas.
     const drawInstructionNote = (ctx: CanvasRenderingContext2D) => {
         setctxForText(ctx);
-        ctx.fillText("`   | x", 0, canvasSize - 98);
-        ctx.fillText("h   | h", 0, canvasSize - 88);
-        ctx.fillText(`l   | ${loop ? "o" : "s"}`, 0, canvasSize - 78);
-        ctx.fillText(`<>  | ${fftSize}`, 0, canvasSize - 68);
-        ctx.fillText(`[]  | ${blockSize}`, 0, canvasSize - 58);
+        ctx.fillText("`   | x", 0, canvasSize - 98 * canvasScale);
+        ctx.fillText("h   | h", 0, canvasSize - 88 * canvasScale);
+        ctx.fillText(
+            `l   | ${loop ? "o" : "s"}`,
+            0,
+            canvasSize - 78 * canvasScale,
+        );
+        ctx.fillText(`<>  | ${fftSize}`, 0, canvasSize - 68 * canvasScale);
+        ctx.fillText(`[]  | ${blockSize}`, 0, canvasSize - 58 * canvasScale);
         ctx.fillText(
             `1-${gradientChoices.length} | ${gradientChoice}`,
             0,
-            canvasSize - 48,
+            canvasSize - 48 * canvasScale,
         );
         ctx.fillText(
             `+/- | ${gainNode.gain.value.toFixed(2)}`,
             0,
-            canvasSize - 38,
+            canvasSize - 38 * canvasScale,
         );
-        ctx.fillText(`s   | ${showLog ? "lo" : "li"}`, 0, canvasSize - 28);
-        ctx.fillText(`?   | ${volumeAffects ? "o" : "s"}`, 0, canvasSize - 18);
-        ctx.fillText(`' ' | ${!isPaused ? "o" : "s"}`, 0, canvasSize - 8);
+        ctx.fillText(
+            `s   | ${showLog ? "lo" : "li"}`,
+            0,
+            canvasSize - 28 * canvasScale,
+        );
+        ctx.fillText(
+            `?   | ${volumeAffects ? "o" : "s"}`,
+            0,
+            canvasSize - 18 * canvasScale,
+        );
+        ctx.fillText(
+            `' ' | ${!isPaused ? "o" : "s"}`,
+            0,
+            canvasSize - 8 * canvasScale,
+        );
     };
 
     const handleCanvasClick = () => fileInput.click();
