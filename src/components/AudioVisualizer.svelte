@@ -32,6 +32,7 @@
     let hide = false;
     let loop = false;
     let fftSize = 11; // 2048; // Number of bins in the FFT analysis; Must be a power of 2 between 5 and 15
+    let smoothingTimeConstant = 0.85;
     let blockSize = 5; // Size of each block in pixels
     let showLog = false;
     let lowFrequency = 20;
@@ -215,6 +216,8 @@
         analyserRight = audioContext.createAnalyser();
         analyserLeft.fftSize = 2 ** fftSize;
         analyserRight.fftSize = 2 ** fftSize;
+        analyserLeft.smoothingTimeConstant = smoothingTimeConstant;
+        analyserRight.smoothingTimeConstant = smoothingTimeConstant;
 
         const bufferLength = analyserLeft.frequencyBinCount;
         dataArrayLeft = new Uint8Array(bufferLength);
@@ -455,6 +458,16 @@
             gainNode.gain.value = Math.max(gainNode.gain.value - 0.05, 0);
         if (event.key === "?" || event.key === "/")
             volumeAffects = !volumeAffects;
+        if (event.key === "z" || event.key === "Z") {
+            smoothingTimeConstant = Math.max(0, smoothingTimeConstant - 0.05);
+            analyserLeft.smoothingTimeConstant = smoothingTimeConstant;
+            analyserRight.smoothingTimeConstant = smoothingTimeConstant;
+        }
+        if (event.key === "x" || event.key === "X") {
+            smoothingTimeConstant = Math.min(1, smoothingTimeConstant + 0.05);
+            analyserLeft.smoothingTimeConstant = smoothingTimeConstant;
+            analyserRight.smoothingTimeConstant = smoothingTimeConstant;
+        }
         if (
             !isNaN(parseInt(event.key)) &&
             parseInt(event.key) > 0 &&
@@ -639,14 +652,19 @@
     // Draw instructional notes on the canvas.
     const drawInstructionNote = (ctx: CanvasRenderingContext2D) => {
         setctxForText(ctx);
-        ctx.fillText("`   | x", 0, canvasSize - 98 * canvasScale);
-        ctx.fillText("h   | h", 0, canvasSize - 88 * canvasScale);
+        ctx.fillText("`   | x", 0, canvasSize - 108 * canvasScale);
+        ctx.fillText("h   | h", 0, canvasSize - 98 * canvasScale);
         ctx.fillText(
             `l   | ${loop ? "o" : "s"}`,
             0,
-            canvasSize - 78 * canvasScale,
+            canvasSize - 88 * canvasScale,
         );
-        ctx.fillText(`<>  | ${fftSize}`, 0, canvasSize - 68 * canvasScale);
+        ctx.fillText(`<>  | ${fftSize}`, 0, canvasSize - 78 * canvasScale);
+        ctx.fillText(
+            `z/x | ${smoothingTimeConstant.toFixed(2)}`,
+            0,
+            canvasSize - 68 * canvasScale,
+        );
         ctx.fillText(`[]  | ${blockSize}`, 0, canvasSize - 58 * canvasScale);
         ctx.fillText(
             `1-${gradientChoices.length} | ${gradientChoice}`,
