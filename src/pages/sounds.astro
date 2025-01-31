@@ -38,10 +38,18 @@ const sounds = (
                         <h2>{sound.Sound.title}</h2>
                         {/* prettier-ignore */}
                         <div>
-                            <a href={sound.Sound.youtubeUrl}>{/* prettier-ignore */}<span class="y">You</span><span class="t">Tube</span></a>
-                            |
-                            <a href={sound.Sound.soundcloudUrl}>{/* prettier-ignore */}<span class="s">Sound</span><span class="c">Cloud</span></a>
-                            |
+                            {sound.Sound.youtubeUrl != null && (
+                                <>
+                                    <a href={sound.Sound.youtubeUrl}>{/* prettier-ignore */}<span class="y">You</span><span class="t">Tube</span></a>
+                                    |
+                                </>
+                            )}
+                            {sound.Sound.soundcloudUrl != null && (
+                                <>
+                                    <a href={sound.Sound.soundcloudUrl}>{/* prettier-ignore */}<span class="s">Sound</span><span class="c">Cloud</span></a>
+                                    |
+                                </>
+                            )}
                             <span>{sound.Sound.date.toLocaleString()}</span>
                         </div>
                         <AudioPlayer

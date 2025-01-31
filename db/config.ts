@@ -25,13 +25,13 @@ export const Sound = defineTable({
         memberDiscord: column.text({
             references: () => Member.columns.discord,
         }),
-        youtubeUrl: column.text(),
-        soundcloudUrl: column.text(),
+        youtubeUrl: column.text({ optional: true }),
+        soundcloudUrl: column.text({ optional: true }),
         date: column.date({ default: NOW }),
         tags: column.json({ default: [] }),
         trackType: column.text(),
-        deleted: column.boolean({ default: false }),
         coverType: column.text(),
+        deleted: column.boolean({ default: false }),
     },
 });
 
@@ -39,13 +39,13 @@ export interface SoundType {
     id: number;
     title: string;
     memberDiscord: MemberType["discord"];
-    youtubeUrl: string;
-    soundcloudUrl: string;
+    youtubeUrl: string | null;
+    soundcloudUrl: string | null;
     date: Date;
     tags: string[];
-    deleted: boolean;
     trackType: "mp3" | "wav";
     coverType: "jpg" | "png";
+    deleted: boolean;
 }
 
 type SoundTypeInDb = Omit<SoundType, "tags" | "trackType" | "coverType"> & {

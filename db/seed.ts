@@ -180,8 +180,8 @@ export default async function seed() {
         {
             title: "unsaved",
             memberDiscord: "352605625869402123",
-            youtubeUrl: "https://www.youtube.com/watch?v=jd9pqCo3ZcA",
-            soundcloudUrl: "https://soundcloud.com/latex4000/unsaved",
+            youtubeUrl: null,
+            soundcloudUrl: null,
             date: new Date("2025-01-17T22:47:52.000Z"),
             trackType: "mp3",
             coverType: "jpg",
@@ -190,8 +190,7 @@ export default async function seed() {
             title: "fake feeling type beat",
             memberDiscord: "352605625869402123",
             youtubeUrl: "https://www.youtube.com/watch?v=bTFUeY6_7Kk",
-            soundcloudUrl:
-                "https://soundcloud.com/latex4000/fake-feeling-type-beat",
+            soundcloudUrl: null,
             date: new Date("2025-01-18T01:17:52.000Z"),
             tags: ["my awesome tag", "tag2"],
             trackType: "mp3",
@@ -200,7 +199,7 @@ export default async function seed() {
         {
             title: "unknown",
             memberDiscord: "352605625869402123",
-            youtubeUrl: "https://www.youtube.com/watch?v=yhLEwAjcJZc",
+            youtubeUrl: null,
             soundcloudUrl: "https://soundcloud.com/latex4000/unknown",
             date: new Date("2025-01-18T18:22:38.986Z"),
             tags: ["my awesome tag"],

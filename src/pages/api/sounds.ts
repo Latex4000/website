@@ -37,10 +37,8 @@ export const POST: APIRoute = async ({ request }) => {
     if (
         typeof discord !== "string" ||
         typeof title !== "string" ||
-        typeof soundcloudUrl !== "string" ||
-        !URL.canParse(soundcloudUrl) ||
-        typeof youtubeUrl !== "string" ||
-        !URL.canParse(youtubeUrl) ||
+        !(soundcloudUrl == null || (typeof soundcloudUrl === "string" && URL.canParse(soundcloudUrl))) ||
+        !(youtubeUrl == null || (typeof youtubeUrl === "string" && URL.canParse(youtubeUrl))) ||
         typeof tags !== "string"
     ) {
         return jsonError("Invalid form params");
