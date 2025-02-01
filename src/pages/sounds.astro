@@ -86,9 +86,24 @@ const sounds = (
 
     img {
         width: 11lh;
-        height: 100%;
+        height: 11lh;
         flex: none;
         object-fit: cover;
+
+        @media (max-width: 800px) {
+            width: 8lh;
+            height: 8lh;
+        }
+
+        @media (max-width: 600px) {
+            width: 5lh;
+            height: 5lh;
+        }
+
+        @media (max-width: 400px) {
+            width: 3lh;
+            height: 3lh;
+        }
     }
 
     .details {
