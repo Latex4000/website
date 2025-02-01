@@ -69,11 +69,17 @@
     Signed:
     <ul id="member-list" use:gridColumns>
         {#each members as member}
-            {#if member.addedRingToSite}
-                <li use:gridSpan><a href={member.site}>{member.alias}</a></li>
-            {:else}
-                <li use:gridSpan>{member.alias}</li>
-            {/if}
+            <li
+                use:gridSpan
+                title={member.color}
+                style={`--marker-color: ${member.color}`}
+            >
+                {#if member.addedRingToSite}
+                    <a href={member.site}>{member.alias}</a>
+                {:else}
+                    {member.alias}
+                {/if}
+            </li>
         {/each}
     </ul>
 </div>
@@ -91,5 +97,9 @@
     li {
         white-space: nowrap;
         list-style-position: inside;
+    }
+
+    li::marker {
+        color: var(--marker-color);
     }
 </style>
