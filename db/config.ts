@@ -177,7 +177,7 @@ export const ActionItem = defineTable({
     },
 });
 
-export interface ActionType {
+export interface ActionItemType {
     id: number;
     actionID: ActionType["id"];
     title: string;
