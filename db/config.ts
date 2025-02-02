@@ -152,7 +152,7 @@ export const Action = defineTable({
             references: () => Member.columns.discord,
         }),
         title: column.text(),
-        type: column.text(),
+        description: column.text(),
         url: column.text(),
     },
 });
@@ -161,7 +161,7 @@ export interface ActionType {
     id: number;
     memberDiscord: MemberType["discord"];
     title: string;
-    type: string;
+    description: string;
     url: string;
 }
 
@@ -172,7 +172,8 @@ export const ActionItem = defineTable({
             references: () => Action.columns.id,
         }),
         title: column.text(),
-        link: column.text(),
+        description: column.text(),
+        url: column.text(),
         date: column.date(),
     },
 });
@@ -181,7 +182,8 @@ export interface ActionItemType {
     id: number;
     actionID: ActionType["id"];
     title: string;
-    link: string;
+    description: string;
+    url: string;
     date: Date;
 }
 
