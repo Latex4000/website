@@ -1,0 +1,106 @@
+---
+import { db, Action, Member, eq } from "astro:db";
+import { detectFeedType } from "../server/rss";
+import { paginationQuery } from "../server/pagination";
+import { ActionItem } from "astro:db";
+import Layout from "../layouts/Layout.astro";
+import type { ActionItemType } from "../../db/config";
+
+interface actionList {
+    username: string;
+    title: string;
+    url: string;
+    type: string;
+    enabled: boolean;
+}
+const actions: actionList[] = await db
+    .select({
+        username: Member.alias,
+        title: Action.title,
+        url: Action.url,
+    })
+    .from(Action)
+    .innerJoin(Member, eq(Action.memberDiscord, Member.discord))
+    .then((actions) =>
+        actions.map((action) => ({
+            ...action,
+            type: detectFeedType(action.url),
+            enabled: true,
+        }))
+    );
+
+const actionsGroupedByUser = actions.reduce(
+    (acc, action) => {
+        if (!acc[action.username]) acc[action.username] = [];
+
+        acc[action.username]!.push(action);
+        return acc;
+    },
+    {} as Record<string, actionList[]>
+);
+
+const {
+    things: actionItems,
+    prevCursor,
+    nextCursor,
+} = await paginationQuery(Astro.url.searchParams, ActionItem).then(
+    async (res) => {
+        try {
+            const json = await res.json();
+            if ("error" in json) return {};
+            return json as {
+                things?: ActionItemType[];
+                prevCursor?: number;
+                nextCursor?: number;
+            };
+        } catch (e) {
+            console.error(e);
+            return {};
+        }
+    }
+);
+
+if (actionItems)
+    actionItems.sort((a, b) => b.date.getTime() - a.date.getTime());
+---
+
+<Layout header="Actions">
+    <div class="actions">
+        {
+            Object.entries(actionsGroupedByUser).map(([username, actions]) => (
+                <div class="actionsByUser">
+                    <h2>{username}</h2>
+                    {actions.map((action) => (
+                        <div class="action">
+                            <h3>{action.title}</h3>
+                            <a href={action.url}>{action.url}</a>
+                            <span>{action.type}</span>
+                            <span>
+                                {action.enabled ? "Enabled" : "Disabled"}
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            ))
+        }
+    </div>
+
+    <div class="actionItems">
+        {
+            actionItems &&
+                actionItems.map((actionItem) => (
+                    <div class="actionItem">
+                        <h3>{actionItem.title}</h3>
+                        <a href={actionItem.url}>{actionItem.url}</a>
+                        <span>{actionItem.date.toLocaleString()}</span>
+                        <span>{actionItem.description}</span>
+                    </div>
+                ))
+        }
+    </div>
+
+    <div class="pagination">
+        <a href={`?cursor=${prevCursor}&direction=prev`}>Previous</a>
+        <a href={`?cursor=${nextCursor}&direction=next`}>Next</a>
+    </div>
+</Layout>
