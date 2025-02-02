@@ -1,22 +1,15 @@
 ---
 import { motionFromDb } from "../../db/config";
 import Layout from "../layouts/Layout.astro";
-import { db, Motion, Member, eq } from "astro:db";
+import { db, Motion, eq } from "astro:db";
 
 export const prerender = false;
 
 const motions = (
-    await db
-        .select()
-        .from(Motion)
-        .where(eq(Motion.deleted, false))
-        .innerJoin(Member, eq(Motion.memberDiscord, Member.discord))
+    await db.select().from(Motion).where(eq(Motion.deleted, false))
 )
-    .sort((a, b) => b.Motion.date.getTime() - a.Motion.date.getTime())
-    .map((motion) => ({
-        Motion: motionFromDb(motion.Motion),
-        Member: motion.Member,
-    }));
+    .sort((a, b) => b.date.getTime() - a.date.getTime())
+    .map(motionFromDb);
 ---
 
 <Layout header="Motions">
@@ -27,12 +20,8 @@ const motions = (
             motions.map((motion) => (
                 <div class="motion">
                     <iframe
-                        src={motion.Motion.youtubeUrl.replace(
-                            /watch\?v=/,
-                            "embed/"
-                        )}
+                        src={motion.youtubeUrl.replace(/watch\?v=/, "embed/")}
                         style={{
-                            border: `var(--border-thickness) solid ${motion.Member.color}`,
                             width: "16lh",
                             height: "9lh",
                         }}
@@ -42,15 +31,15 @@ const motions = (
                         allowfullscreen
                     />
                     <div class="details">
-                        <h2>{motion.Motion.title}</h2>
+                        <h2>{motion.title}</h2>
                         {/* prettier-ignore */}
                         <div>
-                            <a href={motion.Motion.youtubeUrl}>{/* prettier-ignore */}<span class="y">You</span><span class="t">Tube</span></a>
+                            <a href={motion.youtubeUrl}>{/* prettier-ignore */}<span class="y">You</span><span class="t">Tube</span></a>
                             |
-                            <span>{motion.Motion.date.toLocaleString()}</span>
+                            <span>{motion.date.toLocaleString()}</span>
                         </div>
                         <div class="tags">
-                            {motion.Motion.tags.map((tag) => (
+                            {motion.tags.map((tag) => (
                                 <span>{tag}</span>
                             ))}
                         </div>
