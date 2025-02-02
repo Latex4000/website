@@ -6,7 +6,7 @@ const urls = [
     "/",
     "/sounds",
     "/words",
-    // "/actions",
+    "/actions",
     "/motions",
     // "/sights",
     // "/things",
