@@ -171,17 +171,17 @@ export const ActionItem = defineTable({
         actionID: column.number({
             references: () => Action.columns.id,
         }),
-        title: column.text(),
+        title: column.text({ optional: true }),
         description: column.text(),
         url: column.text(),
-        date: column.date(),
+        date: column.date({ default: NOW }),
     },
 });
 
 export interface ActionItemType {
     id: number;
     actionID: ActionType["id"];
-    title: string;
+    title: string | null;
     description: string;
     url: string;
     date: Date;

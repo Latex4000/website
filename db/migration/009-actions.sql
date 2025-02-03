@@ -10,9 +10,9 @@ CREATE TABLE "Action" (
 CREATE TABLE "ActionItem" (
     "id" INTEGER PRIMARY KEY AUTOINCREMENT,
     "actionID" INTEGER NOT NULL,
-    "title" text NOT NULL,
+    "title" text,
     "url" text NOT NULL,
-    "description" text,
-    "date" text,
+    "description" text NOT NULL,
+    "date" text NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY ("actionID") REFERENCES "Action" ("id")
 );

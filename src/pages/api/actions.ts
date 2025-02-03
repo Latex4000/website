@@ -17,7 +17,6 @@ export const POST: APIRoute = async (context) => {
         return jsonError("Request body must be JSON");
 
     const action = await context.request.json();
-
     if (
         !action.memberDiscord ||
         !action.title ||
@@ -34,7 +33,7 @@ export const POST: APIRoute = async (context) => {
         const rss = await rssParser.parseURL(action.url);
         if (!rss.link || !rss.items)
             return jsonError("Invalid RSS feed missing title, link, or items");
-        if (rss.items.length && (!rss.items[0]!.title || !rss.items[0]!.link))
+        if (rss.items.length && !rss.items[0]!.link)
             return jsonError("Invalid RSS feed item missing title or link");
 
         const actionRes = await db
@@ -42,14 +41,13 @@ export const POST: APIRoute = async (context) => {
             .values(action)
             .returning()
             .get();
-
         const items = await db
             .insert(ActionItem)
             .values(rss.items.map((item) => {
                 return {
                     actionID: actionRes.id,
-                    title: item.title!,
-                    description: item.description || item.summary || item.contentSnippet || "",
+                    title: item.title || "",
+                    description: item.description || item.summary || item.contentSnippet || item.title || "",
                     url: item.link!,
                     date: new Date(item.pubDate || item.isoDate || Date.now()),
                 };
