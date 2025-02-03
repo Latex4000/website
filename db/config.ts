@@ -153,7 +153,7 @@ export const Action = defineTable({
         }),
         title: column.text(),
         description: column.text(),
-        url: column.text(),
+        url: column.text({ unique: true }),
     },
 });
 

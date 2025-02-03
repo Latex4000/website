@@ -3,7 +3,7 @@ CREATE TABLE "Action" (
     "memberDiscord" text NOT NULL,
 	"title" text NOT NULL,
     "description" text NOT NULL,
-	"url" text NOT NULL,
+	"url" text NOT NULL UNIQUE,
 	FOREIGN KEY ("memberDiscord") REFERENCES "Member" ("discord")
 );
 

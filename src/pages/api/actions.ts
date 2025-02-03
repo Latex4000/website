@@ -30,6 +30,16 @@ export const POST: APIRoute = async (context) => {
         return jsonError("Missing or invalid parameters");
 
     try {
+        const url = new URL(action.url);
+        if (!["http:", "https:"].includes(url.protocol))
+            return jsonError("Invalid URL protocol");
+
+        action.url = url.toString();
+    } catch (error) {
+        return jsonError("Invalid URL");
+    }
+
+    try {
         const rss = await rssParser.parseURL(action.url);
         if (!rss.link || !rss.items)
             return jsonError("Invalid RSS feed missing title, link, or items");
