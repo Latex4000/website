@@ -719,7 +719,6 @@
             );
             const bottomScaleFactor =
                 1 + delta * (bottomDistFromCentre / canvasSize);
-            console.log(topScaleFactor, bottomScaleFactor);
             lowFrequency = Math.min(
                 highFrequency,
                 Math.max(20, lowFrequency * topScaleFactor),

@@ -88,7 +88,6 @@
         const rect = heatmapRef.getBoundingClientRect();
         width = rect.width;
         height = Math.floor(width * 1.2);
-        console.log(width, height);
 
         canvasRef.width = width;
         canvasRef.height = height;
