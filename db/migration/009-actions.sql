@@ -4,6 +4,7 @@ CREATE TABLE "Action" (
 	"title" text NOT NULL,
     "description" text NOT NULL,
 	"url" text NOT NULL UNIQUE,
+    "siteUrl" text NOT NULL UNIQUE,
 	FOREIGN KEY ("memberDiscord") REFERENCES "Member" ("discord")
 );
 

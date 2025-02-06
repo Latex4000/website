@@ -154,6 +154,7 @@ export const Action = defineTable({
         title: column.text(),
         description: column.text(),
         url: column.text({ unique: true }),
+        siteUrl: column.text({ unique: true }),
     },
 });
 
@@ -163,6 +164,7 @@ export interface ActionType {
     title: string;
     description: string;
     url: string;
+    siteUrl: string;
 }
 
 export const ActionItem = defineTable({
