@@ -175,7 +175,7 @@ export const ActionItem = defineTable({
         }),
         title: column.text({ optional: true }),
         description: column.text(),
-        url: column.text(),
+        url: column.text({ unique: true }),
         date: column.date({ default: NOW }),
     },
 });

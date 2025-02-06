@@ -12,7 +12,7 @@ CREATE TABLE "ActionItem" (
     "id" INTEGER PRIMARY KEY AUTOINCREMENT,
     "actionID" INTEGER NOT NULL,
     "title" text,
-    "url" text NOT NULL,
+    "url" text NOT NULL UNIQUE,
     "description" text NOT NULL,
     "date" text NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY ("actionID") REFERENCES "Action" ("id")
