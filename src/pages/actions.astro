@@ -1,176 +1,22 @@
 ---
-import { db, Action, Member, eq } from "astro:db";
-import { detectFeedType } from "../server/rss";
-import { paginationQuery } from "../server/pagination";
-import { ActionItem } from "astro:db";
 import Layout from "../layouts/Layout.astro";
-import type { ActionItemType } from "../../db/config";
-
-interface ActionList {
-    username: string;
-    title: string;
-    url: string;
-    type: string;
-    enabled: boolean;
-}
-
-const actions: ActionList[] = await db
-    .select({
-        username: Member.alias,
-        title: Action.title,
-        url: Action.url,
-    })
-    .from(Action)
-    .innerJoin(Member, eq(Action.memberDiscord, Member.discord))
-    .then((actions) =>
-        actions.map((action) => ({
-            ...action,
-            type: detectFeedType(action.url),
-            enabled: true,
-        }))
-    );
-
-const actionsGroupedByUser = actions.reduce(
-    (acc, action) => {
-        acc[action.username] ??= [];
-        acc[action.username]!.push(action);
-        return acc;
-    },
-    {} as Record<string, ActionList[]>
-);
-
-Astro.url.searchParams.set("pageSize", "100");
-const {
-    things: actionItems,
-    prevCursor,
-    nextCursor,
-} = await paginationQuery(Astro.url.searchParams, ActionItem).then(
-    async (res) => {
-        try {
-            const json = await res.json();
-            if ("error" in json) return {};
-            return json as {
-                things?: ActionItemType[];
-                prevCursor?: number;
-                nextCursor?: number;
-            };
-        } catch (e) {
-            console.error(e);
-            return {};
-        }
-    }
-);
-
-if (actionItems)
-    actionItems
-        .map((item) => ({ ...item, date: new Date(item.date) })) // Date is string from `paginationQuery` func
-        .sort((a, b) => b.date.getTime() - a.date.getTime());
+import ActionsList from "../components/ActionsList.svelte";
+import ActionItemsList from "../components/ActionItemsList.svelte";
 ---
 
 <Layout header="Actions">
     <div class="actions">
-        <h2>Actions by User</h2>
-        {
-            Object.entries(actionsGroupedByUser).map(
-                ([username, userActions]) => (
-                    <div class="actionsByUser">
-                        <label>
-                            <input
-                                type="checkbox"
-                                class="user-toggle"
-                                data-user={username}
-                                checked={
-                                    !userActions.every(
-                                        (action) => !action.enabled
-                                    )
-                                }
-                            />
-                            <strong>{username}</strong>
-                        </label>
-
-                        <div
-                            class="user-actions"
-                            id={"user-actions-" + username}
-                        >
-                            {userActions.map((action, idx) => {
-                                const uniqueId = `${username}-${idx}`;
-                                return (
-                                    <div
-                                        class="action"
-                                        id={"action-" + uniqueId}
-                                    >
-                                        <label>
-                                            <input
-                                                type="checkbox"
-                                                class="action-toggle"
-                                                data-action={uniqueId}
-                                                checked={action.enabled}
-                                            />
-                                            <span>{action.title}</span>
-                                        </label>
-                                        <div>
-                                            <a href={action.url}>
-                                                {action.url}
-                                            </a>
-                                            <span>{action.type}</span>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-                )
-            )
-        }
-        <button id="apply-filter" type="button">Apply Filter</button>
+        <ActionsList client:visible />
     </div>
 
-    <div class="actionItems">
-        {
-            actionItems &&
-                actionItems.map((actionItem) => (
-                    <div class="actionItem">
-                        {actionItem.title && <h3>{actionItem.title}</h3>}
-                        <a href={actionItem.url}>{actionItem.url}</a>
-                        <span>{actionItem.date.toLocaleString()}</span>
-                        <span>{actionItem.description}</span>
-                    </div>
-                ))
-        }
-    </div>
-
-    <div class="pagination">
-        {
-            prevCursor && (
-                <a href={`?cursor=${prevCursor}&direction=prev`}>Previous</a>
-            )
-        }
-        {
-            nextCursor && (
-                <a href={`?cursor=${nextCursor}&direction=next`}>Next</a>
-            )
-        }
-    </div>
-
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            // Dude idk maybe this should just be 2 components but like i cba
-        });
-    </script>
+    <ActionItemsList client:visible />
 </Layout>
 
 <style>
     .actions {
         position: absolute;
         right: 100%;
-    }
-    .actionsByUser {
-        margin-bottom: 1rem;
-        border: 1px solid #ddd;
-        padding: 1rem;
-    }
-    .action {
-        margin-left: 1rem;
-        margin-top: 1rem;
+        width: 100%;
+        max-width: calc(min(20ch, round(down, 100%, 1ch)));
     }
 </style>
