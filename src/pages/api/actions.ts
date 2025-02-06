@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { jsonError, jsonResponse } from "../../server/responses";
-import { db, isDbError, Action, ActionItem } from "astro:db";
+import { db, isDbError, Action, ActionItem, Member, eq } from "astro:db";
 import Parser from "rss-parser";
 import type { ActionItemType } from "../../../db/config";
 
@@ -9,7 +9,16 @@ export const prerender = false;
 const rssParser = new Parser();
 
 export const GET: APIRoute = async () => {
-    const actions = await db.select().from(Action);
+    const actions = await db
+        .select({
+            id: Action.id,
+            username: Member.alias,
+            title: Action.title,
+            description: Action.description,
+            url: Action.url,
+        })
+        .from(Action)
+        .innerJoin(Member, eq(Action.memberDiscord, Member.discord));
     return jsonResponse({ actions });
 };
 
