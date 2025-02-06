@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 import { jsonError, jsonResponse } from "../../server/responses";
 import { db, isDbError, Action, ActionItem } from "astro:db";
 import Parser from "rss-parser";
+import type { ActionItemType } from "../../../db/config";
 
 export const prerender = false;
 
@@ -22,10 +23,12 @@ export const POST: APIRoute = async (context) => {
         !action.title ||
         !action.description ||
         !action.url ||
+        !action.siteUrl ||
         typeof action.memberDiscord !== "string" ||
         typeof action.title !== "string" ||
         typeof action.description !== "string" ||
-        typeof action.url !== "string"
+        typeof action.url !== "string" ||
+        typeof action.siteUrl !== "string"
     )
         return jsonError("Missing or invalid parameters");
 
@@ -51,18 +54,20 @@ export const POST: APIRoute = async (context) => {
             .values(action)
             .returning()
             .get();
-        const items = await db
-            .insert(ActionItem)
-            .values(rss.items.map((item) => {
-                return {
-                    actionID: actionRes.id,
-                    title: item.title || "",
-                    description: item.description || item.summary || item.contentSnippet || item.title || "",
-                    url: item.link!,
-                    date: new Date(item.pubDate || item.isoDate || Date.now()),
-                };
-            }))
-            .returning();
+        let items: ActionItemType[] = [];
+        if (rss.items.length)
+            items = await db
+                .insert(ActionItem)
+                .values(rss.items.map((item) => {
+                    return {
+                        actionID: actionRes.id,
+                        title: item.title || "",
+                        description: item.description || item.summary || item.contentSnippet || item.title || "",
+                        url: item.link!,
+                        date: new Date(item.pubDate || item.isoDate || Date.now()),
+                    };
+                }))
+                .returning();
         return jsonResponse({ action: actionRes, items });
     } catch (error) {
         if (isDbError(error))
