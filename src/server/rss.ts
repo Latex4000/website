@@ -4,20 +4,22 @@
  * Possible feed types.
  * Feel free to adjust or rename as needed.
  */
-export type FeedType =
-    | 'bsky'
-    | 'statuscafe'
-    | 'soundcloud'
-    | 'youtube'
-    | 'twitch'
-    | 'lastfm'
-    | 'rym'
-    | 'bearblog'
-    | 'tumblr'
-    | 'github'
-    | 'mastodon'
-    | 'twitter'
-    | 'custom'; // fallback
+export const FEED_TYPE = [
+    'bsky',
+    'statuscafe',
+    'soundcloud',
+    'youtube',
+    'twitch',
+    'lastfm',
+    'rym',
+    'bearblog',
+    'tumblr',
+    'github',
+    'mastodon',
+    'twitter',
+    'other'
+] as const;
+export type FeedType = typeof FEED_TYPE[number];
 
 /**
  * A small helper that attempts to determine the "type" of an RSS feed
@@ -31,7 +33,7 @@ export function detectFeedType(urlString: string): FeedType {
         parsed = new URL(urlString);
     } catch {
         // Not a valid URL at all, treat as custom or fallback
-        return 'custom';
+        return 'other';
     }
 
     const host = parsed.hostname.toLowerCase();
@@ -50,7 +52,7 @@ export function detectFeedType(urlString: string): FeedType {
         return 'lastfm';
     else if (host.includes('rateyourmusic'))
         return 'rym';
-    else if (host.endsWith('bearblog'))
+    else if (host.includes('bearblog'))
         return 'bearblog';
     else if (host.includes('tumblr'))
         return 'tumblr';
@@ -66,26 +68,5 @@ export function detectFeedType(urlString: string): FeedType {
         return 'twitter';
 
     // Fallback to custom (i.e. user’s personal site or unknown feed)
-    return 'custom';
+    return 'other';
 }
-
-// /* Example usage */
-// const testUrls = [
-//     'https://bsky.app/profile/sammi.sh/rss',
-//     'https://status.cafe/users/vinxis.atom',
-//     'https://nonacademic.net/rss.xml',
-//     'https://feeds.soundcloud.com/users/soundcloud:users:1465894227/sounds.rss',
-//     'https://youtube.com/feeds/videos.xml?channel_id=UCXZO4mFBhtZhQab6H-ktexQ',
-//     'https://twitchrss.com/feeds/?username=vinxis1&feed=channel_updates',
-//     'https://lfm.xiffy.nl/VINXIS',
-//     'https://rateyourmusic.com/~VINXIS/data/rss',
-//     'https://vinxis.bearblog.dev/feed/',
-//     'https://sammish.tumblr.com/rss',
-//     'https://github.com/VINXIS.atom',
-//     'https://mastodon.social/users/nixCraft.rss',
-//     'https://nitter.privacydev.net/corsace_/rss'
-// ];
-
-// for (const url of testUrls) {
-//     console.log(url, '=>', detectFeedType(url));
-// }

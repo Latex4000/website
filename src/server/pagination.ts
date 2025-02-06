@@ -40,5 +40,5 @@ export async function paginationQuery(params: URLSearchParams, table: any, ...qu
         things,
         prevCursor: things[0]?.id ?? undefined,
         nextCursor: things.length === pageSize ? things[things.length - 1]?.id : undefined,
-    });
+    } as { things: any[]; prevCursor?: number; nextCursor?: number });
 }
