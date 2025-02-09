@@ -22,7 +22,7 @@ if (
         .then(() => true)
         .catch(() => false))
 ) {
-    console.error("<database> must be a writable file\n");
+    console.error(`<database> must be a writable file\n ${database}`);
     printUsageAndExit();
 }
 

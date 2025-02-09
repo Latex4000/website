@@ -21,12 +21,12 @@ if (
         .then(() => true)
         .catch(() => false))
 ) {
-    console.error("<database> must be a writable file\n");
+    console.error(`<database> must be a writable file\n ${database}`);
     printUsageAndExit();
 }
 
 if (Number.isNaN(startMigrationId)) {
-    console.error("<start_migration> must be a number\n");
+    console.error(`<start_migration> must be a number\n ${startMigrationId}`);
     printUsageAndExit();
 }
 
