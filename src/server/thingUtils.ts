@@ -1,7 +1,7 @@
 import type { APIContext } from "astro";
 import { jsonError, jsonResponse } from "./responses";
 import { and, db, eq, isDbError, Motion, Word, Sound } from "astro:db";
-import { paginationQuery } from "./pagination";
+import { paginationQuery, parseNumberCursor } from "./pagination";
 
 const thingTypeToTable = {
     words: Word,
@@ -29,6 +29,8 @@ export async function thingGet({ url }: APIContext, thingType: ThingType) {
     return paginationQuery(
         params,
         table,
+        "id",
+        parseNumberCursor,
         eq(table.memberDiscord, discordID),
         eq(table.deleted, showDeleted === "true"),
     );

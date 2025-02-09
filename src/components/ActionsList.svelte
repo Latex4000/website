@@ -37,7 +37,7 @@
         await updateActionItems();
     });
 
-    const updateActionItems = async () => {
+    const updateActionItems = async (dir?: "prev" | "next") => {
         const {
             things: actionItems,
             prevCursor,
@@ -47,10 +47,13 @@
             prevCursor?: number;
             nextCursor?: number;
         } = await fetch(
-            `/api/actionitems?pageSize=100&ignore=${Object.entries($filtersRef)
+            `/api/actionitems?pageSize=20&ignore=${Object.entries($filtersRef)
                 .filter(([_, v]) => !v)
                 .map(([k, _]) => k)
-                .join(",")}`,
+                .join(
+                    ",",
+                )}${dir ? `&direction=${dir}&cursor=${dir === "prev" ? $prevCursorRef : $nextCursorRef}` : ""}
+                `,
         ).then((res) => res.json());
         actionItems.forEach((item) => {
             item.date = new Date(item.date);
@@ -99,6 +102,12 @@
 </script>
 
 <div>
+    {#if $prevCursorRef}
+        <button onclick={() => updateActionItems("prev")}>Previous</button>
+    {/if}
+    {#if $nextCursorRef}
+        <button onclick={() => updateActionItems("next")}>Next</button>
+    {/if}
     {#each Object.entries(actionsGroupedByUser) as [username, actions]}
         <div class="actionUserHeader">
             <button

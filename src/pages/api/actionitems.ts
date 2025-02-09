@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { paginationQuery } from "../../server/pagination";
+import { paginationQuery, parseDateCursor } from "../../server/pagination";
 import { ActionItem, inArray, not } from "astro:db";
 
 export const prerender = false;
@@ -11,5 +11,5 @@ export const GET: APIRoute = async ({ url }) => {
         ActionItem.actionID,
         ignore ? ignore.split(",").map((id) => parseInt(id)) : [0]
     ));
-    return paginationQuery(url.searchParams, ActionItem, notQ);
+    return paginationQuery(url.searchParams, ActionItem, "date", parseDateCursor, notQ);
 };
