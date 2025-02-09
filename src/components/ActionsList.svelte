@@ -8,34 +8,14 @@
         prevCursorRef,
         type ActionList,
     } from "../store/actionsState";
-    import { detectFeedType } from "../server/rss";
     import type { ActionItemType } from "../../db/types";
 
-    onMount(async () => {
-        const rawActions: {
-            id: number;
-            username: string;
-            title: string;
-            description: string;
-            url: string;
-            siteUrl: string;
-        }[] = await fetch("/api/actions")
-            .then((res) => res.json())
-            .then((json) => json.actions);
+    let { actions }: { actions: ActionList[] } = $props();
+    actionsRef.set(actions);
 
-        actionsRef.set(
-            rawActions.map((row) => ({
-                ...row,
-                type: detectFeedType(row.url),
-            })),
-        );
+    filtersRef.set(Object.fromEntries(actions.map((row) => [row.id, true])));
 
-        filtersRef.set(
-            Object.fromEntries(rawActions.map((row) => [row.id, true])),
-        );
-
-        await updateActionItems();
-    });
+    onMount(async () => await updateActionItems());
 
     const updateActionItems = async (dir?: "prev" | "next") => {
         const {
@@ -93,7 +73,7 @@
             (action) => $filtersRef[action.id],
         );
         actionsGroupedByUser[username]!.forEach((action) =>
-            filtersRef.setKey(action.id, anyTrue ? false : true),
+            filtersRef.setKey(action.id, !anyTrue),
         );
         await updateActionItems();
     };
