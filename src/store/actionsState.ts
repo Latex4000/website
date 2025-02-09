@@ -15,7 +15,7 @@ export interface ActionList {
 export type ActionItemList = Omit<ActionItemType, "actionID"> & { action: ActionList };
 
 export const actionsRef = atom<ActionList[]>([]);
-export const prevCursorRef = atom<number | undefined>(undefined);
-export const nextCursorRef = atom<number | undefined>(undefined);
+export const prevCursorRef = atom<Date | undefined>(undefined);
+export const nextCursorRef = atom<Date | undefined>(undefined);
 export const actionItemsRef = atom<ActionItemList[]>([]);
 export const filtersRef = map<Record<number, boolean>>({});

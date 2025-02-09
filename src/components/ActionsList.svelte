@@ -44,8 +44,8 @@
             nextCursor,
         }: {
             things: ActionItemType[];
-            prevCursor?: number;
-            nextCursor?: number;
+            prevCursor?: string;
+            nextCursor?: string;
         } = await fetch(
             `/api/actionitems?pageSize=20&ignore=${Object.entries($filtersRef)
                 .filter(([_, v]) => !v)
@@ -68,8 +68,8 @@
                 )!,
             })),
         );
-        prevCursorRef.set(prevCursor);
-        nextCursorRef.set(nextCursor);
+        prevCursorRef.set(prevCursor ? new Date(prevCursor) : undefined);
+        nextCursorRef.set(nextCursor ? new Date(nextCursor) : undefined);
     };
 
     let actionsGroupedByUser = $derived(
