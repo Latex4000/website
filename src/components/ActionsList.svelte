@@ -1,18 +1,68 @@
 <script lang="ts">
+    import { onMount } from "svelte";
     import {
+        actionItemsRef,
         actionsRef,
         filtersRef,
+        nextCursorRef,
+        prevCursorRef,
         type ActionList,
     } from "../store/actionsState";
+    import { detectFeedType } from "../server/rss";
 
-    const actionsGroupedByUser = $actionsRef.reduce(
-        (acc, action) => {
-            acc[action.username] ??= [];
-            acc[action.username]!.push(action);
-            return acc;
-        },
-        {} as Record<string, ActionList[]>,
+    onMount(async () => {
+        const rawActions: {
+            id: number;
+            username: string;
+            title: string;
+            description: string;
+            url: string;
+        }[] = await fetch("/api/actions")
+            .then((res) => res.json())
+            .then((json) => json.actions);
+
+        actionsRef.set(
+            rawActions.map((row) => ({
+                ...row,
+                type: detectFeedType(row.url),
+            })),
+        );
+
+        await updateActionItems();
+    });
+
+    const updateActionItems = async () => {
+        const {
+            things: actionItems,
+            prevCursor,
+            nextCursor,
+        } = await fetch(
+            `/api/actionitems?pageSize=100&ignore=${Object.entries($filtersRef)
+                .filter(([_, v]) => !v)
+                .map(([k, _]) => k)
+                .join(",")}`,
+        ).then((res) => res.json());
+
+        actionItemsRef.set(actionItems);
+        prevCursorRef.set(prevCursor);
+        nextCursorRef.set(nextCursor);
+    };
+
+    let actionsGroupedByUser = $derived(
+        $actionsRef.reduce(
+            (acc, action) => {
+                acc[action.username] ??= [];
+                acc[action.username]!.push(action);
+                return acc;
+            },
+            {} as Record<string, ActionList[]>,
+        ),
     );
+
+    const onClickHandler = async (actionID: number) => {
+        filtersRef.setKey(actionID, !$filtersRef[actionID]);
+        await updateActionItems();
+    };
 </script>
 
 <div>
@@ -29,7 +79,7 @@
                     </div>
                     <input
                         type="checkbox"
-                        bind:checked={$filtersRef[action.id]}
+                        onclick={() => onClickHandler(action.id)}
                     />
                 </li>
             {/each}
