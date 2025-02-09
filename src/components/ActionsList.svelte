@@ -101,57 +101,63 @@
     let expandedUsers: Record<string, boolean> = $state({});
 </script>
 
-<div>
+<div class="pagination">
     {#if $prevCursorRef}
         <button onclick={() => updateActionItems("prev")}>Previous</button>
     {/if}
     {#if $nextCursorRef}
         <button onclick={() => updateActionItems("next")}>Next</button>
     {/if}
-    {#each Object.entries(actionsGroupedByUser) as [username, actions]}
-        <div class="actionUserHeader">
-            <button
-                onclick={() =>
-                    (expandedUsers[username] = !expandedUsers[username])}
-            >
-                {username}
-                <span class="triangle" class:expanded={expandedUsers[username]}>
-                    ▼
-                </span>
-            </button>
-            <input
-                type="checkbox"
-                checked={actions.some((action) => $filtersRef[action.id])}
-                onclick={() => onClickUser(username)}
-            />
-        </div>
-        {#if expandedUsers[username]}
-            <ul class="actions">
-                {#each actions as action}
-                    <li class="action">
-                        <input
-                            type="checkbox"
-                            checked={$filtersRef[action.id]}
-                            onclick={() => onClickAction(action.id)}
-                        />
-                        <div>
-                            <a
-                                href={action.siteUrl}
-                                target="_blank"
-                                title={action.description}
-                            >
-                                <strong>{action.type}</strong> <br />
-                                <small>{action.title}</small>
-                            </a>
-                        </div>
-                    </li>
-                {/each}
-            </ul>
-        {/if}
-    {/each}
+    <button onclick={() => updateActionItems()}>Reset</button>
 </div>
+{#each Object.entries(actionsGroupedByUser) as [username, actions]}
+    <div class="actionUserHeader">
+        <button
+            onclick={() => (expandedUsers[username] = !expandedUsers[username])}
+        >
+            {username}
+            <span class="triangle" class:expanded={expandedUsers[username]}>
+                ▼
+            </span>
+        </button>
+        <input
+            type="checkbox"
+            checked={actions.some((action) => $filtersRef[action.id])}
+            onclick={() => onClickUser(username)}
+        />
+    </div>
+    {#if expandedUsers[username]}
+        <ul class="actions">
+            {#each actions as action}
+                <li class="action">
+                    <input
+                        type="checkbox"
+                        checked={$filtersRef[action.id]}
+                        onclick={() => onClickAction(action.id)}
+                    />
+                    <div>
+                        <a
+                            href={action.siteUrl}
+                            target="_blank"
+                            title={action.description}
+                        >
+                            <strong>{action.type}</strong> <br />
+                            <small>{action.title}</small>
+                        </a>
+                    </div>
+                </li>
+            {/each}
+        </ul>
+    {/if}
+{/each}
 
 <style>
+    .pagination {
+        display: flex;
+        gap: 1ch;
+        margin-bottom: var(--line-height);
+    }
+
     .actionUserHeader {
         text-transform: none;
         display: flex;
@@ -161,6 +167,7 @@
 
     .triangle {
         display: inline-block;
+        transition: transform 0.2s;
     }
 
     .triangle.expanded {
