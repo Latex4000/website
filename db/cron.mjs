@@ -18,9 +18,9 @@ if (process.argv.length < 2 || process.argv.length > 3) {
 const database = process.argv[2];
 
 if (
-    !(await access(database, constants.R_OK | constants.W_OK).catch(
-        () => false,
-    ))
+    !(await access(database, constants.R_OK | constants.W_OK)
+        .then(() => true)
+        .catch(() => false))
 ) {
     console.error("<database> must be a writable file\n");
     printUsageAndExit();
