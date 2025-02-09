@@ -6,10 +6,10 @@ import ActionItemsList from "../components/ActionItemsList.svelte";
 
 <Layout header="Actions">
     <div class="actions">
-        <ActionsList client:visible />
+        <ActionsList client:only="svelte" />
     </div>
 
-    <ActionItemsList client:visible />
+    <ActionItemsList client:only="svelte" />
 </Layout>
 
 <style>
@@ -17,6 +17,6 @@ import ActionItemsList from "../components/ActionItemsList.svelte";
         position: absolute;
         right: 100%;
         width: 100%;
-        max-width: calc(min(20ch, round(down, 100%, 1ch)));
+        max-width: calc(min(30ch, round(down, 100%, 1ch)));
     }
 </style>

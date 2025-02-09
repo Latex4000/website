@@ -9,7 +9,7 @@ export const GET: APIRoute = async ({ url }) => {
     const ignore = url.searchParams.get("ignore");
     const notQ = not(inArray(
         ActionItem.actionID,
-        ignore ? ignore.split(",").map((id) => parseInt(id)) : []
+        ignore ? ignore.split(",").map((id) => parseInt(id)) : [0]
     ));
     return paginationQuery(url.searchParams, ActionItem, notQ);
 };

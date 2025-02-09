@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 import { jsonError, jsonResponse } from "../../server/responses";
 import { db, isDbError, Action, ActionItem, Member, eq } from "astro:db";
 import Parser from "rss-parser";
-import type { ActionItemType } from "../../../db/config";
+import type { ActionItemType } from "../../../db/types";
 
 export const prerender = false;
 
@@ -16,6 +16,7 @@ export const GET: APIRoute = async () => {
             title: Action.title,
             description: Action.description,
             url: Action.url,
+            siteUrl: Action.siteUrl,
         })
         .from(Action)
         .innerJoin(Member, eq(Action.memberDiscord, Member.discord));

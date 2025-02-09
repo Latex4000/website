@@ -9,6 +9,7 @@
         type ActionList,
     } from "../store/actionsState";
     import { detectFeedType } from "../server/rss";
+    import type { ActionItemType } from "../../db/types";
 
     onMount(async () => {
         const rawActions: {
@@ -17,6 +18,7 @@
             title: string;
             description: string;
             url: string;
+            siteUrl: string;
         }[] = await fetch("/api/actions")
             .then((res) => res.json())
             .then((json) => json.actions);
@@ -28,6 +30,10 @@
             })),
         );
 
+        filtersRef.set(
+            Object.fromEntries(rawActions.map((row) => [row.id, true])),
+        );
+
         await updateActionItems();
     });
 
@@ -36,14 +42,29 @@
             things: actionItems,
             prevCursor,
             nextCursor,
+        }: {
+            things: ActionItemType[];
+            prevCursor?: number;
+            nextCursor?: number;
         } = await fetch(
             `/api/actionitems?pageSize=100&ignore=${Object.entries($filtersRef)
                 .filter(([_, v]) => !v)
                 .map(([k, _]) => k)
                 .join(",")}`,
         ).then((res) => res.json());
+        actionItems.forEach((item) => {
+            item.date = new Date(item.date);
+        });
+        actionItems.sort((a, b) => b.date.getTime() - a.date.getTime());
 
-        actionItemsRef.set(actionItems);
+        actionItemsRef.set(
+            actionItems.map((item) => ({
+                ...item,
+                action: $actionsRef.find(
+                    (action) => action.id === item.actionID,
+                )!,
+            })),
+        );
         prevCursorRef.set(prevCursor);
         nextCursorRef.set(nextCursor);
     };
@@ -59,30 +80,100 @@
         ),
     );
 
-    const onClickHandler = async (actionID: number) => {
+    const onClickAction = async (actionID: number) => {
         filtersRef.setKey(actionID, !$filtersRef[actionID]);
         await updateActionItems();
     };
+
+    const onClickUser = async (username: string) => {
+        const anyTrue = actionsGroupedByUser[username]!.some(
+            (action) => $filtersRef[action.id],
+        );
+        actionsGroupedByUser[username]!.forEach((action) =>
+            filtersRef.setKey(action.id, anyTrue ? false : true),
+        );
+        await updateActionItems();
+    };
+
+    let expandedUsers: Record<string, boolean> = $state({});
 </script>
 
 <div>
     {#each Object.entries(actionsGroupedByUser) as [username, actions]}
-        <h2>{username}</h2>
-        <ul>
-            {#each actions as action}
-                <li>
-                    <div>
-                        <strong>{action.title}</strong> <br />
-                        {action.description} <br />
-                        <a href={action.url} target="_blank">Link</a> <br />
-                        <small>Feed Type: {action.type}</small>
-                    </div>
-                    <input
-                        type="checkbox"
-                        onclick={() => onClickHandler(action.id)}
-                    />
-                </li>
-            {/each}
-        </ul>
+        <div class="actionUserHeader">
+            <button
+                onclick={() =>
+                    (expandedUsers[username] = !expandedUsers[username])}
+            >
+                {username}
+                <span class="triangle" class:expanded={expandedUsers[username]}>
+                    ▼
+                </span>
+            </button>
+            <input
+                type="checkbox"
+                checked={actions.some((action) => $filtersRef[action.id])}
+                onclick={() => onClickUser(username)}
+            />
+        </div>
+        {#if expandedUsers[username]}
+            <ul class="actions">
+                {#each actions as action}
+                    <li class="action">
+                        <input
+                            type="checkbox"
+                            checked={$filtersRef[action.id]}
+                            onclick={() => onClickAction(action.id)}
+                        />
+                        <div>
+                            <a
+                                href={action.siteUrl}
+                                target="_blank"
+                                title={action.description}
+                            >
+                                <strong>{action.type}</strong> <br />
+                                <small>{action.title}</small>
+                            </a>
+                        </div>
+                    </li>
+                {/each}
+            </ul>
+        {/if}
     {/each}
 </div>
+
+<style>
+    .actionUserHeader {
+        text-transform: none;
+        display: flex;
+        gap: 1ch;
+        align-items: center;
+    }
+
+    .triangle {
+        display: inline-block;
+    }
+
+    .triangle.expanded {
+        transform: rotate(180deg);
+    }
+
+    .actions {
+        list-style: none;
+        padding: 0;
+    }
+
+    .action {
+        margin: var(--line-height) 0;
+        display: flex;
+        gap: 2ch;
+    }
+
+    .action a {
+        text-decoration: none;
+    }
+
+    .action a:hover {
+        text-decoration: underline;
+    }
+</style>
