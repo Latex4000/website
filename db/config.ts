@@ -1,4 +1,5 @@
 import { column, defineDb, defineTable, NOW, sql } from "astro:db";
+import type { MotionType, SoundType, WordType } from "./types";
 
 export const Member = defineTable({
     columns: {
@@ -9,14 +10,6 @@ export const Member = defineTable({
         color: column.text(),
     },
 });
-
-export interface MemberType {
-    discord: string;
-    alias: string;
-    site: string | null;
-    addedRingToSite: boolean;
-    color: string;
-}
 
 export const Sound = defineTable({
     columns: {
@@ -34,19 +27,6 @@ export const Sound = defineTable({
         deleted: column.boolean({ default: false }),
     },
 });
-
-export interface SoundType {
-    id: number;
-    title: string;
-    memberDiscord: MemberType["discord"];
-    youtubeUrl: string | null;
-    soundcloudUrl: string | null;
-    date: Date;
-    tags: string[];
-    trackType: "mp3" | "wav";
-    coverType: "jpg" | "png";
-    deleted: boolean;
-}
 
 type SoundTypeInDb = Omit<SoundType, "tags" | "trackType" | "coverType"> & {
     tags: unknown;
@@ -80,15 +60,6 @@ export const Word = defineTable({
     },
 });
 
-export interface WordType {
-    id: number;
-    deleted: boolean;
-    date: Date;
-    memberDiscord: MemberType["discord"];
-    tags: string[];
-    title: string;
-}
-
 type WordTypeInDb = Omit<WordType, "tags"> & { tags: unknown };
 
 export function wordFromDb(word: WordTypeInDb): WordType {
@@ -120,16 +91,6 @@ export const Motion = defineTable({
     },
 });
 
-export interface MotionType {
-    id: number;
-    title: string;
-    youtubeUrl: string;
-    memberDiscord: MemberType["discord"];
-    date: Date;
-    tags: string[];
-    deleted: boolean;
-}
-
 type MotionTypeInDb = Omit<MotionType, "tags"> & {
     tags: unknown;
 };
@@ -158,15 +119,6 @@ export const Action = defineTable({
     },
 });
 
-export interface ActionType {
-    id: number;
-    memberDiscord: MemberType["discord"];
-    title: string;
-    description: string;
-    url: string;
-    siteUrl: string;
-}
-
 export const ActionItem = defineTable({
     columns: {
         id: column.number({ primaryKey: true }),
@@ -179,15 +131,6 @@ export const ActionItem = defineTable({
         date: column.date({ default: NOW }),
     },
 });
-
-export interface ActionItemType {
-    id: number;
-    actionID: ActionType["id"];
-    title: string | null;
-    description: string;
-    url: string;
-    date: Date;
-}
 
 // https://astro.build/db/config
 export default defineDb({

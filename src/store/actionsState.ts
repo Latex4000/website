@@ -1,6 +1,6 @@
 import { atom, map } from 'nanostores';
 import { FEED_TYPE, type FeedType } from '../server/rss';
-import { type ActionItemType } from '../../db/config';
+import type { ActionItemType } from '../../db/types';
 
 export interface ActionList {
     id: number;

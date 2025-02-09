@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { MemberType } from "../../db/config";
+    import type { MemberType } from "../../db/types";
 
     export let members: MemberType[] = [];
     let columnCount = 5;
