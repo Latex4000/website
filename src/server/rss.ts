@@ -45,9 +45,9 @@ export function detectFeedType(urlString: string): FeedType {
         return 'soundcloud';
     else if (host.includes('youtube'))
         return 'youtube';
-    else if (host.includes('twitchrss'))
+    else if (host.includes('twitchrss') || host.includes('twitch.tv'))
         return 'twitch';
-    else if (host.includes('xiffy.nl'))
+    else if (host.includes('xiffy.nl') || host.includes('last.fm'))
         // e.g. https://lfm.xiffy.nl/VINXIS
         return 'lastfm';
     else if (host.includes('rateyourmusic'))
@@ -62,9 +62,8 @@ export function detectFeedType(urlString: string): FeedType {
         // More robust approach might check for any "mastodon." or a known
         // set of Mastodon domains. For now, just matching the example:
         return 'mastodon';
-    else if (host.includes('nitter') || host.includes('lightbrd'))
-        // e.g. nitter.privacydev.net
-        // It's actually a third-party front-end.
+    else if (host.includes('nitter') || host.includes('lightbrd') || host.includes('twitter') || host === 'x')
+        // e.g. nitter.privacydev.net for rss feeds, or lightbrd.com for RSS feeds
         return 'twitter';
 
     // Fallback to custom (i.e. user’s personal site or unknown feed)
