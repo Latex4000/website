@@ -18,6 +18,7 @@ const actions: ActionList[] = await db
         description: Action.description,
         url: Action.url,
         siteUrl: Action.siteUrl,
+        isRSS: Action.isRSS,
     })
     .from(Action)
     .innerJoin(Member, eq(Action.memberDiscord, Member.discord))

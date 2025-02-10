@@ -9,6 +9,7 @@ export interface ActionList {
     description: string;
     url: string;
     siteUrl: string;
+    isRSS: boolean;
     type: FeedType;
 }
 

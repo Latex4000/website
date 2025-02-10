@@ -116,6 +116,7 @@ export const Action = defineTable({
         description: column.text(),
         url: column.text({ unique: true }),
         siteUrl: column.text({ unique: true }),
+        isRSS: column.boolean(),
     },
 });
 

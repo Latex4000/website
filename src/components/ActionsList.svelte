@@ -71,7 +71,7 @@
 
     const onClickUser = async (username: string) => {
         const anyTrue = actionsGroupedByUser[username]!.some(
-            (action) => $filtersRef[action.id],
+            (action) => $filtersRef[action.id] && action.isRSS,
         );
         actionsGroupedByUser[username]!.forEach((action) =>
             filtersRef.setKey(action.id, !anyTrue),
@@ -103,7 +103,9 @@
         </button>
         <input
             type="checkbox"
-            checked={actions.some((action) => $filtersRef[action.id])}
+            checked={actions.some(
+                (action) => $filtersRef[action.id] && action.isRSS,
+            )}
             onclick={() => onClickUser(username)}
         />
     </div>
@@ -111,11 +113,15 @@
         <ul class="actions">
             {#each actions as action}
                 <li class="action">
-                    <input
-                        type="checkbox"
-                        checked={$filtersRef[action.id]}
-                        onclick={() => onClickAction(action.id)}
-                    />
+                    {#if action.isRSS}
+                        <input
+                            type="checkbox"
+                            checked={$filtersRef[action.id]}
+                            onclick={() => onClickAction(action.id)}
+                        />
+                    {:else}
+                        <input type="checkbox" disabled />
+                    {/if}
                     <div>
                         <a
                             href={linkChanger(action.siteUrl, action.type)}

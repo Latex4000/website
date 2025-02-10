@@ -5,9 +5,7 @@ import Parser from "rss-parser";
 const rssParser = new Parser();
 
 function printUsageAndExit() {
-    console.error(
-        `Usage: \x1b[4m${process.argv[1]}\x1b[m <database>`,
-    );
+    console.error(`Usage: \x1b[4m${process.argv[1]}\x1b[m <database>`);
     process.exit(1);
 }
 
@@ -28,7 +26,9 @@ if (
 
 const sqliteClient = createClient({ url: `file:${database}` });
 
-const actions = await sqliteClient.execute("SELECT id, url FROM Action");
+const actions = await sqliteClient.execute(
+    "SELECT id, url FROM Action WHERE isRSS = 1",
+);
 
 console.error(
     `Fetching rss feeds for ${actions.rows.length} actions\nStart time: ${new Date().toISOString()}`,

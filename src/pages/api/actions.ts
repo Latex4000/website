@@ -38,7 +38,8 @@ export const POST: APIRoute = async (context) => {
         typeof action.title !== "string" ||
         typeof action.description !== "string" ||
         typeof action.url !== "string" ||
-        typeof action.siteUrl !== "string"
+        typeof action.siteUrl !== "string" ||
+        typeof action.isRSS !== "boolean"
     )
         return jsonError("Missing or invalid parameters");
 
@@ -50,6 +51,16 @@ export const POST: APIRoute = async (context) => {
         action.url = url.toString();
     } catch (error) {
         return jsonError("Invalid URL");
+    }
+
+    if (!action.isRSS) {
+        const actionRes = await db
+            .insert(Action)
+            .values(action)
+            .returning()
+            .get();
+
+        return jsonResponse({ action: actionRes });
     }
 
     try {

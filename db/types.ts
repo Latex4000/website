@@ -45,6 +45,7 @@ export interface ActionType {
     description: string;
     url: string;
     siteUrl: string;
+    isRSS: boolean;
 }
 
 export interface ActionItemType {

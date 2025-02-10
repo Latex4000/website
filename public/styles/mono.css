@@ -339,6 +339,11 @@ input[type="checkbox"]:checked:before {
     background: var(--text-color);
 }
 
+input[type="checkbox"]:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
 input[type="file"] {
     display: none;
 }
