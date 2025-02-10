@@ -46,7 +46,7 @@
         // Text measurement + marker
         const itemWidth =
             context.measureText((node as HTMLElement).textContent!).width +
-            parseFloat(getComputedStyle(document.body).fontSize) * 1.4375; // Fucking margin + marker size
+            parseFloat(getComputedStyle(document.body).fontSize) * 1.5; // Fucking margin + marker size
 
         const gridSpan = Math.min(
             Math.ceil(itemWidth / gridColumnWidth),
