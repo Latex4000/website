@@ -1,4 +1,5 @@
 import { column, defineDb, defineTable, NOW, sql } from "astro:db";
+import type { MotionType, SoundType, WordType } from "./types";
 
 export const Member = defineTable({
     columns: {
@@ -9,14 +10,6 @@ export const Member = defineTable({
         color: column.text(),
     },
 });
-
-export interface MemberType {
-    discord: string;
-    alias: string;
-    site: string | null;
-    addedRingToSite: boolean;
-    color: string;
-}
 
 export const Sound = defineTable({
     columns: {
@@ -34,19 +27,6 @@ export const Sound = defineTable({
         deleted: column.boolean({ default: false }),
     },
 });
-
-export interface SoundType {
-    id: number;
-    title: string;
-    memberDiscord: MemberType["discord"];
-    youtubeUrl: string | null;
-    soundcloudUrl: string | null;
-    date: Date;
-    tags: string[];
-    trackType: "mp3" | "wav";
-    coverType: "jpg" | "png";
-    deleted: boolean;
-}
 
 type SoundTypeInDb = Omit<SoundType, "tags" | "trackType" | "coverType"> & {
     tags: unknown;
@@ -80,15 +60,6 @@ export const Word = defineTable({
     },
 });
 
-export interface WordType {
-    id: number;
-    deleted: boolean;
-    date: Date;
-    memberDiscord: MemberType["discord"];
-    tags: string[];
-    title: string;
-}
-
 type WordTypeInDb = Omit<WordType, "tags"> & { tags: unknown };
 
 export function wordFromDb(word: WordTypeInDb): WordType {
@@ -120,16 +91,6 @@ export const Motion = defineTable({
     },
 });
 
-export interface MotionType {
-    id: number;
-    title: string;
-    youtubeUrl: string;
-    memberDiscord: MemberType["discord"];
-    date: Date;
-    tags: string[];
-    deleted: boolean;
-}
-
 type MotionTypeInDb = Omit<MotionType, "tags"> & {
     tags: unknown;
 };
@@ -145,9 +106,35 @@ export function motionFromDb(motion: MotionTypeInDb): MotionType {
     throw new TypeError();
 }
 
+export const Action = defineTable({
+    columns: {
+        id: column.number({ primaryKey: true }),
+        memberDiscord: column.text({
+            references: () => Member.columns.discord,
+        }),
+        title: column.text(),
+        description: column.text(),
+        url: column.text({ unique: true }),
+        siteUrl: column.text({ unique: true }),
+    },
+});
+
+export const ActionItem = defineTable({
+    columns: {
+        id: column.number({ primaryKey: true }),
+        actionID: column.number({
+            references: () => Action.columns.id,
+        }),
+        title: column.text({ optional: true }),
+        description: column.text(),
+        url: column.text({ unique: true }),
+        date: column.date({ default: NOW }),
+    },
+});
+
 // https://astro.build/db/config
 export default defineDb({
-    tables: { Member, Sound, Word, Motion },
+    tables: { Member, Sound, Word, Motion, Action, ActionItem },
 });
 
 export function encodeSqlDate(date: Date): ReturnType<typeof sql.raw> {

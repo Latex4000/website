@@ -1,7 +1,8 @@
 import type { APIRoute } from "astro";
 import { jsonError, jsonResponse } from "../../server/responses";
 import { db, isDbError, Motion } from "astro:db";
-import { motionFromDb, type MotionType } from "../../../db/config";
+import { motionFromDb } from "../../../db/config";
+import { type MotionType } from "../../../db/types";
 import { thingDeletion, thingGet } from "../../server/thingUtils";
 
 export const prerender = false;

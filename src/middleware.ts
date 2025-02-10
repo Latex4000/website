@@ -8,6 +8,10 @@ const checkHmacForApi = defineMiddleware(async (context, next) => {
         return next();
     }
 
+    if (context.url.pathname.startsWith("/api/action") && context.request.method === "GET") {
+        return next();
+    }
+
     if (!process.env.SECRET_HMAC_KEY) {
         return jsonError("SECRET_HMAC_KEY not set", 500);
     }

@@ -1,0 +1,51 @@
+---
+import Layout from "../layouts/Layout.astro";
+import ActionsList from "../components/ActionsList.svelte";
+import ActionItemsList from "../components/ActionItemsList.svelte";
+import type { ActionList } from "../store/actionsState";
+import { detectFeedType } from "../server/rss";
+import { db } from "astro:db";
+import { Action } from "astro:db";
+import { Member } from "astro:db";
+import { eq } from "astro:db";
+export const prerender = false;
+
+const actions: ActionList[] = await db
+    .select({
+        id: Action.id,
+        username: Member.alias,
+        title: Action.title,
+        description: Action.description,
+        url: Action.url,
+        siteUrl: Action.siteUrl,
+    })
+    .from(Action)
+    .innerJoin(Member, eq(Action.memberDiscord, Member.discord))
+    .then((actions) =>
+        actions.map((row) => ({
+            ...row,
+            type: detectFeedType(row.url),
+        }))
+    );
+---
+
+<Layout header="Actions">
+    <h4>
+        Here's a list of socials of each of ours, and the latest posts from each
+        of them.
+    </h4>
+    <div class="actions">
+        <ActionsList client:only="svelte" actions={actions} />
+    </div>
+
+    <ActionItemsList client:only="svelte" />
+</Layout>
+
+<style>
+    .actions {
+        position: absolute;
+        right: 100%;
+        width: 100%;
+        max-width: calc(min(30ch, round(down, 100%, 1ch)));
+    }
+</style>

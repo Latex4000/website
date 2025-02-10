@@ -4,9 +4,9 @@ export const prerender = false;
 
 const urls = [
     "/",
+    "/actions",
     "/sounds",
     "/words",
-    // "/actions",
     "/motions",
     // "/sights",
     // "/things",

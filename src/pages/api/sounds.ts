@@ -1,7 +1,8 @@
 import type { APIRoute } from "astro";
 import { jsonError, jsonResponse } from "../../server/responses";
 import { db, isDbError, Sound } from "astro:db";
-import { soundFromDb, type SoundType } from "../../../db/config";
+import { soundFromDb } from "../../../db/config";
+import { type SoundType } from "../../../db/types";
 import { mkdir } from "fs/promises";
 import { execFileSync } from "child_process";
 import { extname } from "path";

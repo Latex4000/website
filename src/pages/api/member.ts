@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { db, eq, isDbError, Member } from "astro:db";
 import { jsonError, jsonResponse } from "../../server/responses";
-import type { MemberType } from "../../../db/config";
+import type { MemberType } from "../../../db/types";
 
 export const prerender = false;
 
@@ -40,9 +40,9 @@ async function parseAndValidateRequest(
         const sixCharColor =
             colorMatch[1].length === 3
                 ? colorMatch[1]
-                      .split("")
-                      .map((char) => char.repeat(2))
-                      .join("")
+                    .split("")
+                    .map((char) => char.repeat(2))
+                    .join("")
                 : colorMatch[1];
 
         member.color = `#${sixCharColor.toLowerCase()}`;
