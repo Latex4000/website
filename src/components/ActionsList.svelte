@@ -143,6 +143,7 @@
         display: flex;
         gap: 1ch;
         align-items: center;
+        margin-bottom: var(--line-height);
     }
 
     .triangle {
