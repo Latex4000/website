@@ -38,33 +38,43 @@ console.error(
 let newItems = 0;
 let actionsDone = 0;
 const start = Date.now();
-for (const action of actions.rows) {
-    const feed = await rssParser.parseURL(action.url);
+const transaction = await sqliteClient.transaction("write");
+try {
+    for (const action of actions.rows) {
+        const feed = await rssParser.parseURL(action.url);
 
-    for (const item of feed.items) {
-        await sqliteClient.execute(
-            `
-            INSERT INTO "ActionItem" ("actionID", "title", "description", "url", "date")
-            VALUES (?, ?, ?, ?, ?)
-            ON CONFLICT DO NOTHING
-        `,
-            [
-                action.id,
-                item.title || "",
-                item.description ||
-                    item.summary ||
-                    item.contentSnippet ||
-                    item.title ||
-                    "",
-                item.link,
-                new Date(
-                    item.pubDate || item.isoDate || Date.now(),
-                ).toISOString(),
-            ],
-        );
-        newItems++;
+        for (const item of feed.items) {
+            await transaction.execute(
+                `
+                INSERT INTO "ActionItem" ("actionID", "title", "description", "url", "date")
+                VALUES (?, ?, ?, ?, ?)
+                ON CONFLICT DO NOTHING
+            `,
+                [
+                    action.id,
+                    item.title || "",
+                    item.description ||
+                        item.summary ||
+                        item.contentSnippet ||
+                        item.title ||
+                        "",
+                    item.link,
+                    new Date(
+                        item.pubDate || item.isoDate || Date.now(),
+                    ).toISOString(),
+                ],
+            );
+            newItems++;
+        }
+        actionsDone++;
+        console.error(`Action ${actionsDone}/${actions.rows.length} done`);
     }
-    actionsDone++;
-    console.error(`Action ${actionsDone}/${actions.rows.length} done`);
+    await transaction.commit();
+    console.error(`Added ${newItems} new items in ${Date.now() - start}ms`);
+} catch (e) {
+    await transaction.rollback();
+    console.error(e);
 }
-console.error(`Added ${newItems} new items in ${Date.now() - start}ms`);
+transaction.close();
+sqliteClient.close();
+process.exit(0);
