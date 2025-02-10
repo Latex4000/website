@@ -9,6 +9,7 @@
         type ActionList,
     } from "../store/actionsState";
     import type { ActionItemType } from "../../db/types";
+    import { linkChanger } from "../server/rss";
 
     let { actions }: { actions: ActionList[] } = $props();
     actionsRef.set(actions);
@@ -117,7 +118,7 @@
                     />
                     <div>
                         <a
-                            href={action.siteUrl}
+                            href={linkChanger(action.siteUrl, action.type)}
                             target="_blank"
                             title={action.description}
                         >

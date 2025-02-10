@@ -70,3 +70,39 @@ export function detectFeedType(urlString: string): FeedType {
     // Fallback to custom (i.e. user’s personal site or unknown feed)
     return 'other';
 }
+
+export function removeTitleDescriptionDuplicates(
+    title: string,
+    description: string,
+    actionType: FeedType,
+): string {
+    if (!title || !description) return title;
+
+    if (actionType === "statuscafe") {
+        const titleWords = title.split(/\s+/);
+        const descWords = new Set(description.split(/\s+/));
+
+        // Filter out words in title that also appear in description
+        const filtered = titleWords.filter((word) => !descWords.has(word));
+
+        // The end may be truncated
+        return filtered.join(" ").replace(/\S*\.\.\.$/, "");
+    }
+
+    if (title.includes(description))
+        return title.replace(description, "").trim();
+
+    return title;
+}
+
+export function linkChanger(url: string, actionType: FeedType) {
+    if (actionType === "twitter")
+        try {
+            const urlObj = new URL(url);
+            return `https://twitter.com${urlObj.pathname}`;
+        } catch (e) {
+            return url;
+        }
+
+    return url;
+}

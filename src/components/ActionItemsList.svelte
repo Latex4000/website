@@ -1,38 +1,18 @@
 <script lang="ts">
-    import type { FeedType } from "../server/rss";
+    import {
+        linkChanger,
+        removeTitleDescriptionDuplicates,
+    } from "../server/rss";
     import { actionItemsRef } from "../store/actionsState";
-    function removePartialDuplicates(
-        title: string,
-        description: string,
-        actionType: FeedType,
-    ): string {
-        if (!title || !description) return title;
-
-        if (actionType === "statuscafe") {
-            const titleWords = title.split(/\s+/);
-            const descWords = new Set(description.split(/\s+/));
-
-            // Filter out words in title that also appear in description
-            const filtered = titleWords.filter((word) => !descWords.has(word));
-
-            // The end may be truncated
-            return filtered.join(" ").replace(/\S*\.\.\.$/, "");
-        }
-
-        if (title.includes(description))
-            return title.replace(description, "").trim();
-
-        return title;
-    }
 </script>
 
 <ul>
     {#each $actionItemsRef as item}
         <li class="actionItem">
-            <a href={item.url}>
+            <a href={linkChanger(item.url, item.action.type)}>
                 <strong>{item.action.username} - {item.action.type}</strong>
                 {#if item.title}
-                    {removePartialDuplicates(
+                    {removeTitleDescriptionDuplicates(
                         item.title,
                         item.description,
                         item.action.type,
