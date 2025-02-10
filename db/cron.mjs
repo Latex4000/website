@@ -6,12 +6,12 @@ const rssParser = new Parser();
 
 function printUsageAndExit() {
     console.error(
-        `Usage: \x1b[4m${process.argv[1]}\x1b[m <database> [<start_migration>]`,
+        `Usage: \x1b[4m${process.argv[1]}\x1b[m <database>`,
     );
     process.exit(1);
 }
 
-if (process.argv.length < 2 || process.argv.length > 3) {
+if (process.argv.length !== 3) {
     printUsageAndExit();
 }
 
