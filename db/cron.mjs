@@ -1,4 +1,4 @@
-import { readdir, readFile, access, constants } from "node:fs/promises";
+import { access, constants } from "node:fs/promises";
 import { createClient } from "@libsql/client";
 import Parser from "rss-parser";
 
