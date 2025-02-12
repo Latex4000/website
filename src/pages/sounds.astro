@@ -1,14 +1,17 @@
 ---
-import { soundFromDb } from "../../db/config";
+import { desc, eq } from "drizzle-orm";
 import Layout from "../layouts/Layout.astro";
-import { db, Sound, eq } from "astro:db";
 import AudioPlayer from "../components/AudioPlayer";
+import db from "../database/db";
+import { sound } from "../database/schema";
 
 export const prerender = false;
 
-const sounds = (await db.select().from(Sound).where(eq(Sound.deleted, false)))
-    .sort((a, b) => b.date.getTime() - a.date.getTime())
-    .map(soundFromDb);
+const sounds = await db
+    .select()
+    .from(sound)
+    .where(eq(sound.deleted, false))
+    .orderBy(desc(sound.id));
 ---
 
 <Layout header="Sounds">
