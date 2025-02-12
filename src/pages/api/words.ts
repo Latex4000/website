@@ -12,6 +12,8 @@ import { execFileSync } from "child_process";
 import { finished } from "stream/promises";
 import { thingDeletion, thingGet } from "../../server/thingUtils";
 import { getMap } from "../../data/emoji";
+import { JSDOM } from 'jsdom';
+import DOMPurify from 'dompurify';
 
 export const prerender = false;
 
@@ -127,7 +129,7 @@ export const POST: APIRoute = async (context) => {
     // Upload compiled HTML file
     const emojis = Object.fromEntries(Object.keys(await getMap()).map((emojiName) => [emojiName, ""]));
     const emptyGif = "data:image/gif;base64,R0lGODlhAQABAIABAP///wAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
-    const html = new Marked(
+    const html = DOMPurify(new JSDOM('').window).sanitize(new Marked(
         markedBaseUrl(
             new URL(`/words-uploads/${wordId(word)}/`, context.url).toString(),
         ),
@@ -135,7 +137,7 @@ export const POST: APIRoute = async (context) => {
             emojis,
             renderer: (token) => `<img alt="" src="${emptyGif}" title=":${token.name}:" class="emoji">`,
         }),
-    ).parse(md, { async: false, breaks: true, silent: true });
+    ).parse(md, { async: false, breaks: true, silent: true }));
 
     await writeFile(`${directory}/words.html`, html, "utf8");
 
