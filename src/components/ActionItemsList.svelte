@@ -5,6 +5,7 @@
     } from "../server/rss";
     import { actionItemsRef } from "../store/actionsState";
     import linkifyHtml from "linkify-html";
+    import DOMPurify from "dompurify";
 </script>
 
 <ul>
@@ -24,7 +25,7 @@
             {/if}
             <br /> <br />
             {#if item.description}
-                {@html linkifyHtml(item.description)} <br />
+                {@html DOMPurify.sanitize(linkifyHtml(item.description))} <br />
             {/if}
             <br />
             <small>Date: {item.date.toLocaleString()}</small>
