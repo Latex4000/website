@@ -7,6 +7,7 @@ import { readFile } from "fs/promises";
 import { Member } from "astro:db";
 import { encodeSqlDate, wordFromDb, wordId } from "../../../db/config";
 import { and } from "astro:db";
+import { htmlPurify } from "../../components/dompurify";
 
 export const prerender = false;
 
@@ -47,11 +48,13 @@ const wordHtml = await readFile(
     `${process.env.WORDS_UPLOAD_DIRECTORY}/${wordId(word)}/words.html`,
     "utf8"
 );
+
+const purifiedHtml = htmlPurify(wordHtml, ".word-markdown", true);
 ---
 
 <Layout title={word.title}>
     <small>{word.date.toLocaleString()}</small>
-    <div class="word-markdown" set:html={wordHtml} />
+    <div class="word-markdown" set:html={purifiedHtml} />
     <p style={{ color: memberColor }}>-L</p>
     <div class="tags">
         {word.tags.map((tag) => <small>{tag}</small>)}
@@ -65,7 +68,7 @@ const wordHtml = await readFile(
         const imgSrcPairs: [HTMLImageElement, string][] = [];
 
         for (const img of document.querySelectorAll(
-            ".word-markdown img.emoji",
+            ".word-markdown img.emoji"
             // eslint-disable-next-line no-undef
         ) as NodeListOf<HTMLImageElement>) {
             imgSrcPairs.push([img, await getDataUrl(img.title.slice(1, -1))]);

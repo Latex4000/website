@@ -12,8 +12,7 @@ import { execFileSync } from "child_process";
 import { finished } from "stream/promises";
 import { thingDeletion, thingGet } from "../../server/thingUtils";
 import { getMap } from "../../data/emoji";
-import { JSDOM } from 'jsdom';
-import DOMPurify from 'dompurify';
+import { htmlPurify } from "../../components/dompurify";
 
 export const prerender = false;
 
@@ -129,15 +128,21 @@ export const POST: APIRoute = async (context) => {
     // Upload compiled HTML file
     const emojis = Object.fromEntries(Object.keys(await getMap()).map((emojiName) => [emojiName, ""]));
     const emptyGif = "data:image/gif;base64,R0lGODlhAQABAIABAP///wAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
-    const html = DOMPurify(new JSDOM('').window).sanitize(new Marked(
-        markedBaseUrl(
-            new URL(`/words-uploads/${wordId(word)}/`, context.url).toString(),
-        ),
-        markedEmoji({
-            emojis,
-            renderer: (token) => `<img alt="" src="${emptyGif}" title=":${token.name}:" class="emoji">`,
-        }),
-    ).parse(md, { async: false, breaks: true, silent: true }));
+    let html: string;
+    try {
+        html = await htmlPurify(new Marked(
+            markedBaseUrl(
+                new URL(`/words-uploads/${wordId(word)}/`, context.url).toString(),
+            ),
+            markedEmoji({
+                emojis,
+                renderer: (token) => `<img alt="" src="${emptyGif}" title=":${token.name}:" class="emoji">`,
+            }),
+        ).parse(md, { async: false, breaks: true, silent: true }), ".word-markdown", true);
+    } catch (e) {
+        console.error(e);
+        return jsonError("Error compiling Markdown to HTML");
+    }
 
     await writeFile(`${directory}/words.html`, html, "utf8");
 
