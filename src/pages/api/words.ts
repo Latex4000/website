@@ -5,6 +5,7 @@ import { createWriteStream, ReadStream } from "fs";
 import { db, isDbError, Word } from "astro:db";
 import { wordFromDb, wordId } from "../../../db/config";
 import { type WordType } from "../../../db/types";
+import DOMPurify from "dompurify";
 import { Marked } from "marked";
 import { baseUrl as markedBaseUrl } from "marked-base-url";
 import { markedEmoji } from "marked-emoji";
@@ -127,7 +128,7 @@ export const POST: APIRoute = async (context) => {
     // Upload compiled HTML file
     const emojis = Object.fromEntries(Object.keys(await getMap()).map((emojiName) => [emojiName, ""]));
     const emptyGif = "data:image/gif;base64,R0lGODlhAQABAIABAP///wAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
-    const html = new Marked(
+    const html = DOMPurify.sanitize(new Marked(
         markedBaseUrl(
             new URL(`/words-uploads/${wordId(word)}/`, context.url).toString(),
         ),
@@ -135,7 +136,7 @@ export const POST: APIRoute = async (context) => {
             emojis,
             renderer: (token) => `<img alt="" src="${emptyGif}" title=":${token.name}:" class="emoji">`,
         }),
-    ).parse(md, { async: false, breaks: true, silent: true });
+    ).parse(md, { async: false, breaks: true, silent: true }));
 
     await writeFile(`${directory}/words.html`, html, "utf8");
 
