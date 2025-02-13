@@ -3,15 +3,15 @@ import { desc, eq } from "drizzle-orm";
 import Layout from "../layouts/Layout.astro";
 import AudioPlayer from "../components/AudioPlayer";
 import db from "../database/db";
-import { sound } from "../database/schema";
+import { Sound } from "../database/schema";
 
 export const prerender = false;
 
 const sounds = await db
     .select()
-    .from(sound)
-    .where(eq(sound.deleted, false))
-    .orderBy(desc(sound.id));
+    .from(Sound)
+    .where(eq(Sound.deleted, false))
+    .orderBy(desc(Sound.id));
 ---
 
 <Layout header="Sounds">

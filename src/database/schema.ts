@@ -1,14 +1,14 @@
 import { relations, sql } from "drizzle-orm";
 import { sqliteTable, integer, text } from "drizzle-orm/sqlite-core";
 
-export const migrations = sqliteTable("_migrations", {
+export const Migration = sqliteTable("_migrations", {
     id: integer().primaryKey(),
     applied: integer({ mode: "boolean" }).default(false).notNull(),
 });
 
-export const action = sqliteTable("Action", {
+export const Action = sqliteTable("Action", {
     id: integer().primaryKey({ autoIncrement: true }),
-    memberDiscord: text().notNull().references(() => member.discord),
+    memberDiscord: text().notNull().references(() => Member.discord),
     title: text().notNull(),
     description: text().notNull(),
     url: text().notNull(),
@@ -16,31 +16,31 @@ export const action = sqliteTable("Action", {
     isRss: integer({ mode: "boolean" }).notNull(),
 });
 
-export const actionRelations = relations(action, ({ one, many }) => ({
-    member: one(member, {
-        fields: [action.memberDiscord],
-        references: [member.discord],
+export const ActionRelations = relations(Action, ({ one, many }) => ({
+    member: one(Member, {
+        fields: [Action.memberDiscord],
+        references: [Member.discord],
     }),
-    actionItems: many(actionItem),
+    actionItems: many(ActionItem),
 }));
 
-export const actionItem = sqliteTable("ActionItem", {
+export const ActionItem = sqliteTable("ActionItem", {
     id: integer().primaryKey({ autoIncrement: true }),
-    actionId: integer().notNull().references(() => action.id),
+    actionId: integer().notNull().references(() => Action.id),
     title: text(),
     url: text().notNull(),
     description: text().notNull(),
     date: text().default(sql`(CURRENT_TIMESTAMP)`).notNull(),
 });
 
-export const actionItemRelations = relations(actionItem, ({ one }) => ({
-    action: one(action, {
-        fields: [actionItem.actionId],
-        references: [action.id],
+export const ActionItemRelations = relations(ActionItem, ({ one }) => ({
+    action: one(Action, {
+        fields: [ActionItem.actionId],
+        references: [Action.id],
     }),
 }));
 
-export const member = sqliteTable("Member", {
+export const Member = sqliteTable("Member", {
     discord: text().primaryKey(),
     alias: text().notNull(),
     site: text(),
@@ -48,34 +48,34 @@ export const member = sqliteTable("Member", {
     color: text().notNull(),
 });
 
-export const memberRelations = relations(member, ({ many }) => ({
-    words: many(word),
-    motions: many(motion),
-    sounds: many(sound),
-    actions: many(action),
+export const MemberRelations = relations(Member, ({ many }) => ({
+    words: many(Word),
+    motions: many(Motion),
+    sounds: many(Sound),
+    actions: many(Action),
 }));
 
-export const motion = sqliteTable("Motion", {
+export const Motion = sqliteTable("Motion", {
     id: integer().primaryKey({ autoIncrement: true }),
     title: text().notNull(),
     youtubeUrl: text().notNull(),
-    memberDiscord: text().notNull().references(() => member.discord),
+    memberDiscord: text().notNull().references(() => Member.discord),
     date: text().default(sql`(CURRENT_TIMESTAMP)`).notNull(),
     tags: text({ mode: "json" }).$type<string[]>().default([]).notNull(),
     deleted: integer({ mode: "boolean" }).default(false).notNull(),
 });
 
-export const motionRelations = relations(motion, ({ one }) => ({
-    member: one(member, {
-        fields: [motion.memberDiscord],
-        references: [member.discord],
+export const MotionRelations = relations(Motion, ({ one }) => ({
+    member: one(Member, {
+        fields: [Motion.memberDiscord],
+        references: [Member.discord],
     }),
 }));
 
-export const sound = sqliteTable("Sound", {
+export const Sound = sqliteTable("Sound", {
     id: integer().primaryKey({ autoIncrement: true }),
     title: text().notNull(),
-    memberDiscord: text().notNull().references(() => member.discord),
+    memberDiscord: text().notNull().references(() => Member.discord),
     youtubeUrl: text(),
     soundcloudUrl: text(),
     date: text().default(sql`(CURRENT_TIMESTAMP)`).notNull(),
@@ -85,25 +85,25 @@ export const sound = sqliteTable("Sound", {
     deleted: integer({ mode: "boolean" }).default(false).notNull(),
 });
 
-export const soundRelations = relations(sound, ({ one }) => ({
-    member: one(member, {
-        fields: [sound.memberDiscord],
-        references: [member.discord],
+export const SoundRelations = relations(Sound, ({ one }) => ({
+    member: one(Member, {
+        fields: [Sound.memberDiscord],
+        references: [Member.discord],
     }),
 }));
 
-export const word = sqliteTable("Word", {
+export const Word = sqliteTable("Word", {
     id: integer().primaryKey({ autoIncrement: true }),
     title: text().notNull(),
-    memberDiscord: text().notNull().references(() => member.discord),
+    memberDiscord: text().notNull().references(() => Member.discord),
     date: text().default(sql`(CURRENT_TIMESTAMP)`).notNull(),
     tags: text({ mode: "json" }).$type<string[]>().default([]).notNull(),
     deleted: integer({ mode: "boolean" }).default(false).notNull(),
 });
 
-export const wordRelations = relations(word, ({ one }) => ({
-    member: one(member, {
-        fields: [word.memberDiscord],
-        references: [member.discord],
+export const WordRelations = relations(Word, ({ one }) => ({
+    member: one(Member, {
+        fields: [Word.memberDiscord],
+        references: [Member.discord],
     }),
 }));
