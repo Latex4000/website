@@ -2,6 +2,7 @@
     import {
         linkChanger,
         removeTitleDescriptionDuplicates,
+        twitterImageReplacer,
     } from "../server/rss";
     import { actionItemsRef } from "../store/actionsState";
     import linkifyHtml from "linkify-html";
@@ -25,7 +26,7 @@
             {/if}
             <br /> <br />
             {#if item.description}
-                {#await clientHTMLPurify(linkifyHtml(item.description), `.actionItem${index}`)}
+                {#await clientHTMLPurify(linkifyHtml(twitterImageReplacer(item.description)), `.actionItem${index}`)}
                     <p>Loading...</p>
                 {:then sanitizedDescription}
                     {@html sanitizedDescription}

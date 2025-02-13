@@ -63,7 +63,7 @@ export function detectFeedType(urlString: string): FeedType {
         // set of Mastodon domains. For now, just matching the example:
         return 'mastodon';
     else if (host.includes('nitter') || host.includes('lightbrd') || host.includes('twitter') || host === 'x')
-        // e.g. nitter.privacydev.net for rss feeds, or lightbrd.com for RSS feeds
+        // e.g. nitter.privacydev.net, nitter.poast.org, lightbrd.com for RSS feeds
         return 'twitter';
 
     // Fallback to custom (i.e. user’s personal site or unknown feed)
@@ -92,6 +92,13 @@ export function removeTitleDescriptionDuplicates(
         return title.replace(description, "").trim();
 
     return title;
+}
+
+export function twitterImageReplacer(description: string): string {
+    return description.replace(
+        /https:\/\/(nitter|lightbrd)\..+\/pic\/(media|tweet_video_thumb)%2F([A-Za-z0-9_-]+)\.(jpg|jpeg|png|gif)/g,
+        "https://pbs.twimg.com/$2/$3.$4",
+    );
 }
 
 export function linkChanger(url: string, actionType: FeedType) {
