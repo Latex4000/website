@@ -5,12 +5,12 @@
     } from "../server/rss";
     import { actionItemsRef } from "../store/actionsState";
     import linkifyHtml from "linkify-html";
-    import { htmlPurify } from "./dompurify";
+    import { clientHTMLPurify } from "./dompurifyclient";
 </script>
 
 <ul>
-    {#each $actionItemsRef as item}
-        <li class="actionItem">
+    {#each $actionItemsRef as item, index}
+        <li class={`actionItem actionItem${index}`}>
             <strong>
                 <a href={linkChanger(item.url, item.action.type)}
                     >{item.action.username} - {item.action.type}
@@ -25,11 +25,13 @@
             {/if}
             <br /> <br />
             {#if item.description}
-                {@html htmlPurify(
-                    linkifyHtml(item.description),
-                    ".actionItem",
-                    false,
-                )} <br />
+                {#await clientHTMLPurify(linkifyHtml(item.description), `.actionItem${index}`)}
+                    <p>Loading...</p>
+                {:then sanitizedDescription}
+                    {@html sanitizedDescription}
+                {:catch error}
+                    <p>{error.message}</p>
+                {/await}
             {/if}
             <br />
             <small>Date: {item.date.toLocaleString()}</small>

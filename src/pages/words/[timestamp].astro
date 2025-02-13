@@ -7,7 +7,7 @@ import { readFile } from "fs/promises";
 import { Member } from "astro:db";
 import { encodeSqlDate, wordFromDb, wordId } from "../../../db/config";
 import { and } from "astro:db";
-import { htmlPurify } from "../../components/dompurify";
+import { serverHTMLPurify } from "../../components/dompurifyserver";
 
 export const prerender = false;
 
@@ -49,7 +49,7 @@ const wordHtml = await readFile(
     "utf8"
 );
 
-const purifiedHtml = htmlPurify(wordHtml, ".word-markdown", true);
+const purifiedHtml = serverHTMLPurify(wordHtml, ".word-markdown");
 ---
 
 <Layout title={word.title}>

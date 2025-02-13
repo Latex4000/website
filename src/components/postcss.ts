@@ -6,10 +6,12 @@ export async function prefixCSSSelectors(cssText: string, prefix: string) {
         prefixer({
             prefix,
             transform(_prefix, _selector, prefixedSelector) {
+                if (_selector.startsWith(_prefix))
+                    return _selector;
                 return prefixedSelector;
             }
         })
-    ]).process(cssText);
+    ]).process(cssText, { from: undefined });
 
     return result.css;
 }

@@ -12,7 +12,7 @@ import { execFileSync } from "child_process";
 import { finished } from "stream/promises";
 import { thingDeletion, thingGet } from "../../server/thingUtils";
 import { getMap } from "../../data/emoji";
-import { htmlPurify } from "../../components/dompurify";
+import { serverHTMLPurify } from "../../components/dompurifyserver";
 
 export const prerender = false;
 
@@ -130,7 +130,7 @@ export const POST: APIRoute = async (context) => {
     const emptyGif = "data:image/gif;base64,R0lGODlhAQABAIABAP///wAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
     let html: string;
     try {
-        html = await htmlPurify(new Marked(
+        html = await serverHTMLPurify(new Marked(
             markedBaseUrl(
                 new URL(`/words-uploads/${wordId(word)}/`, context.url).toString(),
             ),
@@ -138,7 +138,7 @@ export const POST: APIRoute = async (context) => {
                 emojis,
                 renderer: (token) => `<img alt="" src="${emptyGif}" title=":${token.name}:" class="emoji">`,
             }),
-        ).parse(md, { async: false, breaks: true, silent: true }), ".word-markdown", true);
+        ).parse(md, { async: false, breaks: true, silent: true }), ".word-markdown");
     } catch (e) {
         console.error(e);
         return jsonError("Error compiling Markdown to HTML");
