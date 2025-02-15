@@ -1,5 +1,4 @@
-import { column, defineDb, defineTable, NOW, sql } from "astro:db";
-import type { MotionType, SoundType, WordType } from "./types";
+import { column, defineDb, defineTable, NOW } from "astro:db";
 
 export const Member = defineTable({
     columns: {
@@ -28,25 +27,6 @@ export const Sound = defineTable({
     },
 });
 
-type SoundTypeInDb = Omit<SoundType, "tags" | "trackType" | "coverType"> & {
-    tags: unknown;
-    trackType: string;
-    coverType: string;
-};
-
-export function soundFromDb(sound: SoundTypeInDb): SoundType {
-    if (
-        Array.isArray(sound.tags) &&
-        sound.tags.every((tag) => typeof tag === "string") &&
-        (sound.trackType === "mp3" || sound.trackType === "wav") &&
-        (sound.coverType === "jpg" || sound.coverType === "png")
-    ) {
-        return sound as SoundType;
-    }
-
-    throw new TypeError();
-}
-
 export const Word = defineTable({
     columns: {
         id: column.number({ primaryKey: true }),
@@ -59,23 +39,6 @@ export const Word = defineTable({
         title: column.text(),
     },
 });
-
-type WordTypeInDb = Omit<WordType, "tags"> & { tags: unknown };
-
-export function wordFromDb(word: WordTypeInDb): WordType {
-    if (
-        Array.isArray(word.tags) &&
-        word.tags.every((tag) => typeof tag === "string")
-    ) {
-        return word as WordType;
-    }
-
-    throw new TypeError();
-}
-
-export function wordId(word: Pick<WordType, "date">): string {
-    return Math.floor(word.date.getTime() / 1000).toString(10);
-}
 
 export const Motion = defineTable({
     columns: {
@@ -90,21 +53,6 @@ export const Motion = defineTable({
         deleted: column.boolean({ default: false }),
     },
 });
-
-type MotionTypeInDb = Omit<MotionType, "tags"> & {
-    tags: unknown;
-};
-
-export function motionFromDb(motion: MotionTypeInDb): MotionType {
-    if (
-        Array.isArray(motion.tags) &&
-        motion.tags.every((tag) => typeof tag === "string")
-    ) {
-        return motion as MotionType;
-    }
-
-    throw new TypeError();
-}
 
 export const Action = defineTable({
     columns: {
@@ -137,7 +85,3 @@ export const ActionItem = defineTable({
 export default defineDb({
     tables: { Member, Sound, Word, Motion, Action, ActionItem },
 });
-
-export function encodeSqlDate(date: Date): ReturnType<typeof sql.raw> {
-    return sql.raw(`'${date.toISOString().replace("T", " ").slice(0, 19)}'`);
-}
