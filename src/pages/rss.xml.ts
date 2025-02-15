@@ -1,7 +1,8 @@
 import rss from "@astrojs/rss";
 import type { APIRoute } from "astro";
-import { db, desc, Word } from "astro:db";
-import { wordId } from "../../db/config";
+import { desc } from "drizzle-orm";
+import db, { wordId } from "../database/db";
+import { Word } from "../database/schema";
 
 export const prerender = false;
 

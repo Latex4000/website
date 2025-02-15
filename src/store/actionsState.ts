@@ -1,19 +1,14 @@
+import type { InferSelectModel } from 'drizzle-orm';
 import { atom, map } from 'nanostores';
 import { type FeedType } from '../server/rss';
-import type { ActionItemType } from '../../db/types';
+import type { Action, ActionItem } from '../database/schema';
 
-export interface ActionList {
-    id: number;
+export type ActionList = InferSelectModel<typeof Action> & {
     username: string;
-    title: string;
-    description: string;
-    url: string;
-    siteUrl: string;
-    isRSS: boolean;
     type: FeedType;
 }
 
-export type ActionItemList = Omit<ActionItemType, "actionID"> & { action: ActionList };
+export type ActionItemList = InferSelectModel<typeof ActionItem> & { action: ActionList };
 
 export const actionsRef = atom<ActionList[]>([]);
 export const prevCursorRef = atom<Date | undefined>(undefined);

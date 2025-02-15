@@ -1,7 +1,10 @@
+import { LibsqlError } from "@libsql/client";
 import type { APIContext } from "astro";
+import { and, eq } from "drizzle-orm";
 import { jsonError, jsonResponse } from "./responses";
-import { and, db, eq, isDbError, Motion, Word, Sound } from "astro:db";
 import { paginationQuery, parseNumberCursor } from "./pagination";
+import db from "../database/db";
+import { Motion, Sound, Word } from "../database/schema";
 
 const thingTypeToTable = {
     words: Word,
@@ -70,7 +73,8 @@ export async function thingDeletion({ url }: APIContext, thingType: ThingType, i
         if (typeof err.status === "number")
             return jsonError(err.message, err.status);
 
-        if (isDbError(err)) return jsonError(err.message);
+        if (err instanceof LibsqlError)
+            return jsonError(err.message);
 
         console.error(err);
         return jsonError("Internal server error", 500);

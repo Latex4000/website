@@ -1,7 +1,8 @@
 <script lang="ts">
-    import type { MemberType } from "../../db/types";
+    import type { InferSelectModel } from "drizzle-orm";
+    import type { Member } from "../database/schema";
 
-    export let members: MemberType[] = [];
+    export let members: InferSelectModel<typeof Member>[] = [];
     let columnCount = 5;
 
     function gridColumns(node: Node) {

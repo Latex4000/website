@@ -1,24 +1,19 @@
 ---
+import { eq, getTableColumns } from "drizzle-orm";
 import Layout from "../layouts/Layout.astro";
 import ActionsList from "../components/ActionsList.svelte";
 import ActionItemsList from "../components/ActionItemsList.svelte";
 import type { ActionList } from "../store/actionsState";
 import { detectFeedType } from "../server/rss";
-import { db } from "astro:db";
-import { Action } from "astro:db";
-import { Member } from "astro:db";
-import { eq } from "astro:db";
+import db from "../database/db";
+import { Action, Member } from "../database/schema";
+
 export const prerender = false;
 
 const actions: ActionList[] = await db
     .select({
-        id: Action.id,
+        ...getTableColumns(Action),
         username: Member.alias,
-        title: Action.title,
-        description: Action.description,
-        url: Action.url,
-        siteUrl: Action.siteUrl,
-        isRSS: Action.isRSS,
     })
     .from(Action)
     .innerJoin(Member, eq(Action.memberDiscord, Member.discord))
@@ -26,7 +21,7 @@ const actions: ActionList[] = await db
         actions.map((row) => ({
             ...row,
             type: detectFeedType(row.url),
-        }))
+        })),
     );
 ---
 

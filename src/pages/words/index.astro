@@ -1,33 +1,27 @@
 ---
-import { db } from 'astro:db';
+import { desc, eq } from 'drizzle-orm';
 import Layout from '../../layouts/Layout.astro';
-import { Word } from 'astro:db';
-import { wordFromDb, wordId } from '../../../db/config';
-import { Member } from 'astro:db';
-import { eq } from 'astro:db';
+import db, { wordId } from '../../database/db';
+import { Member, Word } from '../../database/schema';
 
 export const prerender = false;
 
-const wordResults = (
-    await db
-        .select({
-            word: Word,
-            memberColor: Member.color,
-        })
-        .from(Word)
-        .where(eq(Word.deleted, false))
-        .innerJoin(Member, eq(Word.memberDiscord, Member.discord))
-    ).sort((a, b) => b.word.date.getTime() - a.word.date.getTime());
+const wordResults = await db
+    .select({
+        word: Word,
+        memberColor: Member.color,
+    })
+    .from(Word)
+    .where(eq(Word.deleted, false))
+    .innerJoin(Member, eq(Word.memberDiscord, Member.discord))
+    .orderBy(desc(Word.id));
 ---
 
 <Layout header="Words">
     {wordResults.length > 0 ? (
         <p>Here are some words</p>
         <ul>
-            {wordResults.map((wordResult) => {
-                const word = wordFromDb(wordResult.word);
-                const memberColor = wordResult.memberColor;
-
+            {wordResults.map(({ memberColor, word }) => {
                 return (
                     <li title={memberColor} style={`--marker-color: ${memberColor}`}>
                         <a href={`/words/${wordId(word)}`}>{word.title}<br>{word.date.toLocaleString()}</a>

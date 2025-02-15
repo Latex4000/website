@@ -1,4 +1,6 @@
-import { and, asc, db, desc, gt, lt } from "astro:db";
+import { and, asc, desc, gt, lt, type SQLWrapper } from "drizzle-orm";
+import type { SQLiteTableWithColumns } from "drizzle-orm/sqlite-core";
+import db from "../database/db";
 import { jsonError, jsonResponse } from "./responses";
 
 interface CursorInfo<T> {
@@ -48,8 +50,16 @@ export function getCursor<T>(params: URLSearchParams, parseCursor: (raw: string 
     return { direction, cursor, pageSize };
 }
 
-// Idk how to type this
-export async function paginationQuery<T>(params: URLSearchParams, table: any, cursorProp: string, parseCursor: (raw: string | null, direction: "next" | "prev") => T, ...queries: any[]) {
+export async function paginationQuery<
+    TTable extends SQLiteTableWithColumns<any>,
+    TColumnName extends keyof TTable["_"]["columns"],
+>(
+    params: URLSearchParams,
+    table: TTable,
+    cursorProp: TColumnName,
+    parseCursor: (raw: string | null, direction: "next" | "prev") => TTable["_"]["columns"][TColumnName]["_"]["data"],
+    ...conditions: (SQLWrapper | undefined)[]
+): Promise<Response> {
     const cursorInfo = getCursor(params, parseCursor);
     if ("status" in cursorInfo)
         return cursorInfo;
@@ -61,7 +71,7 @@ export async function paginationQuery<T>(params: URLSearchParams, table: any, cu
         .where(
             and(
                 direction === "next" ? gt(table[cursorProp], cursor) : lt(table[cursorProp], cursor),
-                ...queries,
+                ...conditions,
             )
         )
         .limit(pageSize)
@@ -72,7 +82,7 @@ export async function paginationQuery<T>(params: URLSearchParams, table: any, cu
 
     return jsonResponse({
         things,
-        prevCursor: things[0] ? things[0][cursorProp] : undefined,
-        nextCursor: things.length === pageSize ? things[things.length - 1]?.[cursorProp] : undefined,
-    } as { things: any[]; prevCursor?: T; nextCursor?: T });
+        prevCursor: things[0]?.[cursorProp],
+        nextCursor: things[pageSize - 1]?.[cursorProp],
+    });
 }

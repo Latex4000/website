@@ -1,8 +1,10 @@
+import { LibsqlError } from "@libsql/client";
 import type { APIRoute } from "astro";
+import { eq, getTableColumns, type InferSelectModel } from "drizzle-orm";
 import { jsonError, jsonResponse } from "../../server/responses";
-import { db, isDbError, Action, ActionItem, Member, eq } from "astro:db";
 import Parser from "rss-parser";
-import type { ActionItemType } from "../../../db/types";
+import db from "../../database/db";
+import { Action, ActionItem, Member } from "../../database/schema";
 
 export const prerender = false;
 
@@ -11,12 +13,8 @@ const rssParser = new Parser();
 export const GET: APIRoute = async () => {
     const actions = await db
         .select({
-            id: Action.id,
+            ...getTableColumns(Action),
             username: Member.alias,
-            title: Action.title,
-            description: Action.description,
-            url: Action.url,
-            siteUrl: Action.siteUrl,
         })
         .from(Action)
         .innerJoin(Member, eq(Action.memberDiscord, Member.discord));
@@ -75,23 +73,21 @@ export const POST: APIRoute = async (context) => {
             .values(action)
             .returning()
             .get();
-        let items: ActionItemType[] = [];
+        let items: InferSelectModel<typeof ActionItem>[] = [];
         if (rss.items.length)
             items = await db
                 .insert(ActionItem)
-                .values(rss.items.map((item) => {
-                    return {
-                        actionID: actionRes.id,
-                        title: item.title || "",
-                        description: item.description || item.summary || item.contentSnippet || item.title || "",
-                        url: item.link!,
-                        date: new Date(item.pubDate || item.isoDate || Date.now()),
-                    };
-                }))
+                .values(rss.items.map((item) => ({
+                    actionId: actionRes.id,
+                    title: item.title || "",
+                    description: item.description || item.summary || item.contentSnippet || item.title || "",
+                    url: item.link!,
+                    date: new Date(item.pubDate || item.isoDate || Date.now()),
+                })))
                 .returning();
         return jsonResponse({ action: actionRes, items });
     } catch (error) {
-        if (isDbError(error))
+        if (error instanceof LibsqlError)
             return jsonError(error.message);
 
         console.error(error);

@@ -1,10 +1,9 @@
+import { LibsqlError } from "@libsql/client";
 import type { APIRoute } from "astro";
+import type { InferSelectModel } from "drizzle-orm";
 import { jsonError, jsonResponse } from "../../server/responses";
 import { mkdir, writeFile } from "fs/promises";
 import { createWriteStream, ReadStream } from "fs";
-import { db, isDbError, Word } from "astro:db";
-import { wordFromDb, wordId } from "../../../db/config";
-import { type WordType } from "../../../db/types";
 import DOMPurify from "dompurify";
 import { Marked } from "marked";
 import { baseUrl as markedBaseUrl } from "marked-base-url";
@@ -13,6 +12,8 @@ import { execFileSync } from "child_process";
 import { finished } from "stream/promises";
 import { thingDeletion, thingGet } from "../../server/thingUtils";
 import { getMap } from "../../data/emoji";
+import db, { wordId } from "../../database/db";
+import { Word } from "../../database/schema";
 
 export const prerender = false;
 
@@ -81,31 +82,31 @@ export const POST: APIRoute = async (context) => {
     }
 
     // Store to DB
-    let word: WordType;
+    let word: InferSelectModel<typeof Word>;
     try {
-        word = wordFromDb(
-            await db
-                .insert(Word)
-                .values({
-                    memberDiscord: discord,
-                    tags:
-                        tags.length === 0
-                            ? []
-                            : tags.split(",").map((tag) => tag.trim()),
-                    title,
-                })
-                .returning()
-                .get(),
-        );
+        word = await db
+            .insert(Word)
+            .values({
+                memberDiscord: discord,
+                tags:
+                    tags.length === 0
+                        ? []
+                        : tags.split(",").map((tag) => tag.trim()),
+                title,
+            })
+            .returning()
+            .get();
     } catch (error) {
-        if (isDbError(error) && error.code === "SQLITE_CONSTRAINT_UNIQUE") {
-            return jsonError("Word already exists");
-        }
+        if (error instanceof LibsqlError) {
+            if (error.code === "SQLITE_CONSTRAINT_UNIQUE") {
+                return jsonError("Word already exists");
+            }
 
-        if (isDbError(error) && error.code === "SQLITE_CONSTRAINT_FOREIGNKEY") {
-            return jsonError(
-                "Invalid Discord ID; member does not exist; probably needs to join first",
-            );
+            if (error.code === "SQLITE_CONSTRAINT_FOREIGNKEY") {
+                return jsonError(
+                    "Invalid Discord ID; member does not exist; probably needs to join first",
+                );
+            }
         }
 
         throw error;

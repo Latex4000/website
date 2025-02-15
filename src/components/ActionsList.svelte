@@ -1,4 +1,6 @@
 <script lang="ts">
+    import type { InferSelectModel } from "drizzle-orm";
+    import type { ActionItem } from "../database/schema";
     import { onMount } from "svelte";
     import {
         actionItemsRef,
@@ -8,7 +10,6 @@
         prevCursorRef,
         type ActionList,
     } from "../store/actionsState";
-    import type { ActionItemType } from "../../db/types";
     import { linkChanger } from "../server/rss";
 
     let { actions }: { actions: ActionList[] } = $props();
@@ -24,7 +25,7 @@
             prevCursor,
             nextCursor,
         }: {
-            things: ActionItemType[];
+            things: InferSelectModel<typeof ActionItem>[];
             prevCursor?: string;
             nextCursor?: string;
         } = await fetch(
@@ -45,7 +46,7 @@
             actionItems.map((item) => ({
                 ...item,
                 action: $actionsRef.find(
-                    (action) => action.id === item.actionID,
+                    (action) => action.id === item.actionId,
                 )!,
             })),
         );
@@ -71,7 +72,7 @@
 
     const onClickUser = async (username: string) => {
         const anyTrue = actionsGroupedByUser[username]!.some(
-            (action) => $filtersRef[action.id] && action.isRSS,
+            (action) => $filtersRef[action.id] && action.isRss,
         );
         actionsGroupedByUser[username]!.forEach((action) =>
             filtersRef.setKey(action.id, !anyTrue),
@@ -104,7 +105,7 @@
         <input
             type="checkbox"
             checked={actions.some(
-                (action) => $filtersRef[action.id] && action.isRSS,
+                (action) => $filtersRef[action.id] && action.isRss,
             )}
             onclick={() => onClickUser(username)}
         />
@@ -113,7 +114,7 @@
         <ul class="actions">
             {#each actions as action}
                 <li class="action">
-                    {#if action.isRSS}
+                    {#if action.isRss}
                         <input
                             type="checkbox"
                             checked={$filtersRef[action.id]}

@@ -1,24 +1,24 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import MembersList from "../components/MembersList.svelte";
-import { db, Member } from "astro:db";
+import db from "../database/db";
+import { Member } from "../database/schema";
 
 export const prerender = false;
 
-function rotateArray<T>(array: T[]): T[] {
+function rotateArray<T>(array: readonly T[]): T[] {
     const startIndex = Math.round(Math.random() * array.length);
     return [...array.slice(startIndex), ...array.slice(0, startIndex)];
 }
 
-const members = rotateArray(
-    await db
-        .select({
-            addedRingToSite: Member.addedRingToSite,
-            site: Member.site,
-            alias: Member.alias,
-        })
-        .from(Member)
-);
+const members = await db
+    .select({
+        addedRingToSite: Member.addedRingToSite,
+        site: Member.site,
+        alias: Member.alias,
+    })
+    .from(Member)
+    .then(rotateArray);
 ---
 
 <Layout header="Yo">

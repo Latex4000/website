@@ -1,12 +1,14 @@
+import { LibsqlError } from "@libsql/client";
 import type { APIRoute } from "astro";
-import { db, eq, isDbError, Member } from "astro:db";
+import { eq, type InferInsertModel, type InferSelectModel } from "drizzle-orm";
 import { jsonError, jsonResponse } from "../../server/responses";
-import type { MemberType } from "../../../db/types";
+import db from "../../database/db";
+import { Member } from "../../database/schema";
 
 export const prerender = false;
 
-type AlmostMemberType = Omit<MemberType, "addedRingToSite" | "color"> &
-    Partial<Pick<MemberType, "addedRingToSite" | "color">>;
+type AlmostMemberType = Omit<InferSelectModel<typeof Member>, "addedRingToSite" | "color"> &
+    Partial<Pick<InferSelectModel<typeof Member>, "addedRingToSite" | "color">>;
 
 async function parseAndValidateRequest(
     request: Request,
@@ -86,14 +88,15 @@ export const POST: APIRoute = async ({ request }) => {
 
         const memberRes = await db
             .insert(Member)
-            .values(member as MemberType)
+            .values(member as InferInsertModel<typeof Member>)
             .returning();
         return jsonResponse(memberRes);
     } catch (err: any) {
         if (typeof err.status === "number")
             return jsonError(err.message, err.status);
 
-        if (isDbError(err)) return jsonError(err.message);
+        if (err instanceof LibsqlError)
+            return jsonError(err.message);
 
         console.error(err);
         return jsonError("Internal server error", 500);
@@ -115,7 +118,8 @@ export const PUT: APIRoute = async ({ request }) => {
         if (typeof err.status === "number")
             return jsonError(err.message, err.status);
 
-        if (isDbError(err)) return jsonError(err.message);
+        if (err instanceof LibsqlError)
+            return jsonError(err.message);
 
         console.error(err);
         return jsonError("Internal server error", 500);

@@ -1,15 +1,16 @@
 ---
-import { motionFromDb } from "../../db/config";
+import { desc, eq } from "drizzle-orm";
+import db from "../database/db";
+import { Motion } from "../database/schema";
 import Layout from "../layouts/Layout.astro";
-import { db, Motion, eq } from "astro:db";
 
 export const prerender = false;
 
-const motions = (
-    await db.select().from(Motion).where(eq(Motion.deleted, false))
-)
-    .sort((a, b) => b.date.getTime() - a.date.getTime())
-    .map(motionFromDb);
+const motions = await db
+    .select()
+    .from(Motion)
+    .where(eq(Motion.deleted, false))
+    .orderBy(desc(Motion.id));
 ---
 
 <Layout header="Motions">

@@ -1,5 +1,7 @@
 import type { APIRoute } from "astro";
-import { db, eq, Member } from "astro:db";
+import { eq } from "drizzle-orm";
+import db from "../database/db";
+import { Member } from "../database/schema";
 
 export const prerender = false;
 

@@ -1,14 +1,15 @@
+import { LibsqlError } from "@libsql/client";
 import type { APIRoute } from "astro";
+import type { InferSelectModel } from "drizzle-orm";
 import { jsonError, jsonResponse } from "../../server/responses";
-import { db, isDbError, Sound } from "astro:db";
-import { soundFromDb } from "../../../db/config";
-import { type SoundType } from "../../../db/types";
 import { mkdir } from "fs/promises";
 import { execFileSync } from "child_process";
 import { extname } from "path";
 import { getFileOrDiscordAttachment, getTags } from "../../server/validation";
 import { writeBlobToFile } from "../../server/webApi";
 import { thingDeletion, thingGet } from "../../server/thingUtils";
+import db from "../../database/db";
+import { Sound } from "../../database/schema";
 
 export const prerender = false;
 
@@ -62,25 +63,23 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     // Store to DB
-    let sound: SoundType;
+    let sound: InferSelectModel<typeof Sound>;
     try {
-        sound = soundFromDb(
-            await db
-                .insert(Sound)
-                .values({
-                    title,
-                    memberDiscord: discord,
-                    soundcloudUrl,
-                    youtubeUrl,
-                    tags: getTags(tags),
-                    trackType,
-                    coverType,
-                })
-                .returning()
-                .get(),
-        );
+        sound = await db
+            .insert(Sound)
+            .values({
+                title,
+                memberDiscord: discord,
+                soundcloudUrl,
+                youtubeUrl,
+                tags: getTags(tags),
+                trackType,
+                coverType,
+            })
+            .returning()
+            .get();
     } catch (error) {
-        if (isDbError(error) && error.code === "SQLITE_CONSTRAINT_FOREIGNKEY") {
+        if (error instanceof LibsqlError && error.code === "SQLITE_CONSTRAINT_FOREIGNKEY") {
             return jsonError("Invalid Discord ID");
         }
 
