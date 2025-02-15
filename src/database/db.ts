@@ -1,3 +1,4 @@
+import type { InferSelectModel } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/libsql";
 import * as schema from "./schema";
 
@@ -7,3 +8,7 @@ if (!process.env.DATABASE_URL) {
 
 const db = drizzle(process.env.DATABASE_URL, { schema });
 export default db;
+
+export function wordId(word: Pick<InferSelectModel<typeof schema.Word>, "date">): string {
+    return Math.floor(word.date.getTime() / 1000).toString(10);
+}
