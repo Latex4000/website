@@ -3,8 +3,8 @@ import { sqliteTable, integer, text, customType } from "drizzle-orm/sqlite-core"
 
 const date = customType<{ data: Date; driverData: string }>({
     dataType: () => "text",
-    fromDriver: (value) => new Date(value),
-    toDriver: (value) => value.toISOString().replace("T", " ").slice(0, 19),
+    fromDriver: (value) => new Date(value + "Z"),
+    toDriver: (value) => value.toISOString().slice(0, 19).replace("T", " "),
 });
 
 export const Migration = sqliteTable("_migrations", {
