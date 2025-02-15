@@ -7,6 +7,11 @@ const date = customType<{ data: Date; driverData: string }>({
     toDriver: (value) => value.toISOString().replace("T", " ").slice(0, 19),
 });
 
+export const Migration = sqliteTable("_migrations", {
+    id: integer().primaryKey(),
+    applied: integer({ mode: "boolean" }).default(false).notNull(),
+});
+
 export const Action = sqliteTable("Action", {
     id: integer().primaryKey({ autoIncrement: true }),
     memberDiscord: text().notNull().references(() => Member.discord),
