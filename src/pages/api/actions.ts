@@ -78,7 +78,7 @@ export const POST: APIRoute = async (context) => {
             items = await db
                 .insert(ActionItem)
                 .values(rss.items.map((item) => ({
-                    actionId: actionRes.id,
+                    actionID: actionRes.id,
                     title: item.title || "",
                     description: item.description || item.summary || item.contentSnippet || item.title || "",
                     url: item.link!,

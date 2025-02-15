@@ -13,7 +13,7 @@ export const GET: APIRoute = async ({ url }) => {
         .filter(Number.isInteger);
 
     const condition = ignoreArray != null && ignoreArray.length > 0
-        ? notInArray(ActionItem.actionId, ignoreArray)
+        ? notInArray(ActionItem.actionID, ignoreArray)
         : undefined;
 
     return paginationQuery(url.searchParams, ActionItem, "date", parseDateCursor, condition);

@@ -46,7 +46,7 @@
             actionItems.map((item) => ({
                 ...item,
                 action: $actionsRef.find(
-                    (action) => action.id === item.actionId,
+                    (action) => action.id === item.actionID,
                 )!,
             })),
         );
@@ -72,7 +72,7 @@
 
     const onClickUser = async (username: string) => {
         const anyTrue = actionsGroupedByUser[username]!.some(
-            (action) => $filtersRef[action.id] && action.isRss,
+            (action) => $filtersRef[action.id] && action.isRSS,
         );
         actionsGroupedByUser[username]!.forEach((action) =>
             filtersRef.setKey(action.id, !anyTrue),
@@ -105,7 +105,7 @@
         <input
             type="checkbox"
             checked={actions.some(
-                (action) => $filtersRef[action.id] && action.isRss,
+                (action) => $filtersRef[action.id] && action.isRSS,
             )}
             onclick={() => onClickUser(username)}
         />
@@ -114,7 +114,7 @@
         <ul class="actions">
             {#each actions as action}
                 <li class="action">
-                    {#if action.isRss}
+                    {#if action.isRSS}
                         <input
                             type="checkbox"
                             checked={$filtersRef[action.id]}
