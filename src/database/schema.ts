@@ -14,7 +14,7 @@ export const Action = sqliteTable("Action", {
     description: text().notNull(),
     url: text().notNull(),
     siteUrl: text().notNull(),
-    isRss: integer({ mode: "boolean" }).notNull(),
+    isRss: integer("isRSS", { mode: "boolean" }).notNull(),
 });
 
 export const ActionRelations = relations(Action, ({ one, many }) => ({
@@ -27,7 +27,7 @@ export const ActionRelations = relations(Action, ({ one, many }) => ({
 
 export const ActionItem = sqliteTable("ActionItem", {
     id: integer().primaryKey({ autoIncrement: true }),
-    actionId: integer().notNull().references(() => Action.id),
+    actionId: integer("actionID").notNull().references(() => Action.id),
     title: text(),
     url: text().notNull(),
     description: text().notNull(),
