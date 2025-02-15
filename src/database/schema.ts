@@ -1,9 +1,10 @@
 import { relations, sql } from "drizzle-orm";
-import { sqliteTable, integer, text } from "drizzle-orm/sqlite-core";
+import { sqliteTable, integer, text, customType } from "drizzle-orm/sqlite-core";
 
-export const Migration = sqliteTable("_migrations", {
-    id: integer().primaryKey(),
-    applied: integer({ mode: "boolean" }).default(false).notNull(),
+const date = customType<{ data: Date; driverData: string }>({
+    dataType: () => "text",
+    fromDriver: (value) => new Date(value),
+    toDriver: (value) => value.toISOString().replace("T", " ").slice(0, 19),
 });
 
 export const Action = sqliteTable("Action", {
@@ -30,7 +31,7 @@ export const ActionItem = sqliteTable("ActionItem", {
     title: text(),
     url: text().notNull(),
     description: text().notNull(),
-    date: text().default(sql`CURRENT_TIMESTAMP`).notNull(),
+    date: date().default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
 export const ActionItemRelations = relations(ActionItem, ({ one }) => ({
@@ -60,7 +61,7 @@ export const Motion = sqliteTable("Motion", {
     title: text().notNull(),
     youtubeUrl: text().notNull(),
     memberDiscord: text().notNull().references(() => Member.discord),
-    date: text().default(sql`CURRENT_TIMESTAMP`).notNull(),
+    date: date().default(sql`CURRENT_TIMESTAMP`).notNull(),
     tags: text({ mode: "json" }).$type<string[]>().default([]).notNull(),
     deleted: integer({ mode: "boolean" }).default(false).notNull(),
 });
@@ -78,7 +79,7 @@ export const Sound = sqliteTable("Sound", {
     memberDiscord: text().notNull().references(() => Member.discord),
     youtubeUrl: text(),
     soundcloudUrl: text(),
-    date: text().default(sql`CURRENT_TIMESTAMP`).notNull(),
+    date: date().default(sql`CURRENT_TIMESTAMP`).notNull(),
     tags: text({ mode: "json" }).$type<string[]>().default([]).notNull(),
     trackType: text({ enum: ["mp3", "wav"] }).notNull(),
     coverType: text({ enum: ["jpg", "png"] }).notNull(),
@@ -96,7 +97,7 @@ export const Word = sqliteTable("Word", {
     id: integer().primaryKey({ autoIncrement: true }),
     title: text().notNull(),
     memberDiscord: text().notNull().references(() => Member.discord),
-    date: text().default(sql`CURRENT_TIMESTAMP`).notNull(),
+    date: date().default(sql`CURRENT_TIMESTAMP`).notNull(),
     tags: text({ mode: "json" }).$type<string[]>().default([]).notNull(),
     deleted: integer({ mode: "boolean" }).default(false).notNull(),
 });
