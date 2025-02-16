@@ -62,7 +62,7 @@ try {
                     item.link,
                     new Date(
                         item.pubDate || item.isoDate || Date.now(),
-                    ).toISOString(),
+                    ).toISOString().slice(0, 19).replace("T", " "),
                 ],
             );
             newItems++;
