@@ -1,11 +1,3 @@
 {
-    "compilerOptions": {
-        "lib": ["ES2023"],
-        "module": "Node16",
-        "skipLibCheck": true,
-        "strict": true,
-        "target": "ES2022",
-
-        "outDir": "dist"
-    }
+    "extends": "../tsconfig.integrations.json"
 }

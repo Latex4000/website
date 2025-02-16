@@ -19,7 +19,7 @@ export default function localIntegrations() {
 }
 
 /** @type {AstroIntegration["hooks"]["astro:config:setup"]} */
-const hook = async (options) => {
+const hook = async ({ logger, updateConfig }) => {
     const integrationEntries = await readdir("integrations", { withFileTypes: true });
 
     for (const integrationEntry of integrationEntries) {
@@ -29,21 +29,22 @@ const hook = async (options) => {
 
         const integrationPath = join("integrations", integrationEntry.name);
 
-        if (await access(join(integrationPath, "package.json")).catch(() => true)) {
+        if (await access(join(integrationPath, "tsconfig.json")).catch(() => true)) {
             continue;
         }
 
-        if (await access(join(integrationPath, "node_modules")).catch(() => true)) {
-            execFileSync("npm", ["install"], { cwd: integrationPath, stdio: "inherit" });
-        }
-
         if (await access(join(integrationPath, "dist")).catch(() => true)) {
-            execFileSync("npm", ["run", "build"], { cwd: integrationPath, stdio: "inherit" });
+            logger.info(`Building ${integrationPath}`);
+
+            execFileSync("tsc", ["-p", integrationPath], { stdio: "inherit" });
         }
 
         /** @type {{ default: () => AstroIntegration }} */
-        const integration = await import(join(resolve(integrationPath), "dist/index.js"));
+        const integrationModule = await import(join(resolve(integrationPath), "dist/index.js"));
+        const integration = integrationModule.default();
 
-        options.updateConfig({ integrations: [integration.default()] });
+        updateConfig({ integrations: [integration] });
+
+        logger.info(`Loaded ${integration.name}`);
     }
 };
