@@ -54,6 +54,7 @@ try {
                     action.id,
                     item.title || "",
                     item.description ||
+                        item.content ||
                         item.summary ||
                         item.contentSnippet ||
                         item.title ||

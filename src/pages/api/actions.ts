@@ -80,7 +80,7 @@ export const POST: APIRoute = async (context) => {
                 .values(rss.items.map((item) => ({
                     actionID: actionRes.id,
                     title: item.title || "",
-                    description: item.description || item.summary || item.contentSnippet || item.title || "",
+                    description: item.description || item.content || item.summary || item.contentSnippet || item.title || "",
                     url: item.link!,
                     date: new Date(item.pubDate || item.isoDate || Date.now()),
                 })))

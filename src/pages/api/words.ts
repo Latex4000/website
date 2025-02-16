@@ -4,13 +4,13 @@ import type { InferSelectModel } from "drizzle-orm";
 import { jsonError, jsonResponse } from "../../server/responses";
 import { mkdir, writeFile } from "fs/promises";
 import { createWriteStream, ReadStream } from "fs";
-import DOMPurify from "dompurify";
 import { Marked } from "marked";
 import { baseUrl as markedBaseUrl } from "marked-base-url";
 import { markedEmoji } from "marked-emoji";
 import { execFileSync } from "child_process";
 import { finished } from "stream/promises";
 import { thingDeletion, thingGet } from "../../server/thingUtils";
+import { serverHTMLPurify } from "../../components/dompurifyserver";
 import { getMap } from "../../data/emoji";
 import db, { wordId } from "../../database/db";
 import { Word } from "../../database/schema";
@@ -41,7 +41,7 @@ export const POST: APIRoute = async (context) => {
 
     // Form validation
     if (
-        typeof discord !== "string" ||
+        !(discord == null || typeof discord === "string") ||
         typeof title !== "string" ||
         typeof tags !== "string" ||
         typeof md !== "string" ||
@@ -129,15 +129,21 @@ export const POST: APIRoute = async (context) => {
     // Upload compiled HTML file
     const emojis = Object.fromEntries(Object.keys(await getMap()).map((emojiName) => [emojiName, ""]));
     const emptyGif = "data:image/gif;base64,R0lGODlhAQABAIABAP///wAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
-    const html = DOMPurify.sanitize(new Marked(
-        markedBaseUrl(
-            new URL(`/words-uploads/${wordId(word)}/`, context.url).toString(),
-        ),
-        markedEmoji({
-            emojis,
-            renderer: (token) => `<img alt="" src="${emptyGif}" title=":${token.name}:" class="emoji">`,
-        }),
-    ).parse(md, { async: false, breaks: true, silent: true }));
+    let html: string;
+    try {
+        html = await serverHTMLPurify(new Marked(
+            markedBaseUrl(
+                new URL(`/words-uploads/${wordId(word)}/`, context.url).toString(),
+            ),
+            markedEmoji({
+                emojis,
+                renderer: (token) => `<img alt="" src="${emptyGif}" title=":${token.name}:" class="emoji">`,
+            }),
+        ).parse(md, { async: false, breaks: true, silent: true }), ".word-markdown");
+    } catch (e) {
+        console.error(e);
+        return jsonError("Error compiling Markdown to HTML");
+    }
 
     await writeFile(`${directory}/words.html`, html, "utf8");
 

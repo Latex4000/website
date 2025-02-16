@@ -65,7 +65,7 @@ export const Motion = sqliteTable("Motion", {
     id: integer().primaryKey({ autoIncrement: true }),
     title: text().notNull(),
     youtubeUrl: text().notNull(),
-    memberDiscord: text().notNull().references(() => Member.discord),
+    memberDiscord: text().references(() => Member.discord),
     date: date().default(sql`CURRENT_TIMESTAMP`).notNull(),
     tags: text({ mode: "json" }).$type<string[]>().default([]).notNull(),
     deleted: integer({ mode: "boolean" }).default(false).notNull(),
@@ -81,7 +81,7 @@ export const MotionRelations = relations(Motion, ({ one }) => ({
 export const Sound = sqliteTable("Sound", {
     id: integer().primaryKey({ autoIncrement: true }),
     title: text().notNull(),
-    memberDiscord: text().notNull().references(() => Member.discord),
+    memberDiscord: text().references(() => Member.discord),
     youtubeUrl: text(),
     soundcloudUrl: text(),
     date: date().default(sql`CURRENT_TIMESTAMP`).notNull(),
@@ -101,7 +101,7 @@ export const SoundRelations = relations(Sound, ({ one }) => ({
 export const Word = sqliteTable("Word", {
     id: integer().primaryKey({ autoIncrement: true }),
     title: text().notNull(),
-    memberDiscord: text().notNull().references(() => Member.discord),
+    memberDiscord: text().references(() => Member.discord),
     date: date().default(sql`CURRENT_TIMESTAMP`).notNull().unique(),
     tags: text({ mode: "json" }).$type<string[]>().default([]).notNull(),
     deleted: integer({ mode: "boolean" }).default(false).notNull(),

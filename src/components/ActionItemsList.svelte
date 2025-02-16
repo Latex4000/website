@@ -2,15 +2,16 @@
     import {
         linkChanger,
         removeTitleDescriptionDuplicates,
+        twitterImageReplacer,
     } from "../server/rss";
     import { actionItemsRef } from "../store/actionsState";
     import linkifyHtml from "linkify-html";
-    import DOMPurify from "dompurify";
+    import { clientHTMLPurify } from "./dompurifyclient";
 </script>
 
 <ul>
-    {#each $actionItemsRef as item}
-        <li class="actionItem">
+    {#each $actionItemsRef as item, index}
+        <li class={`actionItem actionItem${index}`}>
             <strong>
                 <a href={linkChanger(item.url, item.action.type)}
                     >{item.action.username} - {item.action.type}
@@ -25,7 +26,13 @@
             {/if}
             <br /> <br />
             {#if item.description}
-                {@html DOMPurify.sanitize(linkifyHtml(item.description))} <br />
+                {#await clientHTMLPurify(linkifyHtml(twitterImageReplacer(item.description)), `.actionItem${index}`)}
+                    <p>Loading...</p>
+                {:then sanitizedDescription}
+                    {@html sanitizedDescription}
+                {:catch error}
+                    <p>{error.message}</p>
+                {/await}
             {/if}
             <br />
             <small>Date: {item.date.toLocaleString()}</small>
