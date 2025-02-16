@@ -34,17 +34,21 @@ const hook = async ({ logger, updateConfig }) => {
         }
 
         if (await access(join(integrationPath, "dist")).catch(() => true)) {
-            logger.info(`Building ${integrationEntry.name}`);
+            logger.info(`Building "${integrationEntry.name}"`);
 
             execFileSync("tsc", ["-p", integrationPath], { stdio: "inherit" });
         }
 
-        /** @type {{ default: () => AstroIntegration }} */
-        const integrationModule = await import(join(resolve(integrationPath), "dist/index.js"));
-        const integration = integrationModule.default();
+        try {
+            /** @type {{ default: () => AstroIntegration }} */
+            const integrationModule = await import(join(resolve(integrationPath), "dist/index.js"));
+            const integration = integrationModule.default();
 
-        updateConfig({ integrations: [integration] });
+            updateConfig({ integrations: [integration] });
 
-        logger.info(`Loaded ${integration.name}`);
+            logger.info(`Loaded ${integration.name}`);
+        } catch {
+            logger.error(`Failed to load "${integrationEntry.name}", make sure the default export of ${join(integrationPath, "index.ts")} is of type () => AstroIntegration`);
+        }
     }
 };
