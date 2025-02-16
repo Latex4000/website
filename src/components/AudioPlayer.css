@@ -19,8 +19,8 @@
     position: absolute;
     width: calc(100% * var(--progress));
     height: 100%;
-
     background-color: var(--text-color);
+    transition: width 0.2s cubic-bezier(0.215, 0.610, 0.355, 1);
 }
 
 .audio-player-bar-fill-buffered {
