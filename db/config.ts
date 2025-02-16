@@ -17,6 +17,7 @@ export const Sound = defineTable({
         title: column.text(),
         memberDiscord: column.text({
             references: () => Member.columns.discord,
+            optional: true,
         }),
         youtubeUrl: column.text({ optional: true }),
         soundcloudUrl: column.text({ optional: true }),
@@ -54,6 +55,7 @@ export const Word = defineTable({
         date: column.date({ default: NOW, unique: true }),
         memberDiscord: column.text({
             references: () => Member.columns.discord,
+            optional: true,
         }),
         tags: column.json({ default: [] }),
         title: column.text(),
@@ -84,6 +86,7 @@ export const Motion = defineTable({
         youtubeUrl: column.text(),
         memberDiscord: column.text({
             references: () => Member.columns.discord,
+            optional: true,
         }),
         date: column.date({ default: NOW }),
         tags: column.json({ default: [] }),

@@ -36,7 +36,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     // Form validation
     if (
-        typeof discord !== "string" ||
+        !(discord == null || typeof discord === "string") ||
         typeof title !== "string" ||
         !(soundcloudUrl == null || (typeof soundcloudUrl === "string" && URL.canParse(soundcloudUrl))) ||
         !(youtubeUrl == null || (typeof youtubeUrl === "string" && URL.canParse(youtubeUrl))) ||

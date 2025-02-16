@@ -21,7 +21,7 @@ const wordResult = await db
         memberColor: Member.color,
     })
     .from(Word)
-    .innerJoin(Member, eq(Word.memberDiscord, Member.discord))
+    .leftJoin(Member, eq(Word.memberDiscord, Member.discord))
     .where(
         and(
             eq(

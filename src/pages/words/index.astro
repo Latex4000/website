@@ -16,7 +16,7 @@ const wordResults = (
         })
         .from(Word)
         .where(eq(Word.deleted, false))
-        .innerJoin(Member, eq(Word.memberDiscord, Member.discord))
+        .leftJoin(Member, eq(Word.memberDiscord, Member.discord))
     ).sort((a, b) => b.word.date.getTime() - a.word.date.getTime());
 ---
 
@@ -29,7 +29,7 @@ const wordResults = (
                 const memberColor = wordResult.memberColor;
 
                 return (
-                    <li title={memberColor} style={`--marker-color: ${memberColor}`}>
+                    <li title={memberColor ?? "ANON"} style={`--marker-color: ${memberColor}`}>
                         <a href={`/words/${wordId(word)}`}>{word.title}<br>{word.date.toLocaleString()}</a>
                     </li>
                 );

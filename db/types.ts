@@ -9,7 +9,7 @@ export interface MemberType {
 export interface SoundType {
     id: number;
     title: string;
-    memberDiscord: MemberType["discord"];
+    memberDiscord: MemberType["discord"] | null;
     youtubeUrl: string | null;
     soundcloudUrl: string | null;
     date: Date;
@@ -23,7 +23,7 @@ export interface WordType {
     id: number;
     deleted: boolean;
     date: Date;
-    memberDiscord: MemberType["discord"];
+    memberDiscord: MemberType["discord"] | null;
     tags: string[];
     title: string;
 }
@@ -32,7 +32,7 @@ export interface MotionType {
     id: number;
     title: string;
     youtubeUrl: string;
-    memberDiscord: MemberType["discord"];
+    memberDiscord: MemberType["discord"] | null;
     date: Date;
     tags: string[];
     deleted: boolean;
