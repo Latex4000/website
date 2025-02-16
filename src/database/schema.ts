@@ -17,8 +17,8 @@ export const Action = sqliteTable("Action", {
     memberDiscord: text().notNull().references(() => Member.discord),
     title: text().notNull(),
     description: text().notNull(),
-    url: text().notNull(),
-    siteUrl: text().notNull(),
+    url: text().notNull().unique(),
+    siteUrl: text().notNull().unique(),
     isRSS: integer({ mode: "boolean" }).notNull(),
 });
 
@@ -34,7 +34,7 @@ export const ActionItem = sqliteTable("ActionItem", {
     id: integer().primaryKey({ autoIncrement: true }),
     actionID: integer().notNull().references(() => Action.id),
     title: text(),
-    url: text().notNull(),
+    url: text().notNull().unique(),
     description: text().notNull(),
     date: date().default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
@@ -48,8 +48,8 @@ export const ActionItemRelations = relations(ActionItem, ({ one }) => ({
 
 export const Member = sqliteTable("Member", {
     discord: text().primaryKey(),
-    alias: text().notNull(),
-    site: text(),
+    alias: text().notNull().unique(),
+    site: text().unique(),
     addedRingToSite: integer({ mode: "boolean" }).notNull(),
     color: text().notNull(),
 });
@@ -102,7 +102,7 @@ export const Word = sqliteTable("Word", {
     id: integer().primaryKey({ autoIncrement: true }),
     title: text().notNull(),
     memberDiscord: text().notNull().references(() => Member.discord),
-    date: date().default(sql`CURRENT_TIMESTAMP`).notNull(),
+    date: date().default(sql`CURRENT_TIMESTAMP`).notNull().unique(),
     tags: text({ mode: "json" }).$type<string[]>().default([]).notNull(),
     deleted: integer({ mode: "boolean" }).default(false).notNull(),
 });
