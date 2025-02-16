@@ -1,5 +1,5 @@
 import { access, constants } from "node:fs/promises";
-import { createClient } from "@libsql/client";
+import { createClient, LibsqlError } from "@libsql/client";
 import Parser from "rss-parser";
 
 const rssParser = new Parser();
@@ -44,28 +44,33 @@ try {
         const feed = await rssParser.parseURL(action.url);
 
         for (const item of feed.items) {
-            await transaction.execute(
-                `
-                INSERT INTO "ActionItem" ("actionID", "title", "description", "url", "date")
-                VALUES (?, ?, ?, ?, ?)
-                ON CONFLICT DO NOTHING
-            `,
-                [
-                    action.id,
-                    item.title || "",
-                    item.description ||
-                        item.content ||
-                        item.summary ||
-                        item.contentSnippet ||
-                        item.title ||
-                        "",
-                    item.link,
-                    new Date(
-                        item.pubDate || item.isoDate || Date.now(),
-                    ).toISOString().slice(0, 19).replace("T", " "),
-                ],
-            );
-            newItems++;
+            try {
+                await transaction.execute(
+                    `
+                        INSERT INTO "ActionItem" ("actionID", "title", "description", "url", "date")
+                        VALUES (?, ?, ?, ?, ?)
+                    `,
+                    [
+                        action.id,
+                        item.title || "",
+                        item.description ||
+                            item.content ||
+                            item.summary ||
+                            item.contentSnippet ||
+                            item.title ||
+                            "",
+                        item.link,
+                        new Date(
+                            item.pubDate || item.isoDate || Date.now(),
+                        ).toISOString().slice(0, 19).replace("T", " "),
+                    ],
+                );
+                newItems++;
+            } catch (error) {
+                if (!(error instanceof LibsqlError && error.code === "SQLITE_CONSTRAINT_UNIQUE")) {
+                    throw error;
+                }
+            }
         }
         actionsDone++;
         console.error(`Action ${actionsDone}/${actions.rows.length} done`);
