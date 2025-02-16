@@ -19,7 +19,7 @@ export default function localIntegrations() {
 }
 
 /** @type {AstroIntegration["hooks"]["astro:config:setup"]} */
-const hook = async ({ logger, updateConfig }) => {
+const hook = async ({ command, logger, updateConfig }) => {
     const integrationEntries = await readdir("integrations", { withFileTypes: true });
 
     for (const integrationEntry of integrationEntries) {
@@ -33,7 +33,7 @@ const hook = async ({ logger, updateConfig }) => {
             continue;
         }
 
-        if (await access(join(integrationPath, "dist")).catch(() => true)) {
+        if (command === "build" || await access(join(integrationPath, "dist")).catch(() => true)) {
             logger.info(`Building "${integrationEntry.name}"`);
 
             execFileSync("tsc", ["-p", integrationPath], { stdio: "inherit" });
