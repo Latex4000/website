@@ -6,6 +6,7 @@ import react from "@astrojs/react";
 import vue from "@astrojs/vue";
 import mdx from "@astrojs/mdx";
 import node from "@astrojs/node";
+import localIntegrations from "./integrations/local-integrations.mjs";
 
 // https://astro.build/config
 export default defineConfig({
@@ -13,6 +14,7 @@ export default defineConfig({
     site: "https://nonacademic.net",
 
     integrations: [
+        localIntegrations(),
         sitemap({
             filter: (page) => page !== "https://nonacademic.net/messages",
         }),

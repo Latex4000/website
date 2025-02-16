@@ -1,6 +1,6 @@
-import { db, Member, Sound } from "astro:db";
+import db from "./db";
+import { Member, Sound } from "./schema";
 
-// https://astro.build/db/seed
 export default async function seed() {
     await db.insert(Member).values([
         {
@@ -204,7 +204,7 @@ export default async function seed() {
             date: new Date("2025-01-18T18:22:38.986Z"),
             tags: ["my awesome tag"],
             trackType: "mp3",
-            coverType: "jpg",
+            coverType: "png",
         },
     ]);
 }

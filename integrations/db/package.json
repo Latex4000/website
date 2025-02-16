@@ -1,0 +1,15 @@
+{
+    "private": true,
+    "type": "module",
+    "exports": {
+        ".": "./dist/index.js"
+    },
+    "scripts": {
+        "build": "tsc"
+    },
+    "devDependencies": {
+        "@types/node": "file:../../node_modules/@types/node",
+        "astro": "file:../../node_modules/astro",
+        "typescript": "file:../../node_modules/typescript"
+    }
+}
