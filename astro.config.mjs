@@ -6,7 +6,6 @@ import react from "@astrojs/react";
 import vue from "@astrojs/vue";
 import mdx from "@astrojs/mdx";
 import node from "@astrojs/node";
-import db from "@astrojs/db";
 
 // https://astro.build/config
 export default defineConfig({
@@ -21,7 +20,6 @@ export default defineConfig({
         react(),
         vue(),
         mdx(),
-        db(),
     ],
 
     build: {

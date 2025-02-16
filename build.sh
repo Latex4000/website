@@ -8,4 +8,4 @@ export DATABASE_URL='file:./latex.db'
 npm run lint
 astro check
 
-exec astro build --remote
+exec astro build

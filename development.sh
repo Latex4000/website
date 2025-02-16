@@ -23,8 +23,5 @@ mkdir -p "$WORDS_UPLOAD_DIRECTORY"
 # Create database
 node db/migrate.mjs "$database"
 
-# Seed database
-astro db execute db/seed.ts --remote
-
 # Run development environment
-exec astro dev --remote
+exec astro dev
