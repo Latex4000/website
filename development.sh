@@ -4,7 +4,6 @@ set -eu
 
 database='dev/latex.db'
 
-export ASTRO_DB_REMOTE_URL="file:./$database"
 export DATABASE_URL="file:./$database"
 export SECRET_HMAC_KEY='dev'
 export SOUNDS_RUN_AFTER_UPLOAD=
