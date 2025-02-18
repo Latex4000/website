@@ -7,7 +7,7 @@ import { createWriteStream, ReadStream } from "fs";
 import { execFileSync } from "child_process";
 import { finished } from "stream/promises";
 import { thingDeletion, thingGet } from "../../server/thingUtils";
-import db, { sightId } from "../../database/db";
+import db from "../../database/db";
 import { Sight } from "../../database/schema";
 
 export const prerender = false;
@@ -111,7 +111,7 @@ export const POST: APIRoute = async (context) => {
     }
 
     // Upload files
-    const directory = `${process.env.SIGHTS_UPLOAD_DIRECTORY}/${sightId(sight)}`;
+    const directory = `${process.env.SIGHTS_UPLOAD_DIRECTORY}/${sight.id}`;
 
     await mkdir(directory);
     for (const file of assetFiles) {
