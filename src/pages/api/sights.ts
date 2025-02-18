@@ -66,7 +66,6 @@ export const POST: APIRoute = async (context) => {
         }
     }
 
-    console.log(assetFiles);
     // Check if files are images only, they may be application/octet-stream as well, so we need to check the type
     if (
         assetFiles.some(
