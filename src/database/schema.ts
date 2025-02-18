@@ -78,6 +78,23 @@ export const MotionRelations = relations(Motion, ({ one }) => ({
     }),
 }));
 
+export const Sight = sqliteTable("Sight", {
+    id: integer().primaryKey({ autoIncrement: true }),
+    title: text().notNull(),
+    description: text().notNull(),
+    memberDiscord: text().references(() => Member.discord),
+    date: date().default(sql`CURRENT_TIMESTAMP`).notNull(),
+    tags: text({ mode: "json" }).$type<string[]>().default([]).notNull(),
+    deleted: integer({ mode: "boolean" }).default(false).notNull(),
+});
+
+export const SightRelations = relations(Sight, ({ one }) => ({
+    member: one(Member, {
+        fields: [Sight.memberDiscord],
+        references: [Member.discord],
+    }),
+}));
+
 export const Sound = sqliteTable("Sound", {
     id: integer().primaryKey({ autoIncrement: true }),
     title: text().notNull(),
@@ -110,23 +127,6 @@ export const Word = sqliteTable("Word", {
 export const WordRelations = relations(Word, ({ one }) => ({
     member: one(Member, {
         fields: [Word.memberDiscord],
-        references: [Member.discord],
-    }),
-}));
-
-export const Sight = sqliteTable("Sight", {
-    id: integer().primaryKey({ autoIncrement: true }),
-    title: text().notNull(),
-    description: text().notNull(),
-    memberDiscord: text().references(() => Member.discord),
-    date: date().default(sql`CURRENT_TIMESTAMP`).notNull(),
-    tags: text({ mode: "json" }).$type<string[]>().default([]).notNull(),
-    deleted: integer({ mode: "boolean" }).default(false).notNull(),
-});
-
-export const SightRelations = relations(Sight, ({ one }) => ({
-    member: one(Member, {
-        fields: [Sight.memberDiscord],
         references: [Member.discord],
     }),
 }));
