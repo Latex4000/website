@@ -44,6 +44,10 @@ const handleResponseErrors = defineMiddleware(async (_, next) => {
 });
 
 const serveUploadedFilesInDev = defineMiddleware(async (context, next) => {
+    if (!process.env.SIGHTS_UPLOAD_DIRECTORY) {
+        return new Response("SIGHTS_UPLOAD_DIRECTORY not set", { status: 500 });
+    }
+
     if (!process.env.SOUNDS_UPLOAD_DIRECTORY) {
         return new Response("SOUNDS_UPLOAD_DIRECTORY not set", { status: 500 });
     }
@@ -53,6 +57,7 @@ const serveUploadedFilesInDev = defineMiddleware(async (context, next) => {
     }
 
     const rewrites = [
+        ["/sights-uploads/", process.env.SIGHTS_UPLOAD_DIRECTORY + "/"],
         ["/sounds-uploads/", process.env.SOUNDS_UPLOAD_DIRECTORY + "/"],
         ["/words-uploads/", process.env.WORDS_UPLOAD_DIRECTORY + "/"],
     ] as const;
