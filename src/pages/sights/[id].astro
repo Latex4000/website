@@ -36,7 +36,8 @@ const images = await readdir(sightsDirectory);
 ---
 
 <Layout title={sight.title}>
-    <small>{sight.date.toLocaleString()}</small>
+    <small style={{ color: memberColor }}>{sight.description}</small>
+    <small style={{ color: memberColor }}>{sight.date.toLocaleString()}</small>
     <div class="sight-images">
         {
             images.map((image) => (
