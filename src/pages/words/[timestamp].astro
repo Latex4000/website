@@ -23,7 +23,7 @@ const wordResult = await db
         and(
             eq(
                 Word.date,
-                new Date(Number.parseInt(Astro.params.timestamp!, 10) * 1000),
+                new Date(Number.parseInt(Astro.params.timestamp!, 10) * 1000)
             ),
             eq(Word.deleted, false)
         )
@@ -44,7 +44,7 @@ const purifiedHtml = serverHTMLPurify(wordHtml, ".word-markdown");
 ---
 
 <Layout title={word.title}>
-    <small>{word.date.toLocaleString()}</small>
+    <small style={{ color: memberColor }}>{word.date.toLocaleString()}</small>
     <div class="word-markdown" set:html={purifiedHtml} />
     <p style={{ color: memberColor }}>-L</p>
     <div class="tags">

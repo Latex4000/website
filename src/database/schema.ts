@@ -55,10 +55,11 @@ export const Member = sqliteTable("Member", {
 });
 
 export const MemberRelations = relations(Member, ({ many }) => ({
-    words: many(Word),
-    motions: many(Motion),
-    sounds: many(Sound),
     actions: many(Action),
+    motions: many(Motion),
+    sights: many(Sight),
+    sounds: many(Sound),
+    words: many(Word),
 }));
 
 export const Motion = sqliteTable("Motion", {
@@ -74,6 +75,23 @@ export const Motion = sqliteTable("Motion", {
 export const MotionRelations = relations(Motion, ({ one }) => ({
     member: one(Member, {
         fields: [Motion.memberDiscord],
+        references: [Member.discord],
+    }),
+}));
+
+export const Sight = sqliteTable("Sight", {
+    id: integer().primaryKey({ autoIncrement: true }),
+    title: text().notNull(),
+    description: text().notNull(),
+    memberDiscord: text().references(() => Member.discord),
+    date: date().default(sql`CURRENT_TIMESTAMP`).notNull(),
+    tags: text({ mode: "json" }).$type<string[]>().default([]).notNull(),
+    deleted: integer({ mode: "boolean" }).default(false).notNull(),
+});
+
+export const SightRelations = relations(Sight, ({ one }) => ({
+    member: one(Member, {
+        fields: [Sight.memberDiscord],
         references: [Member.discord],
     }),
 }));
