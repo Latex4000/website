@@ -11,11 +11,6 @@ if (!process.env.SIGHTS_UPLOAD_DIRECTORY) {
     return new Response("SIGHTS_UPLOAD_DIRECTORY not set", { status: 500 });
 }
 
-console.log(
-    Astro.params,
-    new Date(Number.parseInt(Astro.params.timestamp!, 10) * 1000)
-);
-
 const sightResult = await db
     .select({
         sight: Sight,
@@ -25,10 +20,7 @@ const sightResult = await db
     .leftJoin(Member, eq(Sight.memberDiscord, Member.discord))
     .where(
         and(
-            eq(
-                Sight.date,
-                new Date(Number.parseInt(Astro.params.timestamp!, 10) * 1000)
-            ),
+            eq(Sight.id, Number.parseInt(Astro.params.id!, 10)),
             eq(Sight.deleted, false)
         )
     )
@@ -46,7 +38,11 @@ const images = await readdir(sightsDirectory);
 <Layout title={sight.title}>
     <small>{sight.date.toLocaleString()}</small>
     <div class="sight-images">
-        {images.map((image) => <img src={`/sights-uploads/${sight.id}/${image}`} alt={image} />)}
+        {
+            images.map((image) => (
+                <img src={`/sights-uploads/${sight.id}/${image}`} alt={image} />
+            ))
+        }
     </div>
     <p style={{ color: memberColor }}>-L</p>
     <div class="tags">
