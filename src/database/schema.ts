@@ -55,10 +55,11 @@ export const Member = sqliteTable("Member", {
 });
 
 export const MemberRelations = relations(Member, ({ many }) => ({
-    words: many(Word),
-    motions: many(Motion),
-    sounds: many(Sound),
     actions: many(Action),
+    motions: many(Motion),
+    sights: many(Sight),
+    sounds: many(Sound),
+    words: many(Word),
 }));
 
 export const Motion = sqliteTable("Motion", {
