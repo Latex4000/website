@@ -119,7 +119,7 @@ export const Sight = sqliteTable("Sight", {
     title: text().notNull(),
     description: text().notNull(),
     memberDiscord: text().references(() => Member.discord),
-    date: date().default(sql`CURRENT_TIMESTAMP`).notNull().unique(),
+    date: date().default(sql`CURRENT_TIMESTAMP`).notNull(),
     tags: text({ mode: "json" }).$type<string[]>().default([]).notNull(),
     deleted: integer({ mode: "boolean" }).default(false).notNull(),
 });
