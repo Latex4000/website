@@ -12,7 +12,3 @@ export default db;
 export function wordId(word: Pick<InferSelectModel<typeof schema.Word>, "date">): string {
     return Math.floor(word.date.getTime() / 1000).toString(10);
 }
-
-export function sightId(sight: Pick<InferSelectModel<typeof schema.Sight>, "date">): string {
-    return Math.floor(sight.date.getTime() / 1000).toString(10);
-}

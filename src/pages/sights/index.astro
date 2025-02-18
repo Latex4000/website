@@ -1,7 +1,7 @@
 ---
 import { desc, eq } from 'drizzle-orm';
 import Layout from '../../layouts/Layout.astro';
-import db, { sightId } from '../../database/db';
+import db from '../../database/db';
 import { Member, Sight } from '../../database/schema';
 
 export const prerender = false;
@@ -25,7 +25,7 @@ const sightResults = await db
             {sightResults.map(({ memberColor, sight }) => {
                 return (
                     <li title={memberColor ?? "ANON"} style={`--marker-color: ${memberColor}`}>
-                        <a href={`/sights/${sightId(sight)}`}>{sight.title}<br>{sight.date.toLocaleString()}</a>
+                        <a href={`/sights/${sight.id}`}>{sight.title}<br>{sight.date.toLocaleString()}</a>
                     </li>
                 );
             })}
