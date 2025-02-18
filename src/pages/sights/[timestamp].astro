@@ -2,7 +2,7 @@
 import { and, eq } from "drizzle-orm";
 import Layout from "../../layouts/Layout.astro";
 import { readdir } from "fs/promises";
-import db, { sightId } from "../../database/db";
+import db from "../../database/db";
 import { Member, Sight } from "../../database/schema";
 
 export const prerender = false;
@@ -39,14 +39,14 @@ if (sightResult == null) {
 }
 
 const { memberColor, sight } = sightResult;
-const sightsDirectory = `${process.env.SIGHTS_UPLOAD_DIRECTORY}/${sightId(sight)}`;
+const sightsDirectory = `${process.env.SIGHTS_UPLOAD_DIRECTORY}/${sight.id}`;
 const images = await readdir(sightsDirectory);
 ---
 
 <Layout title={sight.title}>
     <small>{sight.date.toLocaleString()}</small>
     <div class="sight-images">
-        {images.map((image) => <img src={image} alt={image} />)}
+        {images.map((image) => <img src={`/sights-uploads/${sight.id}/${image}`} alt={image} />)}
     </div>
     <p style={{ color: memberColor }}>-L</p>
     <div class="tags">
