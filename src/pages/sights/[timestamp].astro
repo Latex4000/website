@@ -1,0 +1,55 @@
+---
+import { and, eq } from "drizzle-orm";
+import Layout from "../../layouts/Layout.astro";
+import { readdir } from "fs/promises";
+import db, { sightId } from "../../database/db";
+import { Member, Sight } from "../../database/schema";
+
+export const prerender = false;
+
+if (!process.env.SIGHTS_UPLOAD_DIRECTORY) {
+    return new Response("SIGHTS_UPLOAD_DIRECTORY not set", { status: 500 });
+}
+
+console.log(
+    Astro.params,
+    new Date(Number.parseInt(Astro.params.timestamp!, 10) * 1000)
+);
+
+const sightResult = await db
+    .select({
+        sight: Sight,
+        memberColor: Member.color,
+    })
+    .from(Sight)
+    .leftJoin(Member, eq(Sight.memberDiscord, Member.discord))
+    .where(
+        and(
+            eq(
+                Sight.date,
+                new Date(Number.parseInt(Astro.params.timestamp!, 10) * 1000)
+            ),
+            eq(Sight.deleted, false)
+        )
+    )
+    .get();
+
+if (sightResult == null) {
+    return new Response(null, { status: 404 });
+}
+
+const { memberColor, sight } = sightResult;
+const sightsDirectory = `${process.env.SIGHTS_UPLOAD_DIRECTORY}/${sightId(sight)}`;
+const images = await readdir(sightsDirectory);
+---
+
+<Layout title={sight.title}>
+    <small>{sight.date.toLocaleString()}</small>
+    <div class="sight-images">
+        {images.map((image) => <img src={image} alt={image} />)}
+    </div>
+    <p style={{ color: memberColor }}>-L</p>
+    <div class="tags">
+        {sight.tags.map((tag) => <small>{tag}</small>)}
+    </div>
+</Layout>

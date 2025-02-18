@@ -113,3 +113,20 @@ export const WordRelations = relations(Word, ({ one }) => ({
         references: [Member.discord],
     }),
 }));
+
+export const Sight = sqliteTable("Sight", {
+    id: integer().primaryKey({ autoIncrement: true }),
+    title: text().notNull(),
+    description: text().notNull(),
+    memberDiscord: text().references(() => Member.discord),
+    date: date().default(sql`CURRENT_TIMESTAMP`).notNull().unique(),
+    tags: text({ mode: "json" }).$type<string[]>().default([]).notNull(),
+    deleted: integer({ mode: "boolean" }).default(false).notNull(),
+});
+
+export const SightRelations = relations(Sight, ({ one }) => ({
+    member: one(Member, {
+        fields: [Sight.memberDiscord],
+        references: [Member.discord],
+    }),
+}));
