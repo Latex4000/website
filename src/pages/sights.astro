@@ -55,6 +55,9 @@ for (const filename of filenames) {
                                 .map((filename) => (
                                     <img
                                         alt=""
+                                        class:list={[
+                                            sight.pixelated && "pixelated",
+                                        ]}
                                         src={`/sights-uploads/${sight.id}/${filename}`}
                                     />
                                 ))}
@@ -142,5 +145,9 @@ for (const filename of filenames) {
     .sight__date {
         color: var(--text-color-alt);
         text-align: center;
+    }
+
+    .pixelated {
+        image-rendering: pixelated;
     }
 </style>

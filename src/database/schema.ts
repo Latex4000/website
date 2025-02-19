@@ -89,6 +89,7 @@ export const Sight = sqliteTable("Sight", {
     tags: text({ mode: "json" }).$type<string[]>().default([]).notNull(),
     deleted: integer({ mode: "boolean" }).default(false).notNull(),
     showColour: integer({ mode: "boolean" }).default(true).notNull(),
+    pixelated: integer({ mode: "boolean" }).default(false).notNull(),
 });
 
 export const SightRelations = relations(Sight, ({ one }) => ({
