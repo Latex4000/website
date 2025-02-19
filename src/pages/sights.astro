@@ -66,7 +66,7 @@ for (const filename of filenames) {
                         <h3>{sight.title}</h3>
                         <div
                             class="sight__date"
-                            style={{ color: sight.memberColor }}
+                            style={{ color: sight.showColour ? sight.memberColor : undefined }}
                         >
                             {sight.date.toLocaleString()}
                         </div>
