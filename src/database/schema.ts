@@ -70,6 +70,7 @@ export const Motion = sqliteTable("Motion", {
     date: date().default(sql`CURRENT_TIMESTAMP`).notNull(),
     tags: text({ mode: "json" }).$type<string[]>().default([]).notNull(),
     deleted: integer({ mode: "boolean" }).default(false).notNull(),
+    showColour: integer({ mode: "boolean" }).default(true).notNull(),
 });
 
 export const MotionRelations = relations(Motion, ({ one }) => ({
@@ -87,6 +88,7 @@ export const Sight = sqliteTable("Sight", {
     date: date().default(sql`CURRENT_TIMESTAMP`).notNull(),
     tags: text({ mode: "json" }).$type<string[]>().default([]).notNull(),
     deleted: integer({ mode: "boolean" }).default(false).notNull(),
+    showColour: integer({ mode: "boolean" }).default(true).notNull(),
 });
 
 export const SightRelations = relations(Sight, ({ one }) => ({
@@ -107,6 +109,7 @@ export const Sound = sqliteTable("Sound", {
     trackType: text({ enum: ["mp3", "wav"] }).notNull(),
     coverType: text({ enum: ["jpg", "png"] }).notNull(),
     deleted: integer({ mode: "boolean" }).default(false).notNull(),
+    showColour: integer({ mode: "boolean" }).default(true).notNull(),
 });
 
 export const SoundRelations = relations(Sound, ({ one }) => ({
@@ -123,6 +126,7 @@ export const Word = sqliteTable("Word", {
     date: date().default(sql`CURRENT_TIMESTAMP`).notNull().unique(),
     tags: text({ mode: "json" }).$type<string[]>().default([]).notNull(),
     deleted: integer({ mode: "boolean" }).default(false).notNull(),
+    showColour: integer({ mode: "boolean" }).default(true).notNull(),
 });
 
 export const WordRelations = relations(Word, ({ one }) => ({
