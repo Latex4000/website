@@ -8,7 +8,7 @@ const urls = [
     "/sounds",
     "/words",
     "/motions",
-    // "/sights",
+    "/sights",
     // "/things",
 ];
 
