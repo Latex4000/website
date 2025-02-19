@@ -34,10 +34,11 @@ export const POST: APIRoute = async ({ request }) => {
     const track = await getFileOrDiscordAttachment(formData.get("track"));
     const cover = await getFileOrDiscordAttachment(formData.get("cover"));
     const tags = formData.get("tags") ?? "";
+    const showColour = formData.get("colour") === "true";
 
     // Form validation
     if (
-        !(discord == null || typeof discord === "string") ||
+        typeof discord !== "string" ||
         typeof title !== "string" ||
         !(soundcloudUrl == null || (typeof soundcloudUrl === "string" && URL.canParse(soundcloudUrl))) ||
         !(youtubeUrl == null || (typeof youtubeUrl === "string" && URL.canParse(youtubeUrl))) ||
@@ -75,6 +76,7 @@ export const POST: APIRoute = async ({ request }) => {
                 tags: getTags(tags),
                 trackType,
                 coverType,
+                showColour,
             })
             .returning()
             .get();

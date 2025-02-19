@@ -33,10 +33,11 @@ export const POST: APIRoute = async (context) => {
     const description = formData.get("description");
     const tags = formData.get("tags") ?? "";
     const assetFiles = formData.getAll("assets") as File[];
+    const showColour = formData.get("colour") === "true";
 
     // Form validation
     if (
-        !(discord == null || typeof discord === "string") ||
+        typeof discord !== "string" ||
         typeof title !== "string" ||
         typeof description !== "string" ||
         typeof tags !== "string" ||
@@ -90,6 +91,7 @@ export const POST: APIRoute = async (context) => {
                         : tags.split(",").map((tag) => tag.trim()),
                 title,
                 description,
+                showColour,
             })
             .returning()
             .get();

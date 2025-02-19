@@ -13,7 +13,7 @@ const wordResults = await db
     })
     .from(Word)
     .where(eq(Word.deleted, false))
-    .leftJoin(Member, eq(Word.memberDiscord, Member.discord))
+    .innerJoin(Member, eq(Word.memberDiscord, Member.discord))
     .orderBy(desc(Word.id));
 ---
 
@@ -23,7 +23,7 @@ const wordResults = await db
         <ul>
             {wordResults.map(({ memberColor, word }) => {
                 return (
-                    <li title={memberColor ?? "ANON"} style={`--marker-color: ${memberColor}`}>
+                    <li title={word.showColour ? memberColor : "ANON"} style={`--marker-color: ${word.showColour ? memberColor : "inherit"}`}>
                         <a href={`/words/${wordId(word)}`}>{word.title}<br>{word.date.toLocaleString()}</a>
                     </li>
                 );
