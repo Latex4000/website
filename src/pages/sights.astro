@@ -1,9 +1,9 @@
 ---
-import { readdir } from 'node:fs/promises';
-import { desc, eq, getTableColumns } from 'drizzle-orm';
-import db from '../database/db';
-import { Member, Sight } from '../database/schema';
-import Layout from '../layouts/Layout.astro';
+import { readdir } from "node:fs/promises";
+import { desc, eq, getTableColumns } from "drizzle-orm";
+import db from "../database/db";
+import { Member, Sight } from "../database/schema";
+import Layout from "../layouts/Layout.astro";
 
 export const prerender = false;
 
@@ -21,7 +21,9 @@ const sights = await db
     .where(eq(Sight.deleted, false))
     .orderBy(desc(Sight.id));
 
-const filenames = await readdir(process.env.SIGHTS_UPLOAD_DIRECTORY, { recursive: true });
+const filenames = await readdir(process.env.SIGHTS_UPLOAD_DIRECTORY, {
+    recursive: true,
+});
 const filenamesById: Record<number, string[]> = {};
 
 for (const filename of filenames) {
@@ -34,25 +36,43 @@ for (const filename of filenames) {
 }
 ---
 
-<Layout header="Sights">
+<Layout
+    header="Sights"
+    title="Sights"
+    description="Sights created by the Latex 4000 Collective"
+>
     <p>Welcome to my web sight</p>
-    {sights.length > 0 ? (
-        <div class="sights-grid">
-            {sights.map((sight) => (
-                <div class="sight">
-                    <div class={`sight__images sight__images--${Math.min(3, filenamesById[sight.id]?.length ?? 0)}`}>
-                        {filenamesById[sight.id]?.slice(0, 3).map((filename) => (
-                            <img alt="" src={`/sights-uploads/${sight.id}/${filename}`} />
-                        ))}
+    {
+        sights.length > 0 ? (
+            <div class="sights-grid">
+                {sights.map((sight) => (
+                    <div class="sight">
+                        <div
+                            class={`sight__images sight__images--${Math.min(3, filenamesById[sight.id]?.length ?? 0)}`}
+                        >
+                            {filenamesById[sight.id]
+                                ?.slice(0, 3)
+                                .map((filename) => (
+                                    <img
+                                        alt=""
+                                        src={`/sights-uploads/${sight.id}/${filename}`}
+                                    />
+                                ))}
+                        </div>
+                        <h3>{sight.title}</h3>
+                        <div
+                            class="sight__date"
+                            style={{ color: sight.memberColor }}
+                        >
+                            {sight.date.toLocaleString()}
+                        </div>
                     </div>
-                    <h3>{sight.title}</h3>
-                    <div class="sight__date" style={{ color: sight.memberColor }}>{sight.date.toLocaleString()}</div>
-                </div>
-            ))}
-        </div>
-    ) : (
-        <p>No sights currently</p>
-    )}
+                ))}
+            </div>
+        ) : (
+            <p>No sights currently</p>
+        )
+    }
 </Layout>
 
 <style is:global>

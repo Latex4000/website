@@ -2,7 +2,18 @@
 import { ThemeLoader, ThemeSelect, ThemeStyling } from "nottheme";
 import settings from "../styles/nottheme";
 import "../styles/index.css";
-const { header, title } = Astro.props;
+const { header, title, description, colour } = Astro.props;
+const keywords =
+    "Latex 4000, Latex, latex, 4000, collective, webring, art, music, organization, design, web";
+const schema = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: title || "Latex 4000",
+    description: description || "Latex 4000 Collective",
+    url: Astro.url.toString(),
+    keywords,
+    logo: new URL("/logo.png", Astro.url).toString(),
+});
 ---
 
 <!doctype html>
@@ -13,6 +24,7 @@ const { header, title } = Astro.props;
         <meta name="generator" content={Astro.generator} />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="sitemap" href="/sitemap-index.xml" />
+        <link rel="canonical" href={Astro.url.toString()} />
         <link
             rel="alternate"
             type="application/rss+xml"
@@ -20,21 +32,36 @@ const { header, title } = Astro.props;
             href={new URL("/rss.xml", Astro.url)}
         />
         <title>{title || "Latex 4000"}</title>
-        <meta name="description" content="Latex 4000 Collective" />
+        <meta
+            name="description"
+            content={description || "Latex 4000 Collective"}
+        />
         <meta name="author" content="Latex 4000" />
-        <meta name="keywords" content="Latex 4000, collective, webring" />
+        <meta name="keywords" content={keywords} />
+        <meta name="theme-color" content={colour || "#000000"} />
+
         <meta name="twitter:card" content="summary" />
         <meta name="twitter:site" content="@Latex4000" />
         <meta name="twitter:title" content={title || "Latex 4000"} />
-        <meta name="twitter:description" content="Latex 4000 Collective" />
+        <meta
+            name="twitter:description"
+            content={description || "Latex 4000 Collective"}
+        />
         <meta name="twitter:image" content={new URL("/logo.png", Astro.url)} />
+
         <meta property="og:title" content={title || "Latex 4000"} />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={Astro.url} />
         <meta property="og:image" content={new URL("/logo.png", Astro.url)} />
-        <meta property="og:description" content="Latex 4000 Collective" />
+        <meta
+            property="og:description"
+            content={description || "Latex 4000 Collective"}
+        />
         <meta property="og:site_name" content="Latex 4000" />
         <meta property="og:locale" content="en_US" />
+
+        <script type="application/ld+json" set:html={schema} />
+
         <link id="theme-link" rel="stylesheet" href="/styles/mono.css" />
         <ThemeStyling settings={settings} />
         <script>

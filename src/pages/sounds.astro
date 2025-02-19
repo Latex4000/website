@@ -15,7 +15,11 @@ const sounds = await db
     .orderBy(desc(Sound.id));
 ---
 
-<Layout header="Sounds">
+<Layout
+    header="Sounds"
+    title="Sounds"
+    description="Sounds created by the Latex 4000 Collective"
+>
     A lot of us in the group make music. This is some music we have released
     under the collective's name instead of our own:
     <div class="sounds">

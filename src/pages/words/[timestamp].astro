@@ -44,7 +44,7 @@ const wordHtml = await readFile(
 const purifiedHtml = serverHTMLPurify(wordHtml, ".word-markdown");
 ---
 
-<Layout title={word.title}>
+<Layout title={word.title} description={word.title} colour={shownColour}>
     <small style={{ color: shownColour }}>{word.date.toLocaleString()}</small>
     <div class="word-markdown" set:html={purifiedHtml} />
     <p style={{ color: shownColour }}>-L</p>

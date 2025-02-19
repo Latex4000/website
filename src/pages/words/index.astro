@@ -17,7 +17,7 @@ const wordResults = await db
     .orderBy(desc(Word.id));
 ---
 
-<Layout header="Words">
+<Layout header="Words" title="Words" description="Words created by the Latex 4000 Collective">
     {wordResults.length > 0 ? (
         <p>Here are some words</p>
         <ul>

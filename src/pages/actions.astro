@@ -21,11 +21,15 @@ const actions: ActionList[] = await db
         actions.map((row) => ({
             ...row,
             type: detectFeedType(row.url),
-        })),
+        }))
     );
 ---
 
-<Layout header="Actions">
+<Layout
+    header="Actions"
+    title="Actions"
+    description="Actions from the Latex 4000 Collective"
+>
     <h4>
         Here's a list of socials of each of ours, and the latest posts from each
         of them.
