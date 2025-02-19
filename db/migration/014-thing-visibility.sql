@@ -11,7 +11,7 @@ CREATE TABLE "_tmp_Sight" (
 );
 
 INSERT INTO "_tmp_Sight"
-    SELECT *
+    SELECT "id", "title", "description", "memberDiscord", "date", "tags", "deleted", 1
     FROM "Sight";
 
 DROP TABLE "Sight";
@@ -29,7 +29,7 @@ CREATE TABLE "_tmp_Word" (
 );
 
 INSERT INTO "_tmp_Word"
-    SELECT *
+    SELECT "id", "title", "memberDiscord", "date", "tags", "deleted", 1
     FROM "Word";
 
 DROP TABLE "Word";
@@ -51,7 +51,7 @@ CREATE TABLE "_tmp_Sound" (
 );
 
 INSERT INTO "_tmp_Sound"
-	SELECT *
+	SELECT "id", "title", "memberDiscord", "youtubeUrl", "soundcloudUrl", "date", "tags", "trackType", "coverType", "deleted", 1
 	FROM "Sound";
 
 DROP TABLE "Sound";
@@ -70,7 +70,7 @@ CREATE TABLE "_tmp_Motion" (
 );
 
 INSERT INTO "_tmp_Motion"
-    SELECT *
+    SELECT "id", "title", "youtubeUrl", "memberDiscord", "date", "tags", "deleted", 1
     FROM "Motion";
 
 DROP TABLE "Motion";
