@@ -41,7 +41,7 @@ export const POST: APIRoute = async (context) => {
 
     // Form validation
     if (
-        !(discord == null || typeof discord === "string") ||
+        typeof discord !== "string" ||
         typeof title !== "string" ||
         typeof tags !== "string" ||
         typeof md !== "string" ||

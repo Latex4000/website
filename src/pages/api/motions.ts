@@ -21,9 +21,11 @@ export const POST: APIRoute = async ({ request }) => {
     if (
         !motionData.title ||
         !motionData.youtubeUrl ||
+        !motionData.memberDiscord ||
         !motionData.tags ||
         typeof motionData.title !== "string" ||
         typeof motionData.youtubeUrl !== "string" ||
+        typeof motionData.memberDiscord !== "string" ||
         !URL.canParse(motionData.youtubeUrl) ||
         !Array.isArray(motionData.tags) ||
         !motionData.tags.every((tag: unknown) => typeof tag === "string")
