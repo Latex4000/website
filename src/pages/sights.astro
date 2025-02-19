@@ -40,13 +40,13 @@ for (const filename of filenames) {
         <div class="sights-grid">
             {sights.map((sight) => (
                 <div class="sight">
-                    <div>
-                        {filenamesById[sight.id]?.map((filename) => (
+                    <div class={`sight__images sight__images--${Math.min(3, filenamesById[sight.id]?.length ?? 0)}`}>
+                        {filenamesById[sight.id]?.slice(0, 3).map((filename) => (
                             <img alt="" src={`/sights-uploads/${sight.id}/${filename}`} />
                         ))}
                     </div>
                     <h3>{sight.title}</h3>
-                    <div style={{ color: sight.memberColor }}>{sight.date.toLocaleString()}</div>
+                    <div class="sight__date" style={{ color: sight.memberColor }}>{sight.date.toLocaleString()}</div>
                 </div>
             ))}
         </div>
@@ -55,22 +55,59 @@ for (const filename of filenames) {
     )}
 </Layout>
 
+<style is:global>
+    body:is(.themes-latex-light, .themes-latex-dark) .sights-grid {
+        margin-top: 1rem;
+    }
+</style>
+
 <style>
     .sights-grid {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr;
         gap: 2lh 2ch;
     }
 
-    .sight {
-        display: flex;
-        flex-direction: column;
+    @media (min-width: 600px) {
+        .sights-grid {
+            grid-template-columns: 1fr 1fr;
+        }
     }
 
-    .sight img {
+    .sight__images {
         aspect-ratio: 4 / 3;
-        object-fit: contain;
-        background-color: var(--background-color-alt);
+        position: relative;
+    }
+
+    .sight__images img {
+        aspect-ratio: 4 / 3;
+        display: block;
+        object-fit: cover;
+        position: absolute;
+        width: 100%;
+    }
+
+    .sight__images--2 img {
+        width: calc(100% - 2ch);
+    }
+
+    .sight__images--3 img {
+        width: calc(100% - 4ch);
+    }
+
+    .sight__images img:nth-child(1) {
+        top: 0;
+        left: 0;
+    }
+
+    .sight__images img:nth-child(2) {
+        top: calc(2ch * 3 / 4);
+        left: 2ch;
+    }
+
+    .sight__images img:nth-child(3) {
+        top: calc(4ch * 3 / 4);
+        left: 4ch;
     }
 
     .sight h3 {
@@ -78,7 +115,7 @@ for (const filename of filenames) {
         text-align: center;
     }
 
-    .sight :last-child {
+    .sight__date {
         color: var(--text-color-alt);
         text-align: center;
     }
