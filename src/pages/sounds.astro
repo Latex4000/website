@@ -3,7 +3,7 @@ import { desc, eq } from "drizzle-orm";
 import Layout from "../layouts/Layout.astro";
 import AudioPlayer from "../components/AudioPlayer";
 import db from "../database/db";
-import { Sound } from "../database/schema";
+import { Member, Sound } from "../database/schema";
 
 export const prerender = false;
 
@@ -11,6 +11,7 @@ const sounds = await db
     .select()
     .from(Sound)
     .where(eq(Sound.deleted, false))
+    .innerJoin(Member, eq(Sound.memberDiscord, Member.discord))
     .orderBy(desc(Sound.id));
 ---
 
@@ -19,11 +20,16 @@ const sounds = await db
     under the collective's name instead of our own:
     <div class="sounds">
         {
-            sounds.map((sound) => (
+            sounds.map(({ Sound: sound, Member: member }) => (
                 <div class="sound">
                     <img
                         alt=""
                         src={`/sounds-uploads/${sound.id}/cover.${sound.coverType}`}
+                        style={{
+                            border: sound.showColour
+                                ? `var(--border-thickness) solid ${member.color}`
+                                : "none",
+                        }}
                     />
                     <div class="details">
                         <h2>{sound.title}</h2>

@@ -1,7 +1,7 @@
 ---
 import { desc, eq } from "drizzle-orm";
 import db from "../database/db";
-import { Motion } from "../database/schema";
+import { Member, Motion } from "../database/schema";
 import Layout from "../layouts/Layout.astro";
 
 export const prerender = false;
@@ -10,6 +10,7 @@ const motions = await db
     .select()
     .from(Motion)
     .where(eq(Motion.deleted, false))
+    .innerJoin(Member, eq(Motion.memberDiscord, Member.discord))
     .orderBy(desc(Motion.id));
 ---
 
@@ -18,13 +19,16 @@ const motions = await db
     the collective's name instead of our own:
     <div class="motions">
         {
-            motions.map((motion) => (
+            motions.map(({ Motion: motion, Member: member }) => (
                 <div class="motion">
                     <iframe
                         src={motion.youtubeUrl.replace(/watch\?v=/, "embed/")}
                         style={{
                             width: "16lh",
                             height: "9lh",
+                            border: motion.showColour
+                                ? `var(--border-thickness) solid ${member.color}`
+                                : "none",
                         }}
                         title="YouTube video player"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"

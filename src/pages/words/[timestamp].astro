@@ -18,7 +18,7 @@ const wordResult = await db
         memberColor: Member.color,
     })
     .from(Word)
-    .leftJoin(Member, eq(Word.memberDiscord, Member.discord))
+    .innerJoin(Member, eq(Word.memberDiscord, Member.discord))
     .where(
         and(
             eq(
@@ -35,6 +35,7 @@ if (wordResult == null) {
 }
 
 const { memberColor, word } = wordResult;
+const shownColour = word.showColour ? memberColor : "inherit";
 const wordHtml = await readFile(
     `${process.env.WORDS_UPLOAD_DIRECTORY}/${wordId(word)}/words.html`,
     "utf8"
@@ -44,9 +45,9 @@ const purifiedHtml = serverHTMLPurify(wordHtml, ".word-markdown");
 ---
 
 <Layout title={word.title}>
-    <small style={{ color: memberColor }}>{word.date.toLocaleString()}</small>
+    <small style={{ color: shownColour }}>{word.date.toLocaleString()}</small>
     <div class="word-markdown" set:html={purifiedHtml} />
-    <p style={{ color: memberColor }}>-L</p>
+    <p style={{ color: shownColour }}>-L</p>
     <div class="tags">
         {word.tags.map((tag) => <small>{tag}</small>)}
     </div>
