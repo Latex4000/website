@@ -17,7 +17,7 @@ const sights = await db
         memberColor: Member.color,
     })
     .from(Sight)
-    .leftJoin(Member, eq(Sight.memberDiscord, Member.discord))
+    .innerJoin(Member, eq(Sight.memberDiscord, Member.discord))
     .where(eq(Sight.deleted, false))
     .orderBy(desc(Sight.id));
 
