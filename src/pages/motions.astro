@@ -1,5 +1,5 @@
 ---
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, getTableColumns } from "drizzle-orm";
 import db from "../database/db";
 import { Member, Motion } from "../database/schema";
 import Layout from "../layouts/Layout.astro";
@@ -7,7 +7,10 @@ import Layout from "../layouts/Layout.astro";
 export const prerender = false;
 
 const motions = await db
-    .select()
+    .select({
+        ...getTableColumns(Motion),
+        memberColor: Member.color,
+    })
     .from(Motion)
     .where(eq(Motion.deleted, false))
     .innerJoin(Member, eq(Motion.memberDiscord, Member.discord))
@@ -23,7 +26,7 @@ const motions = await db
     the collective's name instead of our own:
     <div class="motions">
         {
-            motions.map(({ Motion: motion, Member: member }) => (
+            motions.map((motion) => (
                 <div class="motion">
                     <iframe
                         src={motion.youtubeUrl.replace(/watch\?v=/, "embed/")}
@@ -31,7 +34,7 @@ const motions = await db
                             width: "16lh",
                             height: "9lh",
                             border: motion.showColour
-                                ? `var(--border-thickness) solid ${member.color}`
+                                ? `var(--border-thickness) solid ${motion.memberColor}`
                                 : "none",
                         }}
                         title="YouTube video player"

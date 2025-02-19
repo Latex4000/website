@@ -1,5 +1,5 @@
 ---
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, getTableColumns } from "drizzle-orm";
 import Layout from "../layouts/Layout.astro";
 import AudioPlayer from "../components/AudioPlayer";
 import db from "../database/db";
@@ -8,7 +8,10 @@ import { Member, Sound } from "../database/schema";
 export const prerender = false;
 
 const sounds = await db
-    .select()
+    .select({
+        ...getTableColumns(Sound),
+        memberColor: Member.color,
+    })
     .from(Sound)
     .where(eq(Sound.deleted, false))
     .innerJoin(Member, eq(Sound.memberDiscord, Member.discord))
@@ -24,14 +27,14 @@ const sounds = await db
     under the collective's name instead of our own:
     <div class="sounds">
         {
-            sounds.map(({ Sound: sound, Member: member }) => (
+            sounds.map((sound) => (
                 <div class="sound">
                     <img
                         alt=""
                         src={`/sounds-uploads/${sound.id}/cover.${sound.coverType}`}
                         style={{
                             border: sound.showColour
-                                ? `var(--border-thickness) solid ${member.color}`
+                                ? `var(--border-thickness) solid ${sound.memberColor}`
                                 : "none",
                         }}
                     />
