@@ -1,0 +1,85 @@
+---
+import { readdir } from 'node:fs/promises';
+import { desc, eq, getTableColumns } from 'drizzle-orm';
+import db from '../database/db';
+import { Member, Sight } from '../database/schema';
+import Layout from '../layouts/Layout.astro';
+
+export const prerender = false;
+
+if (!process.env.SIGHTS_UPLOAD_DIRECTORY) {
+    return new Response("SIGHTS_UPLOAD_DIRECTORY not set", { status: 500 });
+}
+
+const sights = await db
+    .select({
+        ...getTableColumns(Sight),
+        memberColor: Member.color,
+    })
+    .from(Sight)
+    .leftJoin(Member, eq(Sight.memberDiscord, Member.discord))
+    .where(eq(Sight.deleted, false))
+    .orderBy(desc(Sight.id));
+
+const filenames = await readdir(process.env.SIGHTS_UPLOAD_DIRECTORY, { recursive: true });
+const filenamesById: Record<number, string[]> = {};
+
+for (const filename of filenames) {
+    const parts = filename.split("/") as [number, string];
+
+    if (parts.length === 2) {
+        filenamesById[parts[0]] ??= [];
+        filenamesById[parts[0]]!.push(parts[1]);
+    }
+}
+---
+
+<Layout header="Sights">
+    <p>Welcome to my web sight</p>
+    {sights.length > 0 ? (
+        <div class="sights-grid">
+            {sights.map((sight) => (
+                <div class="sight">
+                    <div>
+                        {filenamesById[sight.id]?.map((filename) => (
+                            <img alt="" src={`/sights-uploads/${sight.id}/${filename}`} />
+                        ))}
+                    </div>
+                    <h3>{sight.title}</h3>
+                    <div style={{ color: sight.memberColor }}>{sight.date.toLocaleString()}</div>
+                </div>
+            ))}
+        </div>
+    ) : (
+        <p>No sights currently</p>
+    )}
+</Layout>
+
+<style>
+    .sights-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2lh 2ch;
+    }
+
+    .sight {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .sight img {
+        aspect-ratio: 4 / 3;
+        object-fit: contain;
+        background-color: var(--background-color-alt);
+    }
+
+    .sight h3 {
+        margin: 1lh 0 0 0;
+        text-align: center;
+    }
+
+    .sight :last-child {
+        color: var(--text-color-alt);
+        text-align: center;
+    }
+</style>
