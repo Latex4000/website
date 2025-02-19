@@ -15,9 +15,6 @@ export const POST: APIRoute = async ({ request }) => {
 
     const motionData = await request.json();
 
-    if (motionData.memberDiscord && typeof motionData.memberDiscord !== "string")
-        return jsonError("Invalid motion data");
-
     if (
         !motionData.title ||
         !motionData.youtubeUrl ||
@@ -26,6 +23,7 @@ export const POST: APIRoute = async ({ request }) => {
         typeof motionData.title !== "string" ||
         typeof motionData.youtubeUrl !== "string" ||
         typeof motionData.memberDiscord !== "string" ||
+        typeof motionData.showColour !== "boolean" ||
         !URL.canParse(motionData.youtubeUrl) ||
         !Array.isArray(motionData.tags) ||
         !motionData.tags.every((tag: unknown) => typeof tag === "string")
@@ -45,6 +43,7 @@ export const POST: APIRoute = async ({ request }) => {
                     youtubeUrl: motionData.youtubeUrl,
                     memberDiscord: motionData.memberDiscord,
                     tags: motionData.tags,
+                    showColour: motionData.showColour,
                 })
                 .returning()
                 .get(),

@@ -38,6 +38,7 @@ export const POST: APIRoute = async (context) => {
     const tags = formData.get("tags") ?? "";
     const md = formData.get("md");
     const assetFiles = formData.getAll("assets") as File[];
+    const showColour = formData.get("colour") === "true";
 
     // Form validation
     if (
@@ -93,6 +94,7 @@ export const POST: APIRoute = async (context) => {
                         ? []
                         : tags.split(",").map((tag) => tag.trim()),
                 title,
+                showColour,
             })
             .returning()
             .get();

@@ -34,6 +34,7 @@ export const POST: APIRoute = async ({ request }) => {
     const track = await getFileOrDiscordAttachment(formData.get("track"));
     const cover = await getFileOrDiscordAttachment(formData.get("cover"));
     const tags = formData.get("tags") ?? "";
+    const showColour = formData.get("colour") === "true";
 
     // Form validation
     if (
@@ -75,6 +76,7 @@ export const POST: APIRoute = async ({ request }) => {
                 tags: getTags(tags),
                 trackType,
                 coverType,
+                showColour,
             })
             .returning()
             .get();
