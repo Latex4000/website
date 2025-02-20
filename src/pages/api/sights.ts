@@ -42,6 +42,7 @@ export const POST: APIRoute = async (context) => {
         typeof title !== "string" ||
         typeof description !== "string" ||
         typeof tags !== "string" ||
+        assetFiles.length === 0 ||
         assetFiles.some((value) => !(value instanceof File))
     ) {
         return jsonError("Invalid form params");
