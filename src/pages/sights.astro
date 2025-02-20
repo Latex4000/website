@@ -24,14 +24,18 @@ const sights = await db
 const filenames = await readdir(process.env.SIGHTS_UPLOAD_DIRECTORY, {
     recursive: true,
 });
-const filenamesById: Record<number, string[]> = {};
+const thumbFilenamesById: Record<number, string[]> = {};
+const fullFilenamesById: Record<number, string[]> = {};
 
 for (const filename of filenames) {
-    const parts = filename.split("/") as [number, string];
-
+    const parts = filename.split("/");
+    const sightId = Number(parts[0]);
     if (parts.length === 2) {
-        filenamesById[parts[0]] ??= [];
-        filenamesById[parts[0]]!.push(parts[1]);
+        fullFilenamesById[sightId] ??= [];
+        fullFilenamesById[sightId].push(parts[1]!);
+    } else if (parts.length === 3 && parts[1] === "thumbs") {
+        thumbFilenamesById[sightId] ??= [];
+        thumbFilenamesById[sightId].push(parts[2]!);
     }
 }
 ---
@@ -42,15 +46,28 @@ for (const filename of filenames) {
     description="Sights created by the Latex 4000 Collective"
 >
     <p>Welcome to my web sight we got {sights.length} sights</p>
+    <noscript>
+        <p>JavaScript is required to view the full-size images</p>
+    </noscript>
     {
         sights.length > 0 ? (
             <div class="sights-grid">
                 {sights.map((sight) => (
-                    <div class="sight">
+                    <div
+                        class="sight"
+                        data-sight-id={sight.id}
+                        data-sight-title={sight.title}
+                        data-sight-desc={sight.description}
+                        data-sight-date={sight.date}
+                        data-sight-pixelated={sight.pixelated}
+                        data-sight-color={
+                            sight.showColour ? sight.memberColor : ""
+                        }
+                    >
                         <div
-                            class={`sight__images sight__images--${Math.min(3, filenamesById[sight.id]?.length ?? 0)}`}
+                            class={`sight__images sight__images--${Math.min(3, thumbFilenamesById[sight.id]?.length ?? 0)}`}
                         >
-                            {filenamesById[sight.id]
+                            {thumbFilenamesById[sight.id]
                                 ?.slice(0, 3)
                                 .map((filename) => (
                                     <img
@@ -58,7 +75,7 @@ for (const filename of filenames) {
                                         class:list={[
                                             sight.pixelated && "pixelated",
                                         ]}
-                                        src={`/sights-uploads/${sight.id}/${filename}`}
+                                        src={`/sights-uploads/${sight.id}/thumbs/${filename}`}
                                         title={sight.description}
                                     />
                                 ))}
@@ -100,6 +117,10 @@ for (const filename of filenames) {
         .sights-grid {
             grid-template-columns: 1fr 1fr;
         }
+    }
+
+    .sight {
+        cursor: pointer;
     }
 
     .sight__images {
