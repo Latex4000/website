@@ -29,11 +29,13 @@ const fullFilenamesById: Record<number, string[]> = {};
 
 for (const filename of filenames) {
     const parts = filename.split("/");
-    const sightId = Number(parts[0]);
     if (parts.length === 2) {
+        if (parts[1] === "thumbs") continue;
+        const sightId = Number(parts[0]);
         fullFilenamesById[sightId] ??= [];
         fullFilenamesById[sightId].push(parts[1]!);
     } else if (parts.length === 3 && parts[1] === "thumbs") {
+        const sightId = Number(parts[0]);
         thumbFilenamesById[sightId] ??= [];
         thumbFilenamesById[sightId].push(parts[2]!);
     }
@@ -58,6 +60,7 @@ for (const filename of filenames) {
                         data-sight-id={sight.id}
                         data-sight-title={sight.title}
                         data-sight-desc={sight.description}
+                        data-sight-tags={sight.tags}
                         data-sight-date={sight.date}
                         data-sight-pixelated={sight.pixelated}
                         data-sight-color={
@@ -98,6 +101,26 @@ for (const filename of filenames) {
             <p>No sights currently</p>
         )
     }
+
+    {/* Overlay for full–size images */}
+    <div
+        id="overlay"
+        class="overlay hidden"
+        data-full-filenames={JSON.stringify(fullFilenamesById)}
+    >
+        <div class="overlay-content">
+            <button id="overlay-close">Close</button>
+            <div class="overlay-header">
+                {
+                    /* eslint-disable-next-line astro/jsx-a11y/heading-has-content */
+                }<h3 id="overlay-title"></h3>
+                <p id="overlay-desc"></p>
+                <div id="overlay-tags"></div>
+                <div id="overlay-date"></div>
+            </div>
+            <div id="overlay-images" class="overlay-images"></div>
+        </div>
+    </div>
 </Layout>
 
 <style is:global>
@@ -176,4 +199,123 @@ for (const filename of filenames) {
     .pixelated {
         image-rendering: pixelated;
     }
+
+    /* Overlay Styles */
+    .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+
+    .overlay.hidden {
+        display: none;
+    }
+
+    .overlay-content {
+        background: var(--background-color);
+        padding: 1rem;
+        max-height: 90vh;
+        max-width: 90vw;
+        overflow-y: auto;
+        position: relative;
+    }
+
+    .overlay-header {
+        margin-bottom: 1rem;
+    }
+
+    #overlay-close {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+    }
+
+    #overlay-tags {
+        display: flex;
+        gap: 2ch;
+        overflow-x: auto;
+        margin-top: auto;
+    }
+
+    #overlay-tags > span {
+        border: var(--border-thickness) solid var(--text-color);
+        padding: calc(0.5lh - var(--border-thickness))
+            calc(2ch - var(--border-thickness));
+        text-wrap: nowrap;
+    }
+
+    .overlay-images img {
+        display: block;
+        width: 100%;
+        margin-bottom: 1rem;
+    }
 </style>
+
+<script>
+    const fullFilenamesById: Record<number, string[]> = JSON.parse(
+        document
+            .getElementById("overlay")
+            ?.getAttribute("data-full-filenames") ?? "{}"
+    );
+
+    document.querySelectorAll(".sight").forEach((sightElem) => {
+        sightElem.addEventListener("click", () => {
+            const sightId = Number(sightElem.getAttribute("data-sight-id"));
+            if (!fullFilenamesById[sightId]) return;
+
+            const title = sightElem.getAttribute("data-sight-title");
+            const desc = sightElem.getAttribute("data-sight-desc");
+            const tags = sightElem.getAttribute("data-sight-tags")?.split(",");
+            const date = sightElem.getAttribute("data-sight-date");
+
+            const pixelated =
+                sightElem.getAttribute("data-sight-pixelated") === "true";
+            const color = sightElem.getAttribute("data-sight-color");
+
+            const titleElem = document.getElementById("overlay-title")!;
+            const descElem = document.getElementById("overlay-desc")!;
+            const tagsElem = document.getElementById("overlay-tags")!;
+            const dateElem = document.getElementById("overlay-date")!;
+            titleElem.innerText = title || "";
+            descElem.innerText = desc || "";
+            tagsElem.innerHTML =
+                tags
+                    ?.map((tag) => `<span class="${tag}">${tag}</span>`)
+                    .join("") || "";
+            if (date) dateElem.innerText = new Date(date).toLocaleString();
+
+            titleElem.style.color = color || "";
+            descElem.style.color = color || "";
+            tagsElem.style.color = color || "";
+            dateElem.style.color = color || "";
+
+            const imagesContainer = document.getElementById("overlay-images")!;
+            imagesContainer.innerHTML = "";
+            if (fullFilenamesById[sightId]) {
+                fullFilenamesById[sightId].forEach((filename) => {
+                    const img = document.createElement("img");
+                    if (pixelated) img.classList.add("pixelated");
+                    img.src = `/sights-uploads/${sightId}/${filename}`;
+                    imagesContainer.appendChild(img);
+                });
+            }
+            document.getElementById("overlay")?.classList.remove("hidden");
+        });
+    });
+
+    document.getElementById("overlay-close")?.addEventListener("click", () => {
+        document.getElementById("overlay")?.classList.add("hidden");
+    });
+
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape")
+            document.getElementById("overlay")?.classList.add("hidden");
+    });
+</script>
