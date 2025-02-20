@@ -41,7 +41,7 @@ for (const filename of filenames) {
     title="Sights"
     description="Sights created by the Latex 4000 Collective"
 >
-    <p>Welcome to my web sight</p>
+    <p>Welcome to my web sight we got {sights.length} sights</p>
     {
         sights.length > 0 ? (
             <div class="sights-grid">
@@ -66,7 +66,11 @@ for (const filename of filenames) {
                         <h3>{sight.title}</h3>
                         <div
                             class="sight__date"
-                            style={{ color: sight.showColour ? sight.memberColor : undefined }}
+                            style={{
+                                color: sight.showColour
+                                    ? sight.memberColor
+                                    : undefined,
+                            }}
                         >
                             {sight.date.toLocaleString()}
                         </div>

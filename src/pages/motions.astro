@@ -22,8 +22,8 @@ const motions = await db
     title="Motions"
     description="Motions created by the Latex 4000 Collective"
 >
-    Some of us are REALLY bored. This is some random vids we have released under
-    the collective's name instead of our own:
+    Some of us are REALLY bored. Here are {motions.length} motions that we have released
+    under the collective's name instead of our own:
     <div class="motions">
         {
             motions.map((motion) => (

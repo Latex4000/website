@@ -1,8 +1,8 @@
 ---
-import { desc, eq } from 'drizzle-orm';
-import Layout from '../../layouts/Layout.astro';
-import db, { wordId } from '../../database/db';
-import { Member, Word } from '../../database/schema';
+import { desc, eq } from "drizzle-orm";
+import Layout from "../../layouts/Layout.astro";
+import db, { wordId } from "../../database/db";
+import { Member, Word } from "../../database/schema";
 
 export const prerender = false;
 
@@ -17,25 +17,37 @@ const wordResults = await db
     .orderBy(desc(Word.id));
 ---
 
-<Layout header="Words" title="Words" description="Words created by the Latex 4000 Collective">
-    {wordResults.length > 0 ? (
-        <p>Here are some words</p>
-        <ul>
-            {wordResults.map(({ memberColor, word }) => {
-                return (
-                    <li title={word.showColour ? memberColor : "ANON"} style={`--marker-color: ${word.showColour ? memberColor : "inherit"}`}>
-                        <a href={`/words/${wordId(word)}`}>{word.title}<br>{word.date.toLocaleString()}</a>
-                    </li>
-                );
-            })}
-        </ul>
-    ) : (
-        <p>No words currently</p>
-    )}
+<Layout
+    header="Words"
+    title="Words"
+    description="Words created by the Latex 4000 Collective"
+>
+    <p>Here are {wordResults.length} words that we have written:</p>
+    {
+        wordResults.length > 0 ? (
+            <ul>
+                {wordResults.map(({ memberColor, word }) => {
+                    return (
+                        <li
+                            title={word.showColour ? memberColor : "ANON"}
+                            style={`--marker-color: ${word.showColour ? memberColor : "inherit"}`}
+                        >
+                            <a href={`/words/${wordId(word)}`}>
+                                {word.title}
+                                <br />
+                                {word.date.toLocaleString()}
+                            </a>
+                        </li>
+                    );
+                })}
+            </ul>
+        ) : (
+            <p>No words currently</p>
+        )
+    }
 </Layout>
 
 <style>
-
     li {
         margin-top: calc(var(--line-height) / 2);
     }
