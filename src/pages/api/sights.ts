@@ -33,6 +33,7 @@ export const POST: APIRoute = async (context) => {
     const description = formData.get("description");
     const tags = formData.get("tags") ?? "";
     const assetFiles = formData.getAll("assets") as File[];
+    const pixelated = formData.get("pixelated") === "true";
     const showColour = formData.get("colour") === "true";
 
     // Form validation
@@ -92,6 +93,7 @@ export const POST: APIRoute = async (context) => {
                 title,
                 description,
                 showColour,
+                pixelated,
             })
             .returning()
             .get();
