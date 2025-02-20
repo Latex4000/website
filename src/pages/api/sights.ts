@@ -9,10 +9,9 @@ import { finished } from "stream/promises";
 import { thingDeletion, thingGet } from "../../server/thingUtils";
 import db from "../../database/db";
 import { Sight } from "../../database/schema";
+import sharp from "sharp";
 
 export const prerender = false;
-
-const fileSizeLimit = 2 ** 20;
 
 export const GET: APIRoute = async (context) => thingGet(context, "sights");
 
@@ -61,24 +60,14 @@ export const POST: APIRoute = async (context) => {
     }
 
     // File validation
-    for (const file of assetFiles) {
-        if (file.size > fileSizeLimit) {
+    for (const file of assetFiles)
+        try {
+            sharp(await file.arrayBuffer())
+        } catch (e) {
             return jsonError(
-                `File "${file.name}" is too large (${file.size / 2 ** 10}KiB > ${fileSizeLimit / 2 ** 10}KiB)`,
+                `File "${file.name}" is not a valid image`,
             );
         }
-    }
-
-    // Check if files are images only, they may be application/octet-stream as well, so we need to check the type
-    if (
-        assetFiles.some(
-            (file) => !file.type.startsWith("image/") && file.type !== "application/octet-stream" && (!file.name.endsWith(".png") || !file.name.endsWith(".jpg") || !file.name.endsWith(".jpeg") || !file.name.endsWith(".gif") || !file.name.endsWith(".webp"))
-        )
-    ) {
-        return jsonError(
-            'Cannot upload asset files that are not images',
-        );
-    }
 
     // Store to DB
     let sight: InferSelectModel<typeof Sight>;
@@ -124,6 +113,14 @@ export const POST: APIRoute = async (context) => {
                 createWriteStream(`${directory}/${file.name}`),
             ),
         );
+
+        // also create a thumbnail and add it to the directory as file.name_thumb
+        const thumbsDir = `${directory}/thumbs`;
+        await mkdir(thumbsDir);
+        const thumbnail = sharp(await file.arrayBuffer()).resize(200, 200);
+        await finished(thumbnail.pipe(createWriteStream(`${thumbsDir
+            }/${file.name.replace(/\.[^/.]+$/, "")}_thumb${file.name.match(/\.[^/.]+$/) ?? ""
+            }`)));
     }
 
     if (process.env.SIGHTS_RUN_AFTER_UPLOAD) {
