@@ -117,7 +117,7 @@ export const POST: APIRoute = async (context) => {
         // also create a thumbnail and add it to the directory as file.name_thumb
         const thumbsDir = `${directory}/thumbs`;
         await mkdir(thumbsDir);
-        const thumbnail = sharp(await file.arrayBuffer()).resize(200, 200);
+        const thumbnail = sharp(await file.arrayBuffer(), { animated: true }).resize(200, 200).jpeg({ quality: 1, force: false }).gif({ colors: 4, force: false });
         await finished(thumbnail.pipe(createWriteStream(`${thumbsDir
             }/${file.name.replace(/\.[^/.]+$/, "")}_thumb${file.name.match(/\.[^/.]+$/) ?? ""
             }`)));
