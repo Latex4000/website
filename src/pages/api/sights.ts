@@ -59,17 +59,28 @@ export const POST: APIRoute = async (context) => {
         return jsonError("Tags are too long");
     }
 
-    const filesWithSharp: [File, Sharp][] = [];
+    const filesWithInfo: [File, Sharp, "gif" | "jpeg" | "png"][] = [];
 
     for (const file of assetFiles) {
         try {
-            filesWithSharp.push([
-                file,
-                sharp(await file.arrayBuffer(), { animated: true })
-                    .resize(200, 200)
-                    .gif({ colors: 4, force: false })
-                    .jpeg({ quality: 1, force: false }),
-            ]);
+            const sharpInstance = sharp(await file.arrayBuffer(), { animated: true })
+                .resize(200, 200);
+            let format: "gif" | "jpeg" | "png";
+
+            const metadata = await sharpInstance.metadata();
+
+            // - If the image is animated, use GIF
+            // - If the image has an alpha channel, use PNG
+            // - Otherwise, use JPEG
+            if ((metadata.pages ?? 1) > 1) {
+                format = "gif";
+            } else if (metadata.hasAlpha) {
+                format = "png";
+            } else {
+                format = "jpeg";
+            }
+
+            filesWithInfo.push([file, sharpInstance, format]);
         } catch {
             return jsonError(`File "${file.name}" is not a valid image`);
         }
@@ -115,18 +126,26 @@ export const POST: APIRoute = async (context) => {
 
     await mkdir(thumbnailDirectory, { recursive: true });
 
-    for (const [file, sharpInstance] of filesWithSharp) {
-        // Save original file
+    for (const [file, sharpInstance, sharpFormat] of filesWithInfo) {
         await finished(
             ReadStream.fromWeb(file.stream()).pipe(
                 createWriteStream(`${directory}/${file.name}`),
             ),
         );
 
-        // Create thumbnail
-        await finished(sharpInstance.pipe(createWriteStream(`${thumbnailDirectory
-            }/${file.name.replace(/\.[^/.]+$/, "")}_thumb${file.name.match(/\.[^/.]+$/) ?? ""
-            }`)));
+        switch (sharpFormat) {
+            case "gif":
+                sharpInstance.gif({ colours: 4 });
+                break;
+            case "jpeg":
+                sharpInstance.jpeg({ quality: 1 });
+                break;
+            case "png":
+                sharpInstance.png({ quality: 1 }).resize(100, 100);
+                break;
+        }
+
+        await sharpInstance.toFile(`${thumbnailDirectory}/${file.name.replace(/\.[^.]+$/, "")}.${sharpFormat}`);
     }
 
     if (process.env.SIGHTS_RUN_AFTER_UPLOAD) {
