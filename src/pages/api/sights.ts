@@ -122,16 +122,18 @@ export const POST: APIRoute = async (context) => {
 
     // Upload files
     const directory = `${process.env.SIGHTS_UPLOAD_DIRECTORY}/${sight.id}`;
+    const originalDirectory = `${directory}/original`;
     const thumbnailDirectory = `${directory}/thumbs`;
     const lowQualityThumbnailDirectory = `${directory}/thumbs-evil`;
 
+    await mkdir(originalDirectory, { recursive: true });
     await mkdir(thumbnailDirectory, { recursive: true });
     await mkdir(lowQualityThumbnailDirectory, { recursive: true });
 
     for (const [file, sharpInstance, sharpFormat] of filesWithInfo) {
         await finished(
             ReadStream.fromWeb(file.stream()).pipe(
-                createWriteStream(`${directory}/${file.name}`),
+                createWriteStream(`${originalDirectory}/${file.name}`),
             ),
         );
 
