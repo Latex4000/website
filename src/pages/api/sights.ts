@@ -153,7 +153,7 @@ export const POST: APIRoute = async (context) => {
                 break;
             case "jpeg":
                 sharpInstance.jpeg();
-                lowQualitySharpInstance.jpeg({ quality: 1 }).resize(200, 200, resizeOptions);
+                lowQualitySharpInstance.jpeg({ quality: 5 }).resize(200, 200, resizeOptions);
                 break;
             case "png":
                 sharpInstance.png();
