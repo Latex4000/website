@@ -9,7 +9,7 @@ import { finished } from "stream/promises";
 import { thingDeletion, thingGet } from "../../server/thingUtils";
 import db from "../../database/db";
 import { Sight } from "../../database/schema";
-import sharp, { type Sharp } from "sharp";
+import sharp, { type ResizeOptions, type Sharp } from "sharp";
 
 export const prerender = false;
 
@@ -134,21 +134,27 @@ export const POST: APIRoute = async (context) => {
             ),
         );
 
+        const resizeOptions: ResizeOptions = {
+            fit: "inside",
+            kernel: pixelated ? "nearest" : undefined,
+            withoutEnlargement: true,
+        };
         const lowQualitySharpInstance = sharpInstance.clone();
-        sharpInstance.resize(400, 300, { fit: "inside", withoutEnlargement: true });
+
+        sharpInstance.resize(400, 300, resizeOptions);
 
         switch (sharpFormat) {
             case "gif":
                 sharpInstance.gif();
-                lowQualitySharpInstance.gif({ colours: 4 }).resize(200, 200, { fit: "inside", withoutEnlargement: true  });
+                lowQualitySharpInstance.gif({ colours: 4 }).resize(200, 200, resizeOptions);
                 break;
             case "jpeg":
                 sharpInstance.jpeg();
-                lowQualitySharpInstance.jpeg({ quality: 1 }).resize(200, 200, { fit: "inside", withoutEnlargement: true  });
+                lowQualitySharpInstance.jpeg({ quality: 1 }).resize(200, 200, resizeOptions);
                 break;
             case "png":
                 sharpInstance.png();
-                lowQualitySharpInstance.png({ quality: 1 }).resize(100, 100, { fit: "inside", withoutEnlargement: true  });
+                lowQualitySharpInstance.png({ quality: 1 }).resize(100, 100, resizeOptions);
                 break;
         }
 
