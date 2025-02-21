@@ -67,16 +67,17 @@ export const POST: APIRoute = async (context) => {
             let format: "gif" | "jpeg" | "png";
 
             const metadata = await sharpInstance.metadata();
+            const stats = await sharpInstance.stats();
 
             // - If the image is animated, use GIF
             // - If the image has an alpha channel, use PNG
             // - Otherwise, use JPEG
             if ((metadata.pages ?? 1) > 1) {
                 format = "gif";
-            } else if (metadata.hasAlpha) {
-                format = "png";
-            } else {
+            } else if (stats.isOpaque) {
                 format = "jpeg";
+            } else {
+                format = "png";
             }
 
             filesWithInfo.push([file, sharpInstance, format]);
