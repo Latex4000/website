@@ -9,7 +9,7 @@ import { finished } from "stream/promises";
 import { thingDeletion, thingGet } from "../../server/thingUtils";
 import db from "../../database/db";
 import { Sight } from "../../database/schema";
-import sharp from "sharp";
+import sharp, { type Sharp } from "sharp";
 
 export const prerender = false;
 
@@ -59,15 +59,21 @@ export const POST: APIRoute = async (context) => {
         return jsonError("Tags are too long");
     }
 
-    // File validation
-    for (const file of assetFiles)
+    const filesWithSharp: [File, Sharp][] = [];
+
+    for (const file of assetFiles) {
         try {
-            sharp(await file.arrayBuffer())
-        } catch (e) {
-            return jsonError(
-                `File "${file.name}" is not a valid image`,
-            );
+            filesWithSharp.push([
+                file,
+                sharp(await file.arrayBuffer(), { animated: true })
+                    .resize(200, 200)
+                    .gif({ colors: 4, force: false })
+                    .jpeg({ quality: 1, force: false }),
+            ]);
+        } catch {
+            return jsonError(`File "${file.name}" is not a valid image`);
         }
+    }
 
     // Store to DB
     let sight: InferSelectModel<typeof Sight>;
@@ -105,20 +111,20 @@ export const POST: APIRoute = async (context) => {
 
     // Upload files
     const directory = `${process.env.SIGHTS_UPLOAD_DIRECTORY}/${sight.id}`;
+    const thumbnailDirectory = `${directory}/thumbs`;
 
-    await mkdir(directory);
-    for (const file of assetFiles) {
+    await mkdir(thumbnailDirectory, { recursive: true });
+
+    for (const [file, sharpInstance] of filesWithSharp) {
+        // Save original file
         await finished(
             ReadStream.fromWeb(file.stream()).pipe(
                 createWriteStream(`${directory}/${file.name}`),
             ),
         );
 
-        // also create a thumbnail and add it to the directory as file.name_thumb
-        const thumbsDir = `${directory}/thumbs`;
-        await mkdir(thumbsDir);
-        const thumbnail = sharp(await file.arrayBuffer(), { animated: true }).resize(200, 200).jpeg({ quality: 1, force: false }).gif({ colors: 4, force: false });
-        await finished(thumbnail.pipe(createWriteStream(`${thumbsDir
+        // Create thumbnail
+        await finished(sharpInstance.pipe(createWriteStream(`${thumbnailDirectory
             }/${file.name.replace(/\.[^/.]+$/, "")}_thumb${file.name.match(/\.[^/.]+$/) ?? ""
             }`)));
     }
