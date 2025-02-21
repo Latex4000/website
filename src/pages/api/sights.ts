@@ -63,8 +63,7 @@ export const POST: APIRoute = async (context) => {
 
     for (const file of assetFiles) {
         try {
-            const sharpInstance = sharp(await file.arrayBuffer(), { animated: true })
-                .resize(200, 200);
+            const sharpInstance = sharp(await file.arrayBuffer(), { animated: true });
             let format: "gif" | "jpeg" | "png";
 
             const metadata = await sharpInstance.metadata();
@@ -123,8 +122,10 @@ export const POST: APIRoute = async (context) => {
     // Upload files
     const directory = `${process.env.SIGHTS_UPLOAD_DIRECTORY}/${sight.id}`;
     const thumbnailDirectory = `${directory}/thumbs`;
+    const lowQualityThumbnailDirectory = `${directory}/thumbs-evil`;
 
     await mkdir(thumbnailDirectory, { recursive: true });
+    await mkdir(lowQualityThumbnailDirectory, { recursive: true });
 
     for (const [file, sharpInstance, sharpFormat] of filesWithInfo) {
         await finished(
@@ -133,19 +134,28 @@ export const POST: APIRoute = async (context) => {
             ),
         );
 
+        const lowQualitySharpInstance = sharpInstance.clone();
+        sharpInstance.resize(400, 300, { fit: "inside" });
+
         switch (sharpFormat) {
             case "gif":
-                sharpInstance.gif({ colours: 4 });
+                sharpInstance.gif();
+                lowQualitySharpInstance.gif({ colours: 4 }).resize(200, 200, { fit: "inside" });
                 break;
             case "jpeg":
-                sharpInstance.jpeg({ quality: 1 });
+                sharpInstance.jpeg();
+                lowQualitySharpInstance.jpeg({ quality: 1 }).resize(200, 200, { fit: "inside" });
                 break;
             case "png":
-                sharpInstance.png({ quality: 1 }).resize(100, 100);
+                sharpInstance.png();
+                lowQualitySharpInstance.png({ quality: 1 }).resize(100, 100, { fit: "inside" });
                 break;
         }
 
-        await sharpInstance.toFile(`${thumbnailDirectory}/${file.name.replace(/\.[^.]+$/, "")}.${sharpFormat}`);
+        const filename = `${file.name.replace(/\.[^.]+$/, "")}.${sharpFormat}`;
+
+        await sharpInstance.toFile(`${thumbnailDirectory}/${filename}`);
+        await lowQualitySharpInstance.toFile(`${lowQualityThumbnailDirectory}/${filename}`);
     }
 
     if (process.env.SIGHTS_RUN_AFTER_UPLOAD) {
