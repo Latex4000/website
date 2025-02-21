@@ -135,20 +135,20 @@ export const POST: APIRoute = async (context) => {
         );
 
         const lowQualitySharpInstance = sharpInstance.clone();
-        sharpInstance.resize(400, 300, { fit: "inside" });
+        sharpInstance.resize(400, 300, { fit: "inside", withoutEnlargement: true });
 
         switch (sharpFormat) {
             case "gif":
                 sharpInstance.gif();
-                lowQualitySharpInstance.gif({ colours: 4 }).resize(200, 200, { fit: "inside" });
+                lowQualitySharpInstance.gif({ colours: 4 }).resize(200, 200, { fit: "inside", withoutEnlargement: true  });
                 break;
             case "jpeg":
                 sharpInstance.jpeg();
-                lowQualitySharpInstance.jpeg({ quality: 1 }).resize(200, 200, { fit: "inside" });
+                lowQualitySharpInstance.jpeg({ quality: 1 }).resize(200, 200, { fit: "inside", withoutEnlargement: true  });
                 break;
             case "png":
                 sharpInstance.png();
-                lowQualitySharpInstance.png({ quality: 1 }).resize(100, 100, { fit: "inside" });
+                lowQualitySharpInstance.png({ quality: 1 }).resize(100, 100, { fit: "inside", withoutEnlargement: true  });
                 break;
         }
 
