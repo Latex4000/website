@@ -19,6 +19,7 @@ export const Action = sqliteTable("Action", {
     description: text().notNull(),
     url: text().notNull().unique(),
     siteUrl: text().notNull().unique(),
+    deleted: integer({ mode: "boolean" }).default(false).notNull(),
     isRSS: integer({ mode: "boolean" }).notNull(),
 });
 

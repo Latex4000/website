@@ -17,6 +17,7 @@ export const GET: APIRoute = async () => {
             username: Member.alias,
         })
         .from(Action)
+        .where(eq(Action.deleted, false))
         .innerJoin(Member, eq(Action.memberDiscord, Member.discord));
     return jsonResponse({ actions });
 };

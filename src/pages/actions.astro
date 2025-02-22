@@ -16,6 +16,7 @@ const actions: ActionList[] = await db
         username: Member.alias,
     })
     .from(Action)
+    .where(eq(Action.deleted, false))
     .innerJoin(Member, eq(Action.memberDiscord, Member.discord))
     .then((actions) =>
         actions.map((row) => ({
