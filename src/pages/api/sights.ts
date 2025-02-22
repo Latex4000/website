@@ -1,6 +1,6 @@
 import { LibsqlError } from "@libsql/client";
 import type { APIRoute } from "astro";
-import type { InferSelectModel } from "drizzle-orm";
+import { eq, type InferSelectModel } from "drizzle-orm";
 import { jsonError, jsonResponse } from "../../server/responses";
 import { mkdir } from "fs/promises";
 import { createWriteStream, ReadStream } from "fs";
@@ -8,7 +8,7 @@ import { execFileSync } from "child_process";
 import { finished } from "stream/promises";
 import { thingDeletion, thingGet } from "../../server/thingUtils";
 import db from "../../database/db";
-import { Sight } from "../../database/schema";
+import { Member, Sight } from "../../database/schema";
 
 export const prerender = false;
 
@@ -46,6 +46,19 @@ export const POST: APIRoute = async (context) => {
         assetFiles.some((value) => !(value instanceof File))
     ) {
         return jsonError("Invalid form params");
+    }
+
+    const member = await db
+        .select()
+        .from(Member)
+        .where(eq(Member.discord, discord))
+        .get();
+    if (!member) {
+        return jsonError("Member does not exist");
+    }
+
+    if (member.deleted) {
+        return jsonError("Member has been deleted");
     }
 
     if (title.length > 2 ** 10) {
