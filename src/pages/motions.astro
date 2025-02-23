@@ -3,6 +3,7 @@ import { desc, eq, getTableColumns } from "drizzle-orm";
 import db from "../database/db";
 import { Member, Motion } from "../database/schema";
 import Layout from "../layouts/Layout.astro";
+import { thingColourHandler } from "../server/thingUtils";
 
 export const prerender = false;
 
@@ -14,7 +15,8 @@ const motions = await db
     .from(Motion)
     .where(eq(Motion.deleted, false))
     .innerJoin(Member, eq(Motion.memberDiscord, Member.discord))
-    .orderBy(desc(Motion.id));
+    .orderBy(desc(Motion.id))
+    .then(thingColourHandler);
 ---
 
 <Layout
@@ -33,7 +35,7 @@ const motions = await db
                         style={{
                             width: "16lh",
                             height: "9lh",
-                            border: motion.showColour
+                            border: motion.memberColor
                                 ? `var(--border-thickness) solid ${motion.memberColor}`
                                 : "none",
                         }}

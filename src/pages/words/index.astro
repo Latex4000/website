@@ -1,20 +1,22 @@
 ---
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, getTableColumns } from "drizzle-orm";
 import Layout from "../../layouts/Layout.astro";
 import db, { wordId } from "../../database/db";
 import { Member, Word } from "../../database/schema";
+import { thingColourHandler } from "../../server/thingUtils";
 
 export const prerender = false;
 
 const wordResults = await db
     .select({
-        word: Word,
+        ...getTableColumns(Word),
         memberColor: Member.color,
     })
     .from(Word)
     .where(eq(Word.deleted, false))
     .innerJoin(Member, eq(Word.memberDiscord, Member.discord))
-    .orderBy(desc(Word.id));
+    .orderBy(desc(Word.id))
+    .then(thingColourHandler);
 ---
 
 <Layout
@@ -26,11 +28,11 @@ const wordResults = await db
     {
         wordResults.length > 0 ? (
             <ul>
-                {wordResults.map(({ memberColor, word }) => {
+                {wordResults.map((word) => {
                     return (
                         <li
-                            title={word.showColour ? memberColor : "ANON"}
-                            style={`--marker-color: ${word.showColour ? memberColor : "inherit"}`}
+                            title={word.memberColor ?? "ANON"}
+                            style={`--marker-color: ${word.memberColor ?? "inherit"}`}
                         >
                             <a href={`/words/${wordId(word)}`}>
                                 {word.title}

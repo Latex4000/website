@@ -82,3 +82,13 @@ export async function thingDeletion({ url }: APIContext, thingType: ThingType, i
         return jsonError("Internal server error", 500);
     }
 }
+
+export function thingColourHandler<T extends { memberColor: string, showColour: boolean }>(rows: T[]): (Omit<T, "showColour" | "memberColor"> & { memberColor?: string })[] {
+    return rows.map((row) => {
+        return {
+            ...row,
+            memberColor: row.showColour ? row.memberColor : undefined,
+            showColour: undefined,
+        };
+    });
+}
