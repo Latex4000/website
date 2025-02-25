@@ -49,10 +49,8 @@
                     event.key === "Enter" && selectSight(sight)}
             >
                 <div
-                    class="sight__images sight__images--{Math.min(
-                        3,
-                        thumbFilenamesById[sight.id]?.length ?? 0,
-                    )} sight__images--quality-high"
+                    class="sight__images sight__images--quality-high"
+                    style="--count: {thumbFilenamesById[sight.id]?.length ?? 0}"
                 >
                     {#each thumbFilenamesById[sight.id]?.slice(0, 3) ?? [] as filename}
                         <img
@@ -64,10 +62,8 @@
                     {/each}
                 </div>
                 <div
-                    class="sight__images sight__images--{Math.min(
-                        3,
-                        thumbFilenamesById[sight.id]?.length ?? 0,
-                    )} sight__images--quality-low"
+                    class="sight__images sight__images--quality-low"
+                    style="--count: {thumbFilenamesById[sight.id]?.length ?? 0}"
                 >
                     {#each thumbFilenamesById[sight.id]?.slice(0, 3) ?? [] as filename}
                         <img
@@ -168,18 +164,9 @@
     .sight__images img {
         aspect-ratio: 4 / 3;
         display: block;
-        object-fit: cover;
-        position: absolute;
-        width: 100%;
-    }
-    .sight__images--1 img {
         object-fit: contain;
-    }
-    .sight__images--2 img {
-        width: calc(100% - 2ch);
-    }
-    .sight__images--3 img {
-        width: calc(100% - 4ch);
+        position: absolute;
+        width: calc(100% - 2ch * (min(var(--count), 3) - 1));
     }
     .sight__images img:nth-child(1) {
         top: 0;
