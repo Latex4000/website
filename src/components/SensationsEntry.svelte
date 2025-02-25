@@ -145,10 +145,16 @@
         {showExample ? "Example Entry" : entry ? "Edit Entry" : "New Entry"} – {new Date(
             date,
         ).toLocaleString()}
-        {#if entry && !showExample}
-            <button type="button" onclick={() => deleteEntry({ id })}
-                >Delete</button
-            >
+        {#if !showExample}
+            <div class="options">
+                <button type="submit">Save</button>
+                {#if entry}
+                    <button type="button" onclick={() => deleteEntry({ id })}
+                        >Delete</button
+                    >
+                {/if}
+                <button type="button" onclick={() => cancel()}>Cancel</button>
+            </div>
         {/if}
     </h3>
     <form onsubmit={saveEntry}>
@@ -315,17 +321,6 @@
                 </div>
             </div>
         </div>
-        {#if !showExample}
-            <div class="options">
-                <button type="submit">Save</button>
-                {#if entry}
-                    <button type="button" onclick={() => deleteEntry({ id })}
-                        >Delete</button
-                    >
-                {/if}
-                <button type="button" onclick={() => cancel()}>Cancel</button>
-            </div>
-        {/if}
     </form>
 </div>
 
@@ -341,6 +336,8 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        position: sticky;
+        left: 0;
     }
     form {
         display: flex;
