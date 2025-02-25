@@ -26,10 +26,9 @@
         selectedSight = undefined;
     }
 
-    const handleKeydown = (event: KeyboardEvent, sight?: Sight) => {
+    function handleKeydown(event: KeyboardEvent) {
         if (event.key === "Escape") closeOverlay();
-        if (event.key === "Enter" && sight) selectSight(sight);
-    };
+    }
 
     onMount(() => {
         window.addEventListener("keydown", handleKeydown);
@@ -46,7 +45,8 @@
                 role="button"
                 aria-pressed="false"
                 onclick={() => selectSight(sight)}
-                onkeydown={(e) => handleKeydown(e, sight)}
+                onkeydown={(event) =>
+                    event.key === "Enter" && selectSight(sight)}
             >
                 <div
                     class="sight__images sight__images--{Math.min(
@@ -99,20 +99,14 @@
     <div
         id="overlay"
         class="overlay"
-        tabindex="0"
+        tabindex="-1"
         role="button"
         aria-pressed="false"
-        onclick={closeOverlay}
-        onkeydown={handleKeydown}
+        onclick={(event) =>
+            event.currentTarget === event.target && closeOverlay()}
+        onkeydown={undefined}
     >
-        <div
-            class="overlay-content"
-            tabindex="0"
-            role="button"
-            aria-pressed="false"
-            onclick={(e) => e.stopPropagation()}
-            onkeydown={(e) => e.stopPropagation()}
-        >
+        <div class="overlay-content">
             <button id="overlay-close" onclick={closeOverlay}>Close</button>
             <div class="overlay-header">
                 <h3 style="color: {selectedSight.memberColor}">
