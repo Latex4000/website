@@ -36,8 +36,8 @@
     });
 </script>
 
-<div class="sights-grid">
-    {#if sights.length > 0}
+{#if sights.length > 0}
+    <div class="sights-grid">
         {#each sights as sight}
             <div
                 class="sight"
@@ -85,10 +85,10 @@
                 </div>
             </div>
         {/each}
-    {:else}
-        <p>No sights currently</p>
-    {/if}
-</div>
+    </div>
+{:else}
+    <p>No sights currently</p>
+{/if}
 
 <!-- Overlay (only shown when a sight is selected) -->
 {#if selectedSight}
