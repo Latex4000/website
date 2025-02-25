@@ -18,7 +18,7 @@
     let selectedSight = $state<Sight & { fullFilenames: string[] }>();
 
     function selectSight(sight: Sight) {
-        const fullFilenames = fullFilenamesById[sight.id] || [];
+        const fullFilenames = fullFilenamesById[sight.id] ?? [];
         selectedSight = { ...sight, fullFilenames };
     }
 
