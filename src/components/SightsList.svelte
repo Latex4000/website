@@ -48,7 +48,7 @@
                 onkeydown={(event) =>
                     event.key === "Enter" && selectSight(sight)}
             >
-                {#snippet images(quality: "high" | "low")}
+                {#each ["high", "low"] as const as quality}
                     <div
                         class="sight__images sight__images--quality-{quality}"
                         style="--count: {thumbFilenamesById[sight.id]?.length ??
@@ -65,9 +65,7 @@
                             />
                         {/each}
                     </div>
-                {/snippet}
-                {@render images("high")}
-                {@render images("low")}
+                {/each}
                 <h3>{sight.title}</h3>
                 <div
                     class="sight__date"
