@@ -145,17 +145,17 @@
         {showExample ? "Example Entry" : entry ? "Edit Entry" : "New Entry"} – {new Date(
             date,
         ).toLocaleString()}
-        {#if !showExample}
-            <div class="options">
+        <div class="options">
+            {#if !showExample}
                 <button type="submit">Save</button>
                 {#if entry}
                     <button type="button" onclick={() => deleteEntry({ id })}
                         >Delete</button
                     >
                 {/if}
-                <button type="button" onclick={() => cancel()}>Cancel</button>
-            </div>
-        {/if}
+            {/if}
+            <button type="button" onclick={() => cancel()}>Cancel</button>
+        </div>
     </h3>
     <form onsubmit={saveEntry}>
         <div class="form-container">
