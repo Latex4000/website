@@ -1,30 +1,21 @@
 <script lang="ts">
+    import type { InferSelectModel } from "drizzle-orm";
     import { onMount } from "svelte";
+    import type { Sight as SightTable } from "../database/schema";
 
-    interface Sight {
-        memberColor: string;
-        id: number;
-        title: string;
-        description: string;
-        memberDiscord: string;
-        date: Date;
-        tags: string[];
-        deleted: boolean;
-        showColour: boolean;
-        pixelated: boolean;
-    }
+    type Sight = InferSelectModel<typeof SightTable> & { memberColor: string };
 
-    interface SelectedSight extends Sight {
-        fullFilenames: string[];
-    }
+    const {
+        sights,
+        thumbFilenamesById,
+        fullFilenamesById,
+    }: {
+        sights: Sight[];
+        thumbFilenamesById: Record<number, string[]>;
+        fullFilenamesById: Record<number, string[]>;
+    } = $props();
 
-    // Props passed from Astro
-    export let sights: Array<Sight>;
-    export let thumbFilenamesById: Record<number, string[]>;
-    export let fullFilenamesById: Record<number, string[]>;
-
-    // State
-    let selectedSight: SelectedSight | undefined = undefined;
+    let selectedSight = $state<Sight & { fullFilenames: string[] }>();
 
     function selectSight(sight: Sight) {
         const fullFilenames = fullFilenamesById[sight.id] || [];
