@@ -169,6 +169,12 @@
     <div class="calendar-container">
         <div class="calendar-nav">
             <button onclick={prevMonth}>&lt; Prev</button>
+            <h2 class="calendar-title">
+                {new Date(currentYear, currentMonth).toLocaleString("default", {
+                    month: "long",
+                    year: "numeric",
+                })}
+            </h2>
             <button onclick={nextMonth}>Next &gt;</button>
         </div>
         <Calendar
@@ -232,7 +238,11 @@
     .calendar-nav {
         display: flex;
         justify-content: space-between;
+        align-items: center;
         margin-bottom: 1rem;
+    }
+    .calendar-title {
+        margin: 0;
     }
     .day-entries {
         border: var(--border-thickness) solid #ccc;

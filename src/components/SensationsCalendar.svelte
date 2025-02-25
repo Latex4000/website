@@ -109,14 +109,6 @@
 </script>
 
 <div class="calendar">
-    <div class="header">
-        <h2>
-            {new Date(currentYear, currentMonth).toLocaleString("default", {
-                month: "long",
-                year: "numeric",
-            })}
-        </h2>
-    </div>
     <div class="grid">
         {#each days as day}
             <div
@@ -145,9 +137,6 @@
     .calendar {
         padding: 1rem;
     }
-    .header {
-        text-align: center;
-    }
     .grid {
         display: grid;
         grid-template-columns: repeat(7, 1fr);
@@ -167,7 +156,7 @@
         color: white;
         border-radius: 50%;
         font-size: 0.5rem;
-        padding: 0.5rem;
-        line-height: 0;
+        width: 1rem;
+        height: 1rem;
     }
 </style>
