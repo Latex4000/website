@@ -30,6 +30,9 @@
         entry ? entry.causes.preConds.join("\n") : "",
     );
     let history: string = $state(entry ? entry.causes.history.join("\n") : "");
+    let energy: "low" | "medium" | "high" = $state(
+        entry ? entry.effects.energy : "medium",
+    );
     let physical: string = $state(
         entry ? entry.effects.physical.join("\n") : "",
     );
@@ -64,6 +67,7 @@
             core = entry.causes.core.join("\n");
             preConds = entry.causes.preConds.join("\n");
             history = entry.causes.history.join("\n");
+            energy = entry.effects.energy;
             physical = entry.effects.physical.join("\n");
             mental = entry.effects.mental.join("\n");
             helpful = entry.possibleResponses.helpful.join("\n");
@@ -85,6 +89,7 @@
             core = "";
             preConds = "";
             history = "";
+            energy = "medium";
             physical = "";
             mental = "";
             helpful = "";
@@ -109,6 +114,7 @@
                 history: history.split("\n").filter((s) => s.trim() !== ""),
             },
             effects: {
+                energy,
                 physical: physical.split("\n").filter((s) => s.trim() !== ""),
                 mental: mental.split("\n").filter((s) => s.trim() !== ""),
             },
@@ -244,6 +250,12 @@
                             placeholder="e.g. custom sub-emotions"
                         />
                     {/if}
+                    <div>Your Energy Level</div>
+                    <select bind:value={energy}>
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                    </select>
                 </div>
                 <div class="reaction mental">
                     <div>

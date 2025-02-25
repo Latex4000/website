@@ -7,6 +7,7 @@ export interface SensationList {
         history: string[];
     };
     effects: {
+        energy: "low" | "medium" | "high";
         physical: string[];
         mental: string[];
     };
@@ -28,6 +29,7 @@ export function isSensationList(arg: any): arg is SensationList {
         arg.causes.preConds !== undefined && Array.isArray(arg.causes.preConds) && // causes.preConds
         arg.causes.history !== undefined && Array.isArray(arg.causes.history) && // causes.history
         arg.effects !== undefined && // effects
+        arg.effects.energy !== undefined && (arg.effects.energy === "low" || arg.effects.energy === "medium" || arg.effects.energy === "high") && // effects.energy
         arg.effects.physical !== undefined && Array.isArray(arg.effects.physical) && // effects.physical
         arg.effects.mental !== undefined && Array.isArray(arg.effects.mental) && // effects.mental
         arg.possibleResponses !== undefined && // possibleResponses
@@ -127,6 +129,7 @@ export const exampleSensationLists: () => SensationList[] = () => ([
             history: ["I was bullied as a child"],
         },
         effects: {
+            energy: "medium",
             physical: ["I felt a pit in my stomach", "I felt tense"],
             mental: ["I felt I was being attacked", "I felt defensive"],
         },
@@ -146,6 +149,7 @@ export const exampleSensationLists: () => SensationList[] = () => ([
             history: ["I was reminded of abandonment"],
         },
         effects: {
+            energy: "high",
             physical: ["I felt a pit in my stomach", "My heart raced"],
             mental: ["I felt that I was going to be abandoned", "I felt like I was a failure"],
         },
@@ -165,6 +169,7 @@ export const exampleSensationLists: () => SensationList[] = () => ([
             history: ["This reminded me of insensitive behaviour and actions"],
         },
         effects: {
+            energy: "low",
             physical: ["I recoiled", "My stomach turned"],
             mental: ["I felt appalled at their behaviour", "I felt sickened"],
         },
@@ -184,6 +189,7 @@ export const exampleSensationLists: () => SensationList[] = () => ([
             history: ["I was reminded of being rejected for existing"],
         },
         effects: {
+            energy: "low",
             physical: ["I felt weak", "I was on the verge of tears"],
             mental: ["I felt empty", "I felt like I was a burden", "I felt like I was a failure"],
         },
@@ -203,6 +209,7 @@ export const exampleSensationLists: () => SensationList[] = () => ([
             history: ["My friend seems like a sore loser"],
         },
         effects: {
+            energy: "high",
             physical: ["I felt a rush of energy", "I felt a surge of power"],
             mental: ["I felt like I was on top of the world", "I felt like I was the best", "I thought I was righteously indignant"],
         },
