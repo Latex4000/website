@@ -48,32 +48,26 @@
                 onkeydown={(event) =>
                     event.key === "Enter" && selectSight(sight)}
             >
-                <div
-                    class="sight__images sight__images--quality-high"
-                    style="--count: {thumbFilenamesById[sight.id]?.length ?? 0}"
-                >
-                    {#each thumbFilenamesById[sight.id]?.slice(0, 3) ?? [] as filename}
-                        <img
-                            alt=""
-                            class={sight.pixelated ? "pixelated" : ""}
-                            src={`/sights-uploads/${sight.id}/thumbs/${filename}`}
-                            title={sight.description}
-                        />
-                    {/each}
-                </div>
-                <div
-                    class="sight__images sight__images--quality-low"
-                    style="--count: {thumbFilenamesById[sight.id]?.length ?? 0}"
-                >
-                    {#each thumbFilenamesById[sight.id]?.slice(0, 3) ?? [] as filename}
-                        <img
-                            alt=""
-                            class={sight.pixelated ? "pixelated" : ""}
-                            src={`/sights-uploads/${sight.id}/thumbs-evil/${filename}`}
-                            title={sight.description}
-                        />
-                    {/each}
-                </div>
+                {#snippet images(quality: "high" | "low")}
+                    <div
+                        class="sight__images sight__images--quality-{quality}"
+                        style="--count: {thumbFilenamesById[sight.id]?.length ??
+                            0}"
+                    >
+                        {#each thumbFilenamesById[sight.id]?.slice(0, 3) ?? [] as filename}
+                            {@const thumbsDir =
+                                quality === "high" ? "thumbs" : "thumbs-evil"}
+                            <img
+                                alt=""
+                                class={sight.pixelated ? "pixelated" : ""}
+                                src="/sights-uploads/{sight.id}/{thumbsDir}/{filename}"
+                                title={sight.description}
+                            />
+                        {/each}
+                    </div>
+                {/snippet}
+                {@render images("high")}
+                {@render images("low")}
                 <h3>{sight.title}</h3>
                 <div
                     class="sight__date"
