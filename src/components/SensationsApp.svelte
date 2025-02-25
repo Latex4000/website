@@ -14,6 +14,7 @@
 
     let currentYear = new Date().getFullYear();
     let currentMonth = new Date().getMonth(); // 0-indexed
+    let firstDayOfWeek = "0"; // Sunday
     let selectedDate: Date = new Date();
     let editingEntry: SensationList | null = null;
     let dayEntries: SensationList[] = [];
@@ -21,9 +22,19 @@
     let showExample = false;
 
     const STORAGE_KEY = "sensations_data";
+    const FIRST_DAY_OF_WEEK_KEY = "sensations_first_dow";
 
     // Load data from localStorage on mount.
     onMount(() => {
+        const storedFirstDOW = localStorage.getItem(FIRST_DAY_OF_WEEK_KEY);
+        if (
+            storedFirstDOW &&
+            !isNaN(Number(storedFirstDOW)) &&
+            Number(storedFirstDOW) >= 0 &&
+            Number(storedFirstDOW) <= 6
+        )
+            firstDayOfWeek = storedFirstDOW;
+
         const stored = localStorage.getItem(STORAGE_KEY);
         if (stored) {
             const decompressed = LZString.decompress(stored);
@@ -177,10 +188,28 @@
             </h2>
             <button onclick={nextMonth}>Next &gt;</button>
         </div>
+        <div class="firstDOW">
+            <label for="firstDOW">First day of the week:</label>
+            <select
+                id="firstDOW"
+                bind:value={firstDayOfWeek}
+                onchange={() =>
+                    localStorage.setItem(FIRST_DAY_OF_WEEK_KEY, firstDayOfWeek)}
+            >
+                <option value="0">Sunday</option>
+                <option value="1">Monday</option>
+                <option value="2">Tuesday</option>
+                <option value="3">Wednesday</option>
+                <option value="4">Thursday</option>
+                <option value="5">Friday</option>
+                <option value="6">Saturday</option>
+            </select>
+        </div>
         <Calendar
             {currentYear}
             {currentMonth}
             {sensationsList}
+            firstDayOfWeek={Number(firstDayOfWeek)}
             selectDate={handleSelectDay}
         />
     </div>

@@ -11,23 +11,42 @@
         currentMonth,
         selectDate,
         sensationsList,
+        firstDayOfWeek,
     }: {
         currentYear: number;
         currentMonth: number;
         selectDate: (event: { date: Date }) => void;
         sensationsList: SensationList[];
+        firstDayOfWeek: number;
     } = $props();
 
     // Determine the number of days in the current month.
     let daysInMonth = $derived(
         new Date(currentYear, currentMonth + 1, 0).getDate(),
     );
-    let days = $derived.by(() => {
-        let days = [];
-        for (let i = 1; i <= daysInMonth; i++) {
-            days.push(i);
-        }
-        return days;
+    let firstDate = new Date(currentYear, currentMonth, 1);
+    let offset = $derived.by(
+        () => (firstDate.getDay() - firstDayOfWeek + 7) % 7,
+    );
+
+    let calendarDays = $derived.by(() => {
+        let daysArr = [];
+        for (let i = 0; i < offset; i++) daysArr.push(null);
+        for (let i = 1; i <= daysInMonth; i++) daysArr.push(i);
+        return daysArr;
+    });
+
+    // Derived weekday headers array.
+    let weekDayHeaders = $derived.by(() => {
+        // Fixed base date for offset calculations (Jan 3, 2021 is a Sunday)
+        const baseDate = new Date(2021, 0, 3);
+
+        return Array.from({ length: 7 }, (_, i) => {
+            const dayIndex = (i + firstDayOfWeek) % 7;
+            const date = new Date(baseDate);
+            date.setDate(baseDate.getDate() + dayIndex);
+            return date.toLocaleDateString(undefined, { weekday: "short" });
+        });
     });
 
     // Create a reactive mapping from day to entry count.
@@ -64,7 +83,7 @@
                 }
             });
 
-            // Make the average colour for each day
+            // Compute the average colour for each day.
             return Object.fromEntries(
                 Object.entries(dayCountsWithColArr).map(
                     ([day, { count, colour }]) => {
@@ -76,7 +95,6 @@
                                     .reduce<[number, number, number]>(
                                         (acc, c) => {
                                             const [r, g, b] = c;
-                                            // Check if values are numbers
                                             if (
                                                 r &&
                                                 g &&
@@ -109,26 +127,39 @@
 </script>
 
 <div class="calendar">
+    <!-- Weekday headers -->
+    <div class="weekday-headers">
+        {#each weekDayHeaders as header}
+            <div class="weekday">{header}</div>
+        {/each}
+    </div>
+    <!-- Calendar grid -->
     <div class="grid">
-        {#each days as day}
-            <div
-                class="day"
-                tabindex="0"
-                role="button"
-                aria-pressed="false"
-                onclick={() => selectDay(day)}
-                onkeydown={(e) => e.key === "Enter" && selectDay(day)}
-            >
-                <span>{day}</span>
-                {#if dayCounts[day]}
-                    <span
-                        class="badge"
-                        style="background-color: rgb({dayCounts[day].colour})"
-                    >
-                        {dayCounts[day].count}
-                    </span>
-                {/if}
-            </div>
+        {#each calendarDays as day}
+            {#if day}
+                <div
+                    class="day"
+                    tabindex="0"
+                    role="button"
+                    aria-pressed="false"
+                    onclick={() => selectDay(day)}
+                    onkeydown={(e) => e.key === "Enter" && selectDay(day)}
+                >
+                    <span>{day}</span>
+                    {#if dayCounts[day]}
+                        <span
+                            class="badge"
+                            style="background-color: rgb({dayCounts[day]
+                                .colour})"
+                        >
+                            {dayCounts[day].count}
+                        </span>
+                    {/if}
+                </div>
+            {/if}
+            {#if !day}
+                <div></div>
+            {/if}
         {/each}
     </div>
 </div>
@@ -136,6 +167,15 @@
 <style>
     .calendar {
         padding: 1rem;
+    }
+    .weekday-headers {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        margin-bottom: 0.5rem;
+    }
+    .weekday {
+        text-align: center;
+        font-weight: bold;
     }
     .grid {
         display: grid;
