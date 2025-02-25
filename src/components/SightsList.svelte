@@ -207,15 +207,11 @@
     /* Overlay Styles */
     .overlay {
         position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
+        inset: 0;
         background-color: #222c;
         display: flex;
         align-items: center;
         justify-content: center;
-        z-index: 1000;
     }
     .overlay-content {
         background: var(--background-color);
