@@ -8,8 +8,9 @@ import { execFileSync } from "child_process";
 import { finished } from "stream/promises";
 import { thingDeletion, thingGet } from "../../server/thingUtils";
 import db from "../../database/db";
-import sharp, { type ResizeOptions, type Sharp } from "sharp";
+import type { Sharp } from "sharp";
 import { Member, Sight } from "../../database/schema";
+import { getSightThumbnailSharp, thumbnailSight } from "../../server/thumbnail-sights";
 
 export const prerender = false;
 
@@ -76,24 +77,7 @@ export const POST: APIRoute = async (context) => {
 
     for (const file of assetFiles) {
         try {
-            const sharpInstance = sharp(await file.arrayBuffer(), { animated: true });
-            let format: "gif" | "jpeg" | "png";
-
-            const metadata = await sharpInstance.metadata();
-            const stats = await sharpInstance.stats();
-
-            // - If the image is animated, use GIF
-            // - If the image has an alpha channel, use PNG
-            // - Otherwise, use JPEG
-            if ((metadata.pages ?? 1) > 1) {
-                format = "gif";
-            } else if (stats.isOpaque) {
-                format = "jpeg";
-            } else {
-                format = "png";
-            }
-
-            filesWithInfo.push([file, sharpInstance, format]);
+            filesWithInfo.push([file, ...await getSightThumbnailSharp(file)]);
         } catch {
             return jsonError(`File "${file.name}" is not a valid image`);
         }
@@ -136,12 +120,8 @@ export const POST: APIRoute = async (context) => {
     // Upload files
     const directory = `${process.env.SIGHTS_UPLOAD_DIRECTORY}/${sight.id}`;
     const originalDirectory = `${directory}/original`;
-    const thumbnailDirectory = `${directory}/thumbs`;
-    const lowQualityThumbnailDirectory = `${directory}/thumbs-evil`;
 
     await mkdir(originalDirectory, { recursive: true });
-    await mkdir(thumbnailDirectory, { recursive: true });
-    await mkdir(lowQualityThumbnailDirectory, { recursive: true });
 
     for (const [file, sharpInstance, sharpFormat] of filesWithInfo) {
         await finished(
@@ -149,35 +129,7 @@ export const POST: APIRoute = async (context) => {
                 createWriteStream(`${originalDirectory}/${file.name}`),
             ),
         );
-
-        const resizeOptions: ResizeOptions = {
-            fit: "inside",
-            kernel: pixelated ? "nearest" : undefined,
-            withoutEnlargement: true,
-        };
-        const lowQualitySharpInstance = sharpInstance.clone();
-
-        sharpInstance.resize(400, 300, resizeOptions);
-
-        switch (sharpFormat) {
-            case "gif":
-                sharpInstance.gif();
-                lowQualitySharpInstance.gif({ colours: 4 }).resize(200, 200, resizeOptions);
-                break;
-            case "jpeg":
-                sharpInstance.jpeg();
-                lowQualitySharpInstance.jpeg({ quality: 5 }).resize(200, 200, resizeOptions);
-                break;
-            case "png":
-                sharpInstance.png();
-                lowQualitySharpInstance.png({ quality: 1 }).resize(100, 100, resizeOptions);
-                break;
-        }
-
-        const filename = `${file.name.replace(/\.[^.]+$/, "")}.${sharpFormat}`;
-
-        await sharpInstance.toFile(`${thumbnailDirectory}/${filename}`);
-        await lowQualitySharpInstance.toFile(`${lowQualityThumbnailDirectory}/${filename}`);
+        await thumbnailSight(sight, directory, file, sharpInstance, sharpFormat);
     }
 
     if (process.env.SIGHTS_RUN_AFTER_UPLOAD) {
