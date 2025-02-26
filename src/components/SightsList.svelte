@@ -191,8 +191,8 @@
     .overlay-content {
         background: var(--background-color);
         padding: 1rem;
-        max-height: 90vh;
-        max-width: 90vw;
+        max-height: 100%;
+        max-width: 90%;
         overflow-y: auto;
         position: relative;
     }
@@ -208,7 +208,7 @@
         display: flex;
         gap: 2ch;
         overflow-x: auto;
-        margin-top: auto;
+        margin: 1rem 0;
     }
     .overlay-tags > span {
         border: var(--border-thickness) solid var(--text-color);
