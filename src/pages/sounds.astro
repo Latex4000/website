@@ -4,6 +4,7 @@ import Layout from "../layouts/Layout.astro";
 import AudioPlayer from "../components/AudioPlayer";
 import db from "../database/db";
 import { Member, Sound } from "../database/schema";
+import { thingColourHandler } from "../server/thingUtils";
 
 export const prerender = false;
 
@@ -15,7 +16,8 @@ const sounds = await db
     .from(Sound)
     .where(eq(Sound.deleted, false))
     .innerJoin(Member, eq(Sound.memberDiscord, Member.discord))
-    .orderBy(desc(Sound.id));
+    .orderBy(desc(Sound.id))
+    .then(thingColourHandler);
 ---
 
 <Layout
@@ -33,7 +35,7 @@ const sounds = await db
                         alt=""
                         src={`/sounds-uploads/${sound.id}/cover.${sound.coverType}`}
                         style={{
-                            border: sound.showColour
+                            border: sound.memberColor
                                 ? `var(--border-thickness) solid ${sound.memberColor}`
                                 : "none",
                         }}

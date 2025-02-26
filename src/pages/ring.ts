@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import db from "../database/db";
 import { Member } from "../database/schema";
 
@@ -18,7 +18,12 @@ export const GET: APIRoute = async (context) => {
             site: Member.site,
         })
         .from(Member)
-        .where(eq(Member.addedRingToSite, true));
+        .where(
+            and(
+                eq(Member.addedRingToSite, true),
+                eq(Member.deleted, false),
+            ),
+        );
 
     members.unshift({
         alias: "Latex 4000",

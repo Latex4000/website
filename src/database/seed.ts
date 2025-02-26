@@ -6,8 +6,9 @@ export default async function seed() {
         throw new Error("DEVELOPER_DISCORD_ID not set");
 
     const members = await new MemberFactory().count(20).create();
-    await new MemberFactory().create({ alias: "Obnoxiously Long Name" });
-    await new MemberFactory().create({ alias: "Developer", discord: process.env.DEVELOPER_DISCORD_ID });
+    const longNameMember = await new MemberFactory().create({ alias: "Obnoxiously Long Name" });
+    const developer = await new MemberFactory().create({ alias: "Developer", discord: process.env.DEVELOPER_DISCORD_ID });
+    members.push(...longNameMember, ...developer);
 
     const actions = await new ActionFactory().count(10).create({
         memberDiscord: () => faker.helpers.arrayElement(members.map((member) => member.discord)),

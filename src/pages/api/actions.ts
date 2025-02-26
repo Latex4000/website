@@ -1,25 +1,18 @@
 import { LibsqlError } from "@libsql/client";
 import type { APIRoute } from "astro";
-import { eq, getTableColumns, type InferSelectModel } from "drizzle-orm";
+import { eq, type InferSelectModel } from "drizzle-orm";
 import { jsonError, jsonResponse } from "../../server/responses";
 import Parser from "rss-parser";
 import db from "../../database/db";
 import { Action, ActionItem, Member } from "../../database/schema";
+import { thingDeletion, thingGet } from "../../server/thingUtils";
 
 export const prerender = false;
 
 const rssParser = new Parser();
 
-export const GET: APIRoute = async () => {
-    const actions = await db
-        .select({
-            ...getTableColumns(Action),
-            username: Member.alias,
-        })
-        .from(Action)
-        .innerJoin(Member, eq(Action.memberDiscord, Member.discord));
-    return jsonResponse({ actions });
-};
+
+export const GET: APIRoute = async (context) => thingGet(context, "actions");
 
 export const POST: APIRoute = async (context) => {
     if (context.request.headers.get("content-type") !== "application/json")
@@ -49,6 +42,19 @@ export const POST: APIRoute = async (context) => {
         action.url = url.toString();
     } catch (error) {
         return jsonError("Invalid URL");
+    }
+
+    const member = await db
+        .select()
+        .from(Member)
+        .where(eq(Member.discord, action.memberDiscord))
+        .get();
+    if (!member) {
+        return jsonError("Member does not exist");
+    }
+
+    if (member.deleted) {
+        return jsonError("Member has been deleted");
     }
 
     if (!action.isRSS) {
@@ -94,3 +100,7 @@ export const POST: APIRoute = async (context) => {
         return jsonError("Internal server error", 500);
     }
 }
+
+export const PUT: APIRoute = async (context) => thingDeletion(context, "actions", false);
+
+export const DELETE: APIRoute = async (context) => thingDeletion(context, "actions", true);

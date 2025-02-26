@@ -1,0 +1,22 @@
+---
+import Layout from "../layouts/Layout.astro";
+import SensationsApp from "../components/SensationsApp.svelte";
+---
+
+<Layout
+    title="Sensations"
+    description="Observe yourself. Are you feeling things? Are you having sensations?"
+>
+    <h2>THIS IS A WORK IN PROGRESS</h2>
+    <p>
+        All data is stored in your browser/local storage.<br />You have full
+        control over it.<br />It's advised to export your data regularly.
+    </p>
+    <SensationsApp client:visible />
+    <br />
+    <small>
+        Heavily inspired by <a href="https://atlasofemotions.org/"
+            >Atlas of Emotions</a
+        >
+    </small>
+</Layout>

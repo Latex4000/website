@@ -3,7 +3,8 @@ import type { APIRoute } from "astro";
 import { jsonError, jsonResponse } from "../../server/responses";
 import { thingDeletion, thingGet } from "../../server/thingUtils";
 import db from "../../database/db";
-import { Motion } from "../../database/schema";
+import { Member, Motion } from "../../database/schema";
+import { eq } from "drizzle-orm";
 
 export const prerender = false;
 
@@ -29,6 +30,19 @@ export const POST: APIRoute = async ({ request }) => {
         !motionData.tags.every((tag: unknown) => typeof tag === "string")
     )
         return jsonError("Invalid motion data");
+
+    const member = await db
+        .select()
+        .from(Member)
+        .where(eq(Member.discord, motionData.memberDiscord))
+        .get();
+    if (!member) {
+        return jsonError("Member does not exist");
+    }
+
+    if (member.deleted) {
+        return jsonError("Member has been deleted");
+    }
 
     if (motionData.tags.join("").length > 2 ** 10)
         return jsonError("Tags are too long");

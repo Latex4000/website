@@ -5,6 +5,7 @@ import { desc, eq, getTableColumns } from "drizzle-orm";
 import db from "../database/db";
 import { Member, Sight } from "../database/schema";
 import Layout from "../layouts/Layout.astro";
+import { thingColourHandler } from "../server/thingUtils";
 
 export const prerender = false;
 
@@ -20,7 +21,8 @@ const sights = await db
     .from(Sight)
     .innerJoin(Member, eq(Sight.memberDiscord, Member.discord))
     .where(eq(Sight.deleted, false))
-    .orderBy(desc(Sight.id));
+    .orderBy(desc(Sight.id))
+    .then(thingColourHandler);
 
 const filenames = await readdir(process.env.SIGHTS_UPLOAD_DIRECTORY, {
     recursive: true,
