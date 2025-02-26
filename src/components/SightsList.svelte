@@ -82,7 +82,6 @@
 <!-- Overlay (only shown when a sight is selected) -->
 {#if selectedSight}
     <div
-        id="overlay"
         class="overlay"
         tabindex="-1"
         role="button"
@@ -91,8 +90,8 @@
             event.currentTarget === event.target && closeOverlay()}
         onkeydown={undefined}
     >
-        <div class="overlay-content">
-            <button id="overlay-close" onclick={closeOverlay}>Close</button>
+        <div class="overlay-content" tabindex="-1">
+            <button class="overlay-close" onclick={closeOverlay}>Close</button>
             <div class="overlay-header">
                 <h3 style="color: {selectedSight.memberColor}">
                     {selectedSight.title}
@@ -100,7 +99,7 @@
                 <p style="color: {selectedSight.memberColor}">
                     {selectedSight.description}
                 </p>
-                <div id="overlay-tags">
+                <div class="overlay-tags">
                     {#if selectedSight.tags}
                         {#each selectedSight.tags as tag}
                             <span
@@ -113,7 +112,7 @@
                     {/if}
                 </div>
                 <div
-                    id="overlay-date"
+                    class="overlay-date"
                     style="color: {selectedSight.memberColor}"
                 >
                     {new Date(selectedSight.date).toLocaleString()}
@@ -200,24 +199,24 @@
     .overlay-header {
         margin-bottom: 1rem;
     }
-    #overlay-close {
+    .overlay-close {
         position: absolute;
         top: 0.5rem;
         right: 0.5rem;
     }
-    #overlay-tags {
+    .overlay-tags {
         display: flex;
         gap: 2ch;
         overflow-x: auto;
         margin-top: auto;
     }
-    #overlay-tags > span {
+    .overlay-tags > span {
         border: var(--border-thickness) solid var(--text-color);
         padding: calc(0.5lh - var(--border-thickness))
             calc(2ch - var(--border-thickness));
         white-space: nowrap;
     }
-    .overlay-images img {
+    .overlay-images > img {
         display: block;
         width: 100%;
         margin-bottom: 1rem;
