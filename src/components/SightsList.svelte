@@ -66,7 +66,7 @@
         style="--thumbs-mode: {thumbsMode}"
         onclick={() => selectThumbsMode(thumbsMode === "high" ? "low" : "high")}
     >
-        {thumbsMode === "high" ? "upload sight" : "YOU ARE EVIL"}
+        {thumbsMode === "high" ? "Upload Sight" : "YOU ARE EVIL"}
     </button>
 </div>
 
