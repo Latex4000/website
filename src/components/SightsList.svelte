@@ -3,7 +3,9 @@
     import { onMount } from "svelte";
     import type { Sight as SightTable } from "../database/schema";
 
-    type Sight = InferSelectModel<typeof SightTable> & { memberColor: string };
+    type Sight = Omit<InferSelectModel<typeof SightTable>, "showColour"> & {
+        memberColor?: string;
+    };
 
     const {
         sights,
@@ -67,12 +69,7 @@
                     </div>
                 {/each}
                 <h3>{sight.title}</h3>
-                <div
-                    class="sight__date"
-                    style="color: {sight.showColour
-                        ? sight.memberColor
-                        : undefined}"
-                >
+                <div class="sight__date" style="color: {sight.memberColor}">
                     {new Date(sight.date).toLocaleString()}
                 </div>
             </div>
