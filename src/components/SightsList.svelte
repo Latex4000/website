@@ -17,11 +17,19 @@
         fullFilenamesById: Record<number, string[]>;
     } = $props();
 
+    const THUMBS_MODE_KEY = "sights_thumbs";
+
     let selectedSight = $state<Sight & { fullFilenames: string[] }>();
+    let thumbsMode: "high" | "low" = $state("high");
 
     function selectSight(sight: Sight) {
         const fullFilenames = fullFilenamesById[sight.id] ?? [];
         selectedSight = { ...sight, fullFilenames };
+    }
+
+    function selectThumbsMode(mode: "high" | "low") {
+        thumbsMode = mode;
+        localStorage.setItem(THUMBS_MODE_KEY, mode);
     }
 
     function closeOverlay() {
@@ -44,9 +52,25 @@
 
     onMount(() => {
         window.addEventListener("keydown", handleKeydown);
+
+        const stored = localStorage.getItem(THUMBS_MODE_KEY);
+        if (stored === "low" || stored === "high") thumbsMode = stored;
+
         return () => window.removeEventListener("keydown", handleKeydown);
     });
 </script>
+
+<div>
+    <button
+        class="thumbs-mode"
+        style="--thumbs-mode: {thumbsMode}"
+        onclick={() => selectThumbsMode(thumbsMode === "high" ? "low" : "high")}
+    >
+        {thumbsMode === "high" ? "upload sight" : "YOU ARE EVIL"}
+    </button>
+</div>
+
+<br />
 
 {#if sights.length > 0}
     <div class="sights-grid">
@@ -62,9 +86,11 @@
             >
                 {#each ["high", "low"] as const as quality}
                     <div
-                        class="sight__images sight__images--quality-{quality}"
+                        class="sight__images"
                         style="--count: {thumbFilenamesById[sight.id]?.length ??
-                            0}"
+                            0}; display: {quality === thumbsMode
+                            ? 'block'
+                            : 'none'}"
                     >
                         {#each thumbFilenamesById[sight.id]?.slice(0, 3) ?? [] as filename}
                             {@const thumbsDir =
