@@ -32,6 +32,16 @@
         if (event.key === "Escape") closeOverlay();
     }
 
+    function sightsNav(direction: 1 | -1) {
+        if (!selectedSight) return;
+
+        const index = sights.findIndex(
+            (sight) => sight.id === selectedSight!.id,
+        );
+        const newIndex = (index + direction + sights.length) % sights.length;
+        selectSight(sights[newIndex]!);
+    }
+
     onMount(() => {
         window.addEventListener("keydown", handleKeydown);
         return () => window.removeEventListener("keydown", handleKeydown);
@@ -81,15 +91,17 @@
 
 <!-- Overlay (only shown when a sight is selected) -->
 {#if selectedSight}
-    <div
-        class="overlay"
-        tabindex="-1"
-        role="button"
-        aria-pressed="false"
-        onclick={(event) =>
-            event.currentTarget === event.target && closeOverlay()}
-        onkeydown={undefined}
-    >
+    <div class="overlay">
+        <div
+            class="overlay-nav overlay-left"
+            tabindex="0"
+            role="button"
+            aria-pressed="false"
+            onclick={() => sightsNav(-1)}
+            onkeydown={(event) => event.key === "Enter" && sightsNav(-1)}
+        >
+            ←
+        </div>
         <div class="overlay-content" tabindex="-1">
             <button class="overlay-close" onclick={closeOverlay}>Close</button>
             <div class="overlay-header">
@@ -127,6 +139,16 @@
                     />
                 {/each}
             </div>
+        </div>
+        <div
+            class="overlay-nav overlay-right"
+            tabindex="0"
+            role="button"
+            aria-pressed="false"
+            onclick={() => sightsNav(1)}
+            onkeydown={(event) => event.key === "Enter" && sightsNav(1)}
+        >
+            →
         </div>
     </div>
 {/if}
@@ -195,6 +217,11 @@
         max-width: 90%;
         overflow-y: auto;
         position: relative;
+    }
+    .overlay-nav {
+        font-size: 25ch;
+        margin: auto;
+        cursor: pointer;
     }
     .overlay-header {
         margin-bottom: 1rem;
