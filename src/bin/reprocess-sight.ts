@@ -65,8 +65,9 @@ async function reprocessSight(id: number) {
 
     for (const [file, sharpInstance, sharpFormat] of filesWithInfo) {
         await processSightImage(sight, directory, file, sharpInstance, sharpFormat);
-        await unlink(join(directory, file.name));
     }
+
+    await Promise.all(filesWithInfo.map(([file]) => unlink(join(directory, file.name))));
 
     if (process.env.SIGHTS_RUN_AFTER_UPLOAD) {
         execFileSync(process.env.SIGHTS_RUN_AFTER_UPLOAD, [directory], {
