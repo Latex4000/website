@@ -1,12 +1,12 @@
 import { eq } from "drizzle-orm";
 import { execFileSync } from "node:child_process";
 import { openAsBlob } from "node:fs";
-import { mkdir, readdir, rename } from "node:fs/promises";
+import { readdir, unlink } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import type { Sharp } from "sharp";
 import db from "../database/db";
 import { Sight } from "../database/schema";
-import { getSightThumbnailSharp, thumbnailSight } from "../server/thumbnail-sights";
+import { getSightSharpInstance, processSightImage } from "../server/thumbnail-sights";
 
 if (!process.env.SIGHTS_UPLOAD_DIRECTORY) {
     console.error("SIGHTS_UPLOAD_DIRECTORY not set");
@@ -56,20 +56,16 @@ async function reprocessSight(id: number) {
         const file = new File([await openAsBlob(join(directory, dirent.name))], dirent.name);
 
         try {
-            filesWithInfo.push([file, ...await getSightThumbnailSharp(file)]);
+            filesWithInfo.push([file, ...await getSightSharpInstance(file)]);
         } catch {
             console.error(`File "${file.name}" in sight directory is not a valid image`)
             return;
         }
     }
 
-    const originalDirectory = `${directory}/original`;
-
-    await mkdir(originalDirectory, { recursive: true });
-
     for (const [file, sharpInstance, sharpFormat] of filesWithInfo) {
-        await rename(join(directory, file.name), join(originalDirectory, file.name));
-        await thumbnailSight(sight, directory, file, sharpInstance, sharpFormat);
+        await processSightImage(sight, directory, file, sharpInstance, sharpFormat);
+        await unlink(join(directory, file.name));
     }
 
     if (process.env.SIGHTS_RUN_AFTER_UPLOAD) {

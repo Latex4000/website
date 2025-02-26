@@ -2,15 +2,12 @@ import { LibsqlError } from "@libsql/client";
 import type { APIRoute } from "astro";
 import { eq, type InferSelectModel } from "drizzle-orm";
 import { jsonError, jsonResponse } from "../../server/responses";
-import { mkdir } from "fs/promises";
-import { createWriteStream, ReadStream } from "fs";
 import { execFileSync } from "child_process";
-import { finished } from "stream/promises";
 import { thingDeletion, thingGet } from "../../server/thingUtils";
 import db from "../../database/db";
 import type { Sharp } from "sharp";
 import { Member, Sight } from "../../database/schema";
-import { getSightThumbnailSharp, thumbnailSight } from "../../server/thumbnail-sights";
+import { getSightSharpInstance, processSightImage } from "../../server/thumbnail-sights";
 
 export const prerender = false;
 
@@ -77,7 +74,7 @@ export const POST: APIRoute = async (context) => {
 
     for (const file of assetFiles) {
         try {
-            filesWithInfo.push([file, ...await getSightThumbnailSharp(file)]);
+            filesWithInfo.push([file, ...await getSightSharpInstance(file)]);
         } catch {
             return jsonError(`File "${file.name}" is not a valid image`);
         }
@@ -119,17 +116,9 @@ export const POST: APIRoute = async (context) => {
 
     // Upload files
     const directory = `${process.env.SIGHTS_UPLOAD_DIRECTORY}/${sight.id}`;
-    const originalDirectory = `${directory}/original`;
-
-    await mkdir(originalDirectory, { recursive: true });
 
     for (const [file, sharpInstance, sharpFormat] of filesWithInfo) {
-        await finished(
-            ReadStream.fromWeb(file.stream()).pipe(
-                createWriteStream(`${originalDirectory}/${file.name}`),
-            ),
-        );
-        await thumbnailSight(sight, directory, file, sharpInstance, sharpFormat);
+        await processSightImage(sight, directory, file, sharpInstance, sharpFormat);
     }
 
     if (process.env.SIGHTS_RUN_AFTER_UPLOAD) {

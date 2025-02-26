@@ -1,11 +1,14 @@
 import type { InferSelectModel } from "drizzle-orm";
+import ExifTransformer from "exif-be-gone";
+import { createWriteStream, ReadStream } from "node:fs";
 import { mkdir } from "node:fs/promises";
 import { join } from "node:path";
+import { finished } from "node:stream/promises";
 import type { ResizeOptions, Sharp } from "sharp";
 import sharp from "sharp";
 import type { Sight } from "../database/schema";
 
-export async function getSightThumbnailSharp(image: File): Promise<[Sharp, "gif" | "jpeg" | "png"]> {
+export async function getSightSharpInstance(image: File): Promise<[Sharp, "gif" | "jpeg" | "png"]> {
     const sharpInstance = sharp(await image.arrayBuffer(), { animated: true });
     let format: "gif" | "jpeg" | "png";
 
@@ -26,13 +29,22 @@ export async function getSightThumbnailSharp(image: File): Promise<[Sharp, "gif"
     return [sharpInstance, format];
 }
 
-export async function thumbnailSight(
+export async function processSightImage(
     sight: Pick<InferSelectModel<typeof Sight>, "pixelated">,
     sightDirectory: string,
     image: File,
     sharpInstance: Sharp,
     sharpFormat: "gif" | "jpeg" | "png",
 ): Promise<void> {
+    const originalDirectory = join(sightDirectory, "original");
+
+    await mkdir(originalDirectory, { recursive: true });
+    await finished(
+        ReadStream.fromWeb(image.stream())
+            .pipe(new ExifTransformer())
+            .pipe(createWriteStream(join(originalDirectory, image.name))),
+    );
+
     const resizeOptions: ResizeOptions = {
         fit: "inside",
         kernel: sight.pixelated ? "nearest" : undefined,
