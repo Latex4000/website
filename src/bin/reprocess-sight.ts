@@ -13,7 +13,8 @@ if (!process.env.SIGHTS_UPLOAD_DIRECTORY) {
     process.exit(1);
 }
 
-process.chdir(resolve(import.meta.dirname, "../.."));
+// From "dist/server/bin/"
+process.chdir(resolve(import.meta.dirname, "../../.."));
 
 for (const id of process.argv.slice(2)) {
     console.error(`Processing sight #${id}`);
