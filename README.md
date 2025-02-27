@@ -1,21 +1,23 @@
-# LATEX4000 Website Source Code
+# LaTeX 4000 Website Source Code
 
-Site <https://nonacademic.net>
+**<https://nonacademic.net>**
 
-Editing site:
+## Dependencies
 
-- Clone repository to a folder `git clone https://github.com/Latex4000/website.git`
-- Go to new folder `cd website`
-- Run `npm install`
-- Run `npm run dev`
-- Open `http://localhost:4321/` in your browser
-- Edit files in `src/` directory.
-    - Pages are in `src/pages/`, think of .astro as .html 2
+- Node.js 22 (or use the provided [`nvm`](https://github.com/nvm-sh/nvm) config)
 
-Deploying site:
+## Development setup
 
-- Run `npm run deploy`
+- Clone the repository: `git clone https://github.com/Latex4000/website.git && cd website`
+- Install dependencies: `npm install`
+- Run the development server: `npm run dev`
 
-During the deploy, new migrations will be applied to the production db
+The server will be exposed at `http://localhost:4321/`, and the `dev/` directory will be used for the DB file and upload storage. Files under `dev/` will be reset on every run of the development server.
 
-Yay
+If testing with the Discord bot, you can add `DEVELOPER_DISCORD_ID=<your user ID>` to `.env` to have the development server create a user for you. Right click on your Discord profile and click "Copy User ID" to get the ID.
+
+## Deployment
+
+- Build and deploy: `npm run deploy`
+
+Only [VINXIS](https://github.com/VINXIS) and [cl8n](https://github.com/cl8n) can deploy for now.
