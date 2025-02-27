@@ -53,9 +53,11 @@ const members = await db
             {
                 members.map((member) => (
                     <li>
-                        member.addedRingToSite ? (
-                        <a href={member.site}>{member.alias}</a>) : (
-                        member.alias ),
+                        {member.addedRingToSite ? (
+                            <a href={member.site}>{member.alias}</a>
+                        ) : (
+                            member.alias
+                        )}
                     </li>
                 ))
             }
