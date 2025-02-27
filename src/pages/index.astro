@@ -51,15 +51,13 @@ const members = await db
         Signed:
         <ul>
             {
-                members.map((member) =>
-                    member.addedRingToSite ? (
-                        <li>
-                            <a href={member.site}>{member.alias}</a>
-                        </li>
-                    ) : (
-                        <li>{member.alias}</li>
-                    ),
-                )
+                members.map((member) => (
+                    <li>
+                        member.addedRingToSite ? (
+                        <a href={member.site}>{member.alias}</a>) : (
+                        member.alias ),
+                    </li>
+                ))
             }
         </ul>
     </div>
