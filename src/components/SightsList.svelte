@@ -21,8 +21,7 @@
 
     let selectedSight = $state<Sight & { fullFilenames: string[] }>();
     let thumbsMode = $state(
-        (localStorage.getItem(THUMBS_MODE_KEY) as "high" | "low" | null) ??
-            "high",
+        (localStorage?.getItem(THUMBS_MODE_KEY) ?? "high") as "high" | "low",
     );
 
     function selectSight(sight: Sight) {
