@@ -20,7 +20,10 @@
     const THUMBS_MODE_KEY = "sights_thumbs";
 
     let selectedSight = $state<Sight & { fullFilenames: string[] }>();
-    let thumbsMode: "high" | "low" = $state("high");
+    let thumbsMode = $state(
+        (localStorage.getItem(THUMBS_MODE_KEY) as "high" | "low" | null) ??
+            "high",
+    );
 
     function selectSight(sight: Sight) {
         const fullFilenames = fullFilenamesById[sight.id] ?? [];
@@ -52,9 +55,6 @@
 
     onMount(() => {
         window.addEventListener("keydown", handleKeydown);
-
-        const stored = localStorage.getItem(THUMBS_MODE_KEY);
-        if (stored === "low" || stored === "high") thumbsMode = stored;
 
         return () => window.removeEventListener("keydown", handleKeydown);
     });
