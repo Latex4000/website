@@ -134,6 +134,7 @@ sub {
 table {
     position: relative;
     top: calc(var(--line-height) / 2);
+    width: 100%;
     width: calc(round(down, 100%, 1ch));
     border-collapse: collapse;
     margin: 0 0 calc(var(--line-height) * 2);
@@ -395,6 +396,7 @@ button:active {
 
 label {
     display: block;
+    width: 100%;
     width: calc(round(down, 100%, 1ch));
     height: auto;
     line-height: var(--line-height);
