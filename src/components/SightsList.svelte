@@ -19,10 +19,14 @@
 
     const THUMBS_MODE_KEY = "sights_thumbs";
 
+    // This syntax can't be simplified because Svelte needs to understand that localStorage is never referenced during SSR... I think
+    const initialThumbsMode =
+        typeof localStorage === "undefined"
+            ? "high"
+            : (localStorage.getItem(THUMBS_MODE_KEY) ?? "high");
+
     let selectedSight = $state<Sight & { fullFilenames: string[] }>();
-    let thumbsMode = $state(
-        (localStorage?.getItem(THUMBS_MODE_KEY) ?? "high") as "high" | "low",
-    );
+    let thumbsMode = $state(initialThumbsMode as "high" | "low");
 
     function selectSight(sight: Sight) {
         const fullFilenames = fullFilenamesById[sight.id] ?? [];
