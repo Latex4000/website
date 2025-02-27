@@ -1,11 +1,14 @@
 <script lang="ts">
     import type { InferSelectModel } from "drizzle-orm";
     import type { Member } from "../database/schema";
+    import { onMount } from "svelte";
 
     export let members: InferSelectModel<typeof Member>[] = [];
     let columnCount = 5;
-
+    let jsEnabled = false;
     function gridColumns(node: Node) {
+        if (!window || !document) return;
+
         columnCount = Math.floor(
             Math.min(5, Math.max(2, 0.0332942 * window.innerWidth - 18.60778)),
         ); // Dude idk look at this https://www.desmos.com/calculator/cvs8zridx4
@@ -26,9 +29,13 @@
         const children = document.getElementById("member-list")!.children;
         for (let i = 0; i < children.length; i++)
             if (children[i]) gridSpan(children[i]!);
+
+        jsEnabled = true;
     }
 
     function gridSpan(node: Node) {
+        if (!window || !document) return;
+
         const memberList = document.getElementById("member-list")!;
         const containerWidth = memberList.clientWidth;
         const lineHeight =
@@ -56,17 +63,19 @@
         (node as HTMLElement).style.gridColumn = `span ${gridSpan}`;
     }
 
-    // on window resize
-    window.addEventListener("resize", () =>
-        gridColumns(document.getElementById("member-list")!),
-    );
-    const bodyResizeObserver = new ResizeObserver(() =>
-        gridColumns(document.getElementById("member-list")!),
-    );
-    bodyResizeObserver.observe(document.body);
+    onMount(() => {
+        // on window resize
+        window.addEventListener("resize", () =>
+            gridColumns(document.getElementById("member-list")!),
+        );
+        const bodyResizeObserver = new ResizeObserver(() =>
+            gridColumns(document.getElementById("member-list")!),
+        );
+        bodyResizeObserver.observe(document.body);
+    });
 </script>
 
-<div>
+<div style={!jsEnabled ? "display: none" : ""}>
     Signed:
     <ul id="member-list" use:gridColumns>
         {#each members as member}
@@ -78,6 +87,20 @@
         {/each}
     </ul>
 </div>
+<noscript>
+    <div>
+        Signed:
+        <ul>
+            {#each members as member}
+                {#if member.addedRingToSite}
+                    <li><a href={member.site}>{member.alias}</a></li>
+                {:else}
+                    <li>{member.alias}</li>
+                {/if}
+            {/each}
+        </ul>
+    </div>
+</noscript>
 
 <style>
     ul {

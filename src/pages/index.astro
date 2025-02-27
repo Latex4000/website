@@ -47,5 +47,5 @@ const members = await db
         aliases
     </p>
     <p>Enjoy your stay</p>
-    <MembersList client:only="svelte" members={members} />
+    <MembersList client:load members={members} />
 </Layout>
