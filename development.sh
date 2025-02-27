@@ -2,15 +2,10 @@
 
 set -eu
 
-# Check if .env exists and DEVELOPER_DISCORD_ID is set
-if [ ! -f ".env" ] || ! grep -q "^DEVELOPER_DISCORD_ID=" .env; then
-  echo "Enter your Discord user ID (right-click on your user in Discord and click 'Copy User ID'):"
-  read developer_id
-  echo "DEVELOPER_DISCORD_ID=${developer_id}" >> .env
+if test -f .env; then
+    . ./.env
+    export DEVELOPER_DISCORD_ID
 fi
-
-# Load env file
-. ./.env
 
 database='dev/latex.db'
 
@@ -23,7 +18,6 @@ export SOUNDS_UPLOAD_DIRECTORY='dev/sounds'
 export WORDS_RUN_AFTER_UPLOAD=
 export WORDS_UPLOAD_DIRECTORY='dev/words'
 export PUBLIC_DIRECTORY='public'
-export DEVELOPER_DISCORD_ID
 
 # Clean up files from last run
 rm -rf "$database" "$SIGHTS_UPLOAD_DIRECTORY" "$SOUNDS_UPLOAD_DIRECTORY" "$WORDS_UPLOAD_DIRECTORY"
