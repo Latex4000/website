@@ -10,7 +10,7 @@ import { markedEmoji } from "marked-emoji";
 import { execFileSync } from "child_process";
 import { finished } from "stream/promises";
 import { thingDeletion, thingGet } from "../../server/thingUtils";
-import { serverHTMLPurify } from "../../components/dompurifyserver";
+import { serverHTMLPurify } from "../../components/DOMPurify/server";
 import { getMap } from "../../data/emoji";
 import db, { wordId } from "../../database/db";
 import { Member, Word } from "../../database/schema";

@@ -1,5 +1,5 @@
 import { type Config, type DOMPurify } from "dompurify"
-import { prefixCSSSelectors } from "./postcss";
+import { prefixCSSSelectors } from "../postcss";
 
 const DOMPurifyConfig: Config = { FORCE_BODY: true, ADD_TAGS: ["style"] }
 

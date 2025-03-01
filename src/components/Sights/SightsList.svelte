@@ -1,7 +1,7 @@
 <script lang="ts">
     import type { InferSelectModel } from "drizzle-orm";
     import { onMount } from "svelte";
-    import type { Sight as SightTable } from "../database/schema";
+    import type { Sight as SightTable } from "../../database/schema";
 
     type Sight = Omit<InferSelectModel<typeof SightTable>, "showColour"> & {
         memberColor?: string;

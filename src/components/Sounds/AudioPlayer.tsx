@@ -2,7 +2,7 @@ import "./AudioPlayer.css";
 import { useEffect, useRef, useState, type MouseEventHandler, type RefObject } from "react";
 
 import { useStore } from '@nanostores/react';
-import { prevAudioRef } from '../store/soundsState.ts';
+import { prevAudioRef } from '../../store/soundsState.ts';
 
 function formatTimestamp(seconds?: number): string {
 	if (seconds == null) {

@@ -1,8 +1,8 @@
 ---
 import { eq, getTableColumns } from "drizzle-orm";
 import Layout from "../layouts/Layout.astro";
-import ActionsList from "../components/ActionsList.svelte";
-import ActionItemsList from "../components/ActionItemsList.svelte";
+import ActionsList from "../components/Actions/ActionsList.svelte";
+import ActionItemsList from "../components/Actions/ActionItemsList.svelte";
 import type { ActionList } from "../store/actionsState";
 import { detectFeedType } from "../server/rss";
 import db from "../database/db";

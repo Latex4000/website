@@ -2,7 +2,7 @@
 import { and, eq } from "drizzle-orm";
 import Layout from "../../layouts/Layout.astro";
 import { readFile } from "fs/promises";
-import { serverHTMLPurify } from "../../components/dompurifyserver";
+import { serverHTMLPurify } from "../../components/DOMPurify/server";
 import db, { wordId } from "../../database/db";
 import { Member, Word } from "../../database/schema";
 
@@ -23,10 +23,10 @@ const wordResult = await db
         and(
             eq(
                 Word.date,
-                new Date(Number.parseInt(Astro.params.timestamp!, 10) * 1000),
+                new Date(Number.parseInt(Astro.params.timestamp!, 10) * 1000)
             ),
-            eq(Word.deleted, false),
-        ),
+            eq(Word.deleted, false)
+        )
     )
     .get();
 
@@ -38,7 +38,7 @@ const { memberColor, word } = wordResult;
 const shownColour = word.showColour ? memberColor : "inherit";
 const wordHtml = await readFile(
     `${process.env.WORDS_UPLOAD_DIRECTORY}/${wordId(word)}/words.html`,
-    "utf8",
+    "utf8"
 );
 
 const purifiedHtml = serverHTMLPurify(wordHtml, ".word-markdown");
@@ -60,7 +60,7 @@ const purifiedHtml = serverHTMLPurify(wordHtml, ".word-markdown");
         const imgSrcPairs: [HTMLImageElement, string][] = [];
 
         for (const img of document.querySelectorAll(
-            ".word-markdown img.emoji",
+            ".word-markdown img.emoji"
             // eslint-disable-next-line no-undef
         ) as NodeListOf<HTMLImageElement>) {
             imgSrcPairs.push([img, await getDataUrl(img.title.slice(1, -1))]);

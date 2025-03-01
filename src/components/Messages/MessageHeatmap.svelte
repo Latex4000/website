@@ -1,8 +1,8 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import * as d3 from "d3";
-    import dataFile from "../data/messageData.json";
-    import { type MessageData } from "../typing/messageData";
+    import dataFile from "../../data/messageData.json";
+    import { type MessageData } from "../../typing/messageData";
 
     let rawData: MessageData[] = dataFile.map((d: any) => ({
         channelName: d.channelName,

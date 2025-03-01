@@ -1,6 +1,6 @@
 <script lang="ts">
     import type { InferSelectModel } from "drizzle-orm";
-    import type { ActionItem } from "../database/schema";
+    import type { ActionItem } from "../../database/schema";
     import { onMount } from "svelte";
     import {
         actionItemsRef,
@@ -9,8 +9,8 @@
         nextCursorRef,
         prevCursorRef,
         type ActionList,
-    } from "../store/actionsState";
-    import { linkChanger } from "../server/rss";
+    } from "../../store/actionsState";
+    import { linkChanger } from "../../server/rss";
 
     let { actions }: { actions: ActionList[] } = $props();
     actionsRef.set(actions);

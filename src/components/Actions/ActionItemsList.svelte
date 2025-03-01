@@ -3,10 +3,10 @@
         linkChanger,
         removeTitleDescriptionDuplicates,
         twitterImageReplacer,
-    } from "../server/rss";
-    import { actionItemsRef } from "../store/actionsState";
+    } from "../../server/rss";
+    import { actionItemsRef } from "../../store/actionsState";
     import linkifyHtml from "linkify-html";
-    import { clientHTMLPurify } from "./dompurifyclient";
+    import { clientHTMLPurify } from "../DOMPurify/client";
 </script>
 
 <ul>

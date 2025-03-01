@@ -1,5 +1,5 @@
 import DOMPurify from "dompurify"
-import { HTMLPurify } from "./dompurify";
+import { HTMLPurify } from ".";
 
 export async function clientHTMLPurify(html: string, cssPrefix: string): Promise<string> {
     return await HTMLPurify(
