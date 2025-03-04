@@ -243,22 +243,32 @@
         background: var(--background-color);
         padding: 1rem;
         max-height: 100%;
-        max-width: 90%;
-        overflow-y: auto;
-        position: relative;
+        overflow: auto;
+        scrollbar-width: none;
     }
     .overlay-nav {
-        font-size: 25ch;
+        font-size: 10rem;
         margin: auto;
+        padding: 1rem;
         cursor: pointer;
     }
     .overlay-header {
+        top: 3rem;
+        width: fit-content;
+        padding: 1rem;
         margin-bottom: 1rem;
+        background: var(--background-color);
+    }
+    .overlay-header h3 {
+        margin-top: 0;
     }
     .overlay-close {
-        position: absolute;
-        top: 0.5rem;
-        right: 0.5rem;
+        top: 0;
+    }
+    .overlay-header,
+    .overlay-close {
+        position: sticky;
+        left: 0;
     }
     .overlay-tags {
         display: flex;
@@ -272,9 +282,7 @@
             calc(2ch - var(--border-thickness));
         white-space: nowrap;
     }
-    .overlay-images > img {
-        display: block;
-        width: 100%;
-        margin-bottom: 1rem;
+    .overlay-images {
+        width: max-content;
     }
 </style>
