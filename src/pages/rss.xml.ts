@@ -13,8 +13,8 @@ export const GET: APIRoute = async (context) => {
     }).from(Word).orderBy(desc(Word.id));
 
     return rss({
-        title: "Latex 4000's Words",
-        description: "A collection of articles by members in Latex 4000",
+        title: "LaTeX 4000's Words",
+        description: "A collection of articles by members in LaTeX 4000",
         site: context.site ?? "",
         items: words.map((word) => ({
             title: word.title,

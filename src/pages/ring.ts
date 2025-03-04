@@ -26,7 +26,7 @@ export const GET: APIRoute = async (context) => {
         );
 
     members.unshift({
-        alias: "Latex 4000",
+        alias: "LaTeX 4000",
         site: context.site?.toString() ?? "",
     });
 

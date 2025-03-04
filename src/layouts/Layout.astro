@@ -4,12 +4,12 @@ import settings from "../styles/nottheme";
 import "../styles/index.css";
 const { header, title, description, colour } = Astro.props;
 const keywords =
-    "Latex 4000, Latex, latex, 4000, collective, webring, art, music, organization, design, web";
+    "LaTeX 4000, LaTeX, latex, 4000, collective, webring, art, music, organization, design, web";
 const schema = JSON.stringify({
     "@context": "https://schema.org",
     "@type": "Organization",
-    name: title || "Latex 4000",
-    description: description || "Latex 4000 Collective",
+    name: title || "LaTeX 4000",
+    description: description || "LaTeX 4000 Collective",
     url: Astro.url.toString(),
     keywords,
     logo: new URL("/logo.png", Astro.url).toString(),
@@ -28,36 +28,36 @@ const schema = JSON.stringify({
         <link
             rel="alternate"
             type="application/rss+xml"
-            title="Latex 4000's Words"
+            title="LaTeX 4000's Words"
             href={new URL("/rss.xml", Astro.url)}
         />
-        <title>{title || "Latex 4000"}</title>
+        <title>{title || "LaTeX 4000"}</title>
         <meta
             name="description"
-            content={description || "Latex 4000 Collective"}
+            content={description || "LaTeX 4000 Collective"}
         />
-        <meta name="author" content="Latex 4000" />
+        <meta name="author" content="LaTeX 4000" />
         <meta name="keywords" content={keywords} />
         <meta name="theme-color" content={colour || "#000000"} />
 
         <meta name="twitter:card" content="summary" />
         <meta name="twitter:site" content="@Latex4000" />
-        <meta name="twitter:title" content={title || "Latex 4000"} />
+        <meta name="twitter:title" content={title || "LaTeX 4000"} />
         <meta
             name="twitter:description"
-            content={description || "Latex 4000 Collective"}
+            content={description || "LaTeX 4000 Collective"}
         />
         <meta name="twitter:image" content={new URL("/logo.png", Astro.url)} />
 
-        <meta property="og:title" content={title || "Latex 4000"} />
+        <meta property="og:title" content={title || "LaTeX 4000"} />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={Astro.url} />
         <meta property="og:image" content={new URL("/logo.png", Astro.url)} />
         <meta
             property="og:description"
-            content={description || "Latex 4000 Collective"}
+            content={description || "LaTeX 4000 Collective"}
         />
-        <meta property="og:site_name" content="Latex 4000" />
+        <meta property="og:site_name" content="LaTeX 4000" />
         <meta property="og:locale" content="en_US" />
 
         <script is:inline type="application/ld+json" set:html={schema} />
@@ -120,13 +120,13 @@ const schema = JSON.stringify({
             <div class="webring">
                 Webring:
                 <div>
-                    <a href="/ring?action=prev&from=Latex 4000" title="Previous"
+                    <a href="/ring?action=prev&from=LaTeX 4000" title="Previous"
                         >←</a
                     >
-                    <a href="/ring?action=rand&from=Latex 4000" title="Random"
+                    <a href="/ring?action=rand&from=LaTeX 4000" title="Random"
                         >Random</a
                     >
-                    <a href="/ring?action=next&from=Latex 4000" title="Next"
+                    <a href="/ring?action=next&from=LaTeX 4000" title="Next"
                         >→</a
                     >
                 </div>
