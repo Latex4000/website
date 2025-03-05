@@ -1,7 +1,8 @@
 ---
-import { ThemeLoader, ThemeSelect, ThemeStyling } from "nottheme";
-import settings from "../styles/nottheme";
-import "../styles/index.css";
+import ThemeInit from "../styles/ThemeInit.astro";
+import { defaultTheme } from "../styles/themes";
+import ThemeSelector from "../styles/ThemeSelector.svelte";
+
 const { header, title, description, colour } = Astro.props;
 const keywords =
     "LaTeX 4000, LaTeX, latex, 4000, collective, webring, art, music, organization, design, web";
@@ -62,31 +63,9 @@ const schema = JSON.stringify({
 
         <script is:inline type="application/ld+json" set:html={schema} />
 
-        <link id="theme-link" rel="stylesheet" href="/styles/mono.css" />
-        <ThemeStyling settings={settings} />
-        <script>
-            window.__nottheme_onChange = (_: string, value: string) => {
-                const newcss = value.split("-")[0]!;
-                const themeLinkTag = document.getElementById(
-                    "theme-link"
-                ) as HTMLLinkElement;
-                if (themeLinkTag.href.includes(newcss)) return;
-
-                themeLinkTag.href = `/styles/${newcss}.css`;
-                const styleSource = document.getElementById(
-                    "style-source"
-                ) as HTMLLinkElement;
-                styleSource.textContent = getComputedStyle(
-                    document.body
-                ).getPropertyValue("--srctext");
-                styleSource.href = getComputedStyle(
-                    document.body
-                ).getPropertyValue("--srclink");
-            };
-        </script>
+        <ThemeInit />
     </head>
-    <body>
-        <ThemeLoader settings={settings} />
+    <body data-theme={defaultTheme.slug}>
         <header>
             <div class="main-header">
                 <h1>
@@ -94,7 +73,7 @@ const schema = JSON.stringify({
                         >L<span>a</span>T<span>e</span>X 4000 / L4K</a
                     >
                 </h1>
-                <ThemeSelect settings={settings} />
+                <ThemeSelector client:load />
             </div>
             <h2 class="header-nav">
                 <span class="header-nav-ch"><a href="/random">!ch</a>&#32;</span
@@ -146,9 +125,9 @@ const schema = JSON.stringify({
                 >
             </div>
             <a
-                href="https://owickstrom.github.io/the-monospace-web/"
+                href={defaultTheme.values["--srclink"]}
                 target="_blank"
-                id="style-source">Design implemented from The Monospace Web</a
+                id="style-source">{defaultTheme.values["--srctext"]}</a
             >
         </footer>
     </body>

@@ -1,7 +1,10 @@
-import createTheme from "../createtheme";
+import createThemes from "../createThemes";
+import cssUrl from "./latex.css?url";
 
-export default createTheme(
-    "latex",
+export default createThemes(
+    ["latex", "latex-dark"],
+    ["LaTeX", "LaTeX dark"],
+    [cssUrl],
     {
         "--line-height": "1rem",
         "--border-thickness": "1.36px",
@@ -11,9 +14,8 @@ export default createTheme(
         "--text-color-alt": ["hsl(0, 5%, 10%)", "hsl(0, 0%, 86%)"],
         "--srclink": "https://latex.vercel.app/",
         "--srctext": "Design implemented from LaTeX.css",
-        "--srcopacity": "1",
-    },
-    {
+        "--srcopacity": 1,
+
         "--link-visited": ["hsl(0, 100%, 33%)", "hsl(196, 80%, 77%)"],
         "--link-focus-outline": ["hsl(220, 90%, 52%)", "hsl(215, 63%, 73%)"],
         "--pre-bg-color": ["hsl(210, 28%, 93%)", "hsl(0, 1%, 25%)"],
@@ -23,5 +25,5 @@ export default createTheme(
         "--sidenote-target-border-color": ["hsl(55, 55%, 70%)", "hsl(0, 0%, 59%)"],
         "--footnotes-border-color": ["hsl(0, 0%, 39%)", "hsl(0, 0%, 59%)"],
         "--proof-symbol-filter": [null, "invert(80%)"],
-    }
+    },
 );

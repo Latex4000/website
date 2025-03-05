@@ -1,7 +1,10 @@
-import createTheme from "../createtheme";
+import createThemes from "../createThemes";
+import cssUrl from "./mono.css?url";
 
-export default createTheme(
-    "mono",
+export default createThemes(
+    ["mono", "mono-dark"],
+    ["Mono", "Mono dark"],
+    [cssUrl],
     {
         "--line-height": "1.2rem",
         "--border-thickness": "2px",
@@ -11,6 +14,6 @@ export default createTheme(
         "--text-color-alt": ["#666", "#ccc"],
         "--srclink": "https://owickstrom.github.io/the-monospace-web/",
         "--srctext": "Design implemented from The Monospace Web",
-        "--srcopacity": "0.5",
-    }
+        "--srcopacity": 0.5,
+    },
 );

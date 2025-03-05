@@ -81,7 +81,7 @@ const members = await db
         grid-template-columns: repeat(5, 1fr);
     }
 
-    :global(body:is(.themes-mono-dark, .themes-mono-light)) ul {
+    :global(body:is([data-theme="mono"], [data-theme="mono-dark"])) ul {
         width: round(down, 100%, 5ch);
     }
 

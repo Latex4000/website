@@ -1,7 +1,10 @@
-import createTheme from "../createtheme";
+import createThemes from "../createThemes";
+import cssUrl from "./cs16.css?url";
 
-export default createTheme(
-    "cs16",
+export default createThemes(
+    ["cs16"],
+    ["CS 1.6"],
+    [cssUrl],
     {
         "--line-height": "1rem",
         "--border-thickness": "1px",
@@ -11,6 +14,6 @@ export default createTheme(
         "--text-color-alt": "#d8ded3",
         "--srclink": "https://cs16.samke.me/",
         "--srctext": "Design implemented from cs16.css with font altered to Unifont",
-        "--srcopacity": "1",
-    }
+        "--srcopacity": 1,
+    },
 );
