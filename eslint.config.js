@@ -7,7 +7,7 @@ export default [
     // add more generic rule sets here, such as:
     // js.configs.recommended,
     {
-        ignores: [".astro/", "db/migrate.mjs", "db/cron.mjs", "dist/"],
+        ignores: [".astro/", "db/migrate.mjs", "db/cron.mjs", "**/dist/"],
     },
     {
         files: ["**/*.css"],
