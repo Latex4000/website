@@ -38,11 +38,11 @@ console.error(
 let newItems = 0;
 let actionsDone = 0;
 const start = Date.now();
-const transaction = await sqliteClient.transaction("write");
-try {
-    for (const action of actions.rows) {
-        const feed = await rssParser.parseURL(action.url);
+for (const action of actions.rows) {
+    const feed = await rssParser.parseURL(action.url);
 
+    const transaction = await sqliteClient.transaction("write");
+    try {
         for (const item of feed.items) {
             try {
                 await transaction.execute(
@@ -60,27 +60,36 @@ try {
                             item.title ||
                             "",
                         item.link,
-                        new Date(
-                            item.pubDate || item.isoDate || Date.now(),
-                        ).toISOString().slice(0, 19).replace("T", " "),
+                        new Date(item.pubDate || item.isoDate || Date.now())
+                            .toISOString()
+                            .slice(0, 19)
+                            .replace("T", " "),
                     ],
                 );
                 newItems++;
             } catch (error) {
-                if (!(error instanceof LibsqlError && error.code === "SQLITE_CONSTRAINT_UNIQUE")) {
+                if (
+                    !(
+                        error instanceof LibsqlError &&
+                        error.code === "SQLITE_CONSTRAINT_UNIQUE"
+                    )
+                ) {
                     throw error;
                 }
             }
         }
-        actionsDone++;
-        console.error(`Action ${actionsDone}/${actions.rows.length} done`);
+        await transaction.commit();
+    } catch (e) {
+        await transaction.rollback();
+        console.error(e);
+    } finally {
+        transaction.close();
     }
-    await transaction.commit();
-    console.error(`Added ${newItems} new items in ${Date.now() - start}ms`);
-} catch (e) {
-    await transaction.rollback();
-    console.error(e);
+
+    actionsDone++;
+    console.error(`Action ${actionsDone}/${actions.rows.length} done`);
 }
-transaction.close();
+console.error(`Added ${newItems} new items in ${Date.now() - start}ms`);
+
 sqliteClient.close();
 process.exit(0);
