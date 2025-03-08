@@ -39,55 +39,61 @@ let newItems = 0;
 let actionsDone = 0;
 const start = Date.now();
 for (const action of actions.rows) {
-    const feed = await rssParser.parseURL(action.url);
-
-    const transaction = await sqliteClient.transaction("write");
     try {
-        for (const item of feed.items) {
-            try {
-                await transaction.execute(
-                    `
-                        INSERT INTO "ActionItem" ("actionID", "title", "description", "url", "date")
-                        VALUES (?, ?, ?, ?, ?)
-                    `,
-                    [
-                        action.id,
-                        item.title || "",
-                        item.description ||
-                            item.content ||
-                            item.summary ||
-                            item.contentSnippet ||
-                            item.title ||
-                            "",
-                        item.link,
-                        new Date(item.pubDate || item.isoDate || Date.now())
-                            .toISOString()
-                            .slice(0, 19)
-                            .replace("T", " "),
-                    ],
-                );
-                newItems++;
-            } catch (error) {
-                if (
-                    !(
-                        error instanceof LibsqlError &&
-                        error.code === "SQLITE_CONSTRAINT_UNIQUE"
-                    )
-                ) {
-                    throw error;
+        const feed = await rssParser.parseURL(action.url);
+
+        const transaction = await sqliteClient.transaction("write");
+        try {
+            for (const item of feed.items) {
+                try {
+                    await transaction.execute(
+                        `
+                            INSERT INTO "ActionItem" ("actionID", "title", "description", "url", "date")
+                            VALUES (?, ?, ?, ?, ?)
+                        `,
+                        [
+                            action.id,
+                            item.title || "",
+                            item.description ||
+                                item.content ||
+                                item.summary ||
+                                item.contentSnippet ||
+                                item.title ||
+                                "",
+                            item.link,
+                            new Date(item.pubDate || item.isoDate || Date.now())
+                                .toISOString()
+                                .slice(0, 19)
+                                .replace("T", " "),
+                        ],
+                    );
+                    newItems++;
+                } catch (error) {
+                    if (
+                        !(
+                            error instanceof LibsqlError &&
+                            error.code === "SQLITE_CONSTRAINT_UNIQUE"
+                        )
+                    ) {
+                        throw error;
+                    }
                 }
             }
+            await transaction.commit();
+        } catch (e) {
+            await transaction.rollback();
+            console.error(e);
+        } finally {
+            transaction.close();
         }
-        await transaction.commit();
-    } catch (e) {
-        await transaction.rollback();
-        console.error(e);
-    } finally {
-        transaction.close();
-    }
 
-    actionsDone++;
-    console.error(`Action ${actionsDone}/${actions.rows.length} done`);
+        actionsDone++;
+        console.error(`Action ${actionsDone}/${actions.rows.length} done`);
+    } catch (e) {
+        console.error(
+            `Action ${actionsDone}/${actions.rows.length} failed\n${e}`,
+        );
+    }
 }
 console.error(`Added ${newItems} new items in ${Date.now() - start}ms`);
 
