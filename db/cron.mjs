@@ -90,8 +90,9 @@ for (const action of actions.rows) {
         actionsDone++;
         console.error(`Action ${actionsDone}/${actions.rows.length} done`);
     } catch (e) {
+        actionsDone++;
         console.error(
-            `Action ${actionsDone}/${actions.rows.length} failed\n${e}`,
+            `Action ${actionsDone}/${actions.rows.length} failed: ${e}`,
         );
     }
 }
