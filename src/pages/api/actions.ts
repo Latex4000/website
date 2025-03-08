@@ -3,7 +3,7 @@ import type { APIRoute } from "astro";
 import { eq, type InferSelectModel } from "drizzle-orm";
 import { jsonError, jsonResponse } from "../../server/responses";
 import Parser from "rss-parser";
-import db from "../../database/db";
+import db, { dbOperation } from "../../database/db";
 import { Action, ActionItem, Member } from "../../database/schema";
 import { thingDeletion, thingGet } from "../../server/thingUtils";
 
@@ -58,11 +58,13 @@ export const POST: APIRoute = async (context) => {
     }
 
     if (!action.isRSS) {
-        const actionRes = await db
-            .insert(Action)
-            .values(action)
-            .returning()
-            .get();
+        const actionRes = await dbOperation(() =>
+            db
+                .insert(Action)
+                .values(action)
+                .returning()
+                .get()
+        );
 
         return jsonResponse({ action: actionRes });
     }
@@ -74,23 +76,27 @@ export const POST: APIRoute = async (context) => {
         if (rss.items.length && !rss.items[0]!.link)
             return jsonError("Invalid RSS feed item missing title or link");
 
-        const actionRes = await db
-            .insert(Action)
-            .values(action)
-            .returning()
-            .get();
+        const actionRes = await dbOperation(() =>
+            db
+                .insert(Action)
+                .values(action)
+                .returning()
+                .get()
+        );
         let items: InferSelectModel<typeof ActionItem>[] = [];
         if (rss.items.length)
-            items = await db
-                .insert(ActionItem)
-                .values(rss.items.map((item) => ({
-                    actionID: actionRes.id,
-                    title: item.title || "",
-                    description: item.description || item.content || item.summary || item.contentSnippet || item.title || "",
-                    url: item.link!,
-                    date: new Date(item.pubDate || item.isoDate || Date.now()),
-                })))
-                .returning();
+            items = await dbOperation(() =>
+                db
+                    .insert(ActionItem)
+                    .values(rss.items.map((item) => ({
+                        actionID: actionRes.id,
+                        title: item.title || "",
+                        description: item.description || item.content || item.summary || item.contentSnippet || item.title || "",
+                        url: item.link!,
+                        date: new Date(item.pubDate || item.isoDate || Date.now()),
+                    })))
+                    .returning()
+            );
         return jsonResponse({ action: actionRes, items });
     } catch (error) {
         if (error instanceof LibsqlError)

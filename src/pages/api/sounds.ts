@@ -8,7 +8,7 @@ import { extname } from "path";
 import { getFileOrDiscordAttachment, getTags } from "../../server/validation";
 import { writeBlobToFile } from "../../server/webApi";
 import { thingDeletion, thingGet } from "../../server/thingUtils";
-import db from "../../database/db";
+import db, { dbOperation } from "../../database/db";
 import { Member, Sound } from "../../database/schema";
 
 export const prerender = false;
@@ -79,20 +79,22 @@ export const POST: APIRoute = async ({ request }) => {
     // Store to DB
     let sound: InferSelectModel<typeof Sound>;
     try {
-        sound = await db
-            .insert(Sound)
-            .values({
-                title,
-                memberDiscord: discord,
-                soundcloudUrl,
-                youtubeUrl,
-                tags: getTags(tags),
-                trackType,
-                coverType,
-                showColour,
-            })
-            .returning()
-            .get();
+        sound = await dbOperation(() =>
+            db
+                .insert(Sound)
+                .values({
+                    title,
+                    memberDiscord: discord,
+                    soundcloudUrl,
+                    youtubeUrl,
+                    tags: getTags(tags),
+                    trackType,
+                    coverType,
+                    showColour,
+                })
+                .returning()
+                .get()
+        );
     } catch (error) {
         if (error instanceof LibsqlError && error.code === "SQLITE_CONSTRAINT_FOREIGNKEY") {
             return jsonError("Invalid Discord ID");

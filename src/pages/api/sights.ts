@@ -4,7 +4,7 @@ import { eq, type InferSelectModel } from "drizzle-orm";
 import { jsonError, jsonResponse } from "../../server/responses";
 import { execFileSync } from "child_process";
 import { thingDeletion, thingGet } from "../../server/thingUtils";
-import db from "../../database/db";
+import db, { dbOperation } from "../../database/db";
 import type { Sharp } from "sharp";
 import { Member, Sight } from "../../database/schema";
 import { getSightSharpInstance, processSightImage } from "../../server/thumbnail-sights";
@@ -83,21 +83,23 @@ export const POST: APIRoute = async (context) => {
     // Store to DB
     let sight: InferSelectModel<typeof Sight>;
     try {
-        sight = await db
-            .insert(Sight)
-            .values({
-                memberDiscord: discord,
-                tags:
-                    tags.length === 0
-                        ? []
-                        : tags.split(",").map((tag) => tag.trim()),
-                title,
-                description,
-                showColour,
-                pixelated,
-            })
-            .returning()
-            .get();
+        sight = await dbOperation(() =>
+            db
+                .insert(Sight)
+                .values({
+                    memberDiscord: discord,
+                    tags:
+                        tags.length === 0
+                            ? []
+                            : tags.split(",").map((tag) => tag.trim()),
+                    title,
+                    description,
+                    showColour,
+                    pixelated,
+                })
+                .returning()
+                .get()
+        );
     } catch (error) {
         if (error instanceof LibsqlError) {
             if (error.code === "SQLITE_CONSTRAINT_UNIQUE") {

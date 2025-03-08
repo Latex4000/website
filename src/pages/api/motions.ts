@@ -2,7 +2,7 @@ import { LibsqlError } from "@libsql/client";
 import type { APIRoute } from "astro";
 import { jsonError, jsonResponse } from "../../server/responses";
 import { thingDeletion, thingGet } from "../../server/thingUtils";
-import db from "../../database/db";
+import db, { dbOperation } from "../../database/db";
 import { Member, Motion } from "../../database/schema";
 import { eq } from "drizzle-orm";
 
@@ -50,17 +50,19 @@ export const POST: APIRoute = async ({ request }) => {
     // Store to DB
     try {
         return jsonResponse(
-            await db
-                .insert(Motion)
-                .values({
-                    title: motionData.title,
-                    youtubeUrl: motionData.youtubeUrl,
-                    memberDiscord: motionData.memberDiscord,
-                    tags: motionData.tags,
-                    showColour: motionData.showColour,
-                })
-                .returning()
-                .get(),
+            await dbOperation(() =>
+                db
+                    .insert(Motion)
+                    .values({
+                        title: motionData.title,
+                        youtubeUrl: motionData.youtubeUrl,
+                        memberDiscord: motionData.memberDiscord,
+                        tags: motionData.tags,
+                        showColour: motionData.showColour,
+                    })
+                    .returning()
+                    .get()
+            ),
         );
     } catch (error) {
         if (error instanceof LibsqlError && error.code === "SQLITE_CONSTRAINT_FOREIGNKEY")
