@@ -67,7 +67,7 @@ const schema = JSON.stringify({
     </head>
     <body data-theme={defaultTheme.slug}>
         <header>
-            <div class="main-header">
+            <div class="title-bar">
                 <h1>
                     <a href="/" class="latex"
                         >L<span>a</span>T<span>e</span>X 4000 / L4K</a
@@ -145,11 +145,10 @@ const schema = JSON.stringify({
         margin: 1lh 0;
     }
 
-    .main-header {
+    .title-bar {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        gap: var(--line-height);
     }
 
     nav {
