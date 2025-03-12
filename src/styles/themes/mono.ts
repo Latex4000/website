@@ -1,10 +1,12 @@
 import createThemes from "../createThemes";
 import cssUrl from "./mono.css?url";
+import cssOverridesUrl from "./mono-overrides.css?url";
+import cssResetUrl from "./mono-reset.css?url";
 
 export default createThemes(
     ["mono", "mono-dark"],
     ["Mono", "Mono dark"],
-    [cssUrl],
+    [cssResetUrl, cssUrl, cssOverridesUrl],
     {
         "--line-height": "1.2rem",
         "--border-thickness": "2px",

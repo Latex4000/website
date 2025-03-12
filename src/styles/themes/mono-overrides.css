@@ -1,0 +1,19 @@
+/* Style <select> the same way as <input> */
+select {
+    border: var(--border-thickness) solid var(--text-color);
+    padding: calc(var(--line-height) / 2 - var(--border-thickness))
+        calc(1ch - var(--border-thickness));
+    margin: 0;
+    font: inherit;
+    font-weight: inherit;
+    height: calc(var(--line-height) * 2);
+    width: auto;
+    overflow: visible;
+    background: var(--background-color);
+    color: var(--text-color);
+    line-height: normal;
+    -webkit-font-smoothing: inherit;
+    -moz-osx-font-smoothing: inherit;
+    -webkit-appearance: none;
+    appearance: none;
+}
