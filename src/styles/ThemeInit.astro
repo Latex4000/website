@@ -1,12 +1,8 @@
 ---
-import indexCssUrl from "./index.css?url";
 import { defaultDarkTheme, defaultTheme, ssrStyle, themes } from "./themes";
 
 const initJson = JSON.stringify({ defaultDarkTheme, defaultTheme, themes });
 ---
-
-{/* Global styles for all themes */}
-<link href={indexCssUrl} rel="stylesheet" />
 
 {/* Initial default theme styles for noscript */}
 <style is:inline set:html={ssrStyle()} data-theme></style>
@@ -30,7 +26,7 @@ const initJson = JSON.stringify({ defaultDarkTheme, defaultTheme, themes });
     import type { Theme } from "./createThemes";
 
     const { defaultDarkTheme, defaultTheme, themes } = JSON.parse(
-        document.querySelector("script[data-theme-init]")?.textContent!,
+        document.querySelector("script[data-theme-init]")?.textContent!
     ) as {
         defaultDarkTheme: Theme;
         defaultTheme: Theme;
@@ -89,7 +85,7 @@ const initJson = JSON.stringify({ defaultDarkTheme, defaultTheme, themes });
 
         // Add new theme elements
         newHeadChildren.forEach((element) =>
-            document.head.appendChild(element),
+            document.head.appendChild(element)
         );
 
         // Write theme slug to <body> dataset
@@ -97,7 +93,7 @@ const initJson = JSON.stringify({ defaultDarkTheme, defaultTheme, themes });
 
         // Set new style source link and text
         const styleSource = document.getElementById(
-            "style-source",
+            "style-source"
         ) as HTMLAnchorElement;
         styleSource.href = theme.values["--srclink"];
         styleSource.textContent = theme.values["--srctext"];
