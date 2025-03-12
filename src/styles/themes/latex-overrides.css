@@ -1,0 +1,9 @@
+/* Set nav font-size to the same as h3 */
+nav {
+    font-size: 1.4rem;
+}
+
+/* Justify all paragraphs */
+p {
+    text-align: justify;
+}

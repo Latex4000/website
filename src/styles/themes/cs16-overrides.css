@@ -1,0 +1,7 @@
+/* Centered layout */
+body {
+    margin: 0 auto;
+    padding: var(--line-height) 2ch;
+    max-width: 80ch;
+    line-height: var(--line-height);
+}

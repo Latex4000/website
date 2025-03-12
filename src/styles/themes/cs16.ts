@@ -1,10 +1,11 @@
 import createThemes from "../createThemes";
 import cssUrl from "./cs16.css?url";
+import cssOverridesUrl from "./cs16-overrides.css?url";
 
 export default createThemes(
     ["cs16"],
     ["CS 1.6"],
-    [cssUrl],
+    [cssUrl, cssOverridesUrl],
     {
         "--line-height": "1rem",
         "--border-thickness": "1px",

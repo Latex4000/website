@@ -17,3 +17,8 @@ select {
     -webkit-appearance: none;
     appearance: none;
 }
+
+/* Transform nav text the same way as top-level headers */
+nav {
+    text-transform: uppercase;
+}

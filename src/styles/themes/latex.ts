@@ -1,10 +1,11 @@
 import createThemes from "../createThemes";
 import cssUrl from "./latex.css?url";
+import cssOverridesUrl from "./latex-overrides.css?url";
 
 export default createThemes(
     ["latex", "latex-dark"],
     ["LaTeX", "LaTeX dark"],
-    [cssUrl],
+    [cssUrl, cssOverridesUrl],
     {
         "--line-height": "1rem",
         "--border-thickness": "1.36px",

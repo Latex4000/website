@@ -76,12 +76,16 @@ const members = await db
         margin-top: 0.5lh;
         padding: 0;
         display: grid;
-        gap: 0.5lh 1ch;
         width: 100%;
         grid-template-columns: repeat(5, 1fr);
     }
 
-    :global(body:is([data-theme="mono"], [data-theme="mono-dark"])) ul {
+    :global(body[data-theme^="latex"]) ul {
+        margin-top: 0;
+    }
+
+    :global(body[data-theme^="mono"]) ul {
+        gap: 0.5lh 1ch;
         width: round(down, 100%, 5ch);
     }
 
