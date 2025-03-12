@@ -1,4 +1,5 @@
-/* imported from https://github.com/owickstrom/the-monospace-web/blob/main/index.css */
+/* Source: https://github.com/owickstrom/the-monospace-web */
+/* Unmerged updates from source: https://github.com/owickstrom/the-monospace-web/compare/c0d05c9f4dc113ef0fc8fe5e18b4bc6c5522fee4...main */
 
 @import url("https://fonts.cdnfonts.com/css/jetbrains-mono-2");
 
@@ -21,36 +22,34 @@
     box-sizing: border-box;
 }
 
-body {
+html {
     display: flex;
+    width: 100%;
+    margin: 0;
+    padding: 0;
     flex-direction: column;
-
-    /* Originally in the html tag, moved for nottheme to be functional */
+    align-items: center;
     background: var(--background-color);
     color: var(--text-color);
+}
+
+body {
+    position: relative;
+    width: 100%;
+    margin: 0;
+    padding: var(--line-height) 2ch;
+    max-width: calc(min(80ch, round(down, 100%, 1ch)));
+    line-height: var(--line-height);
+    overflow-x: hidden;
 }
 
 @media screen and (max-width: 480px) {
     :root {
         font-size: 14px;
     }
-}
-
-header {
-    text-decoration: none;
-    color: inherit;
-}
-
-main {
-    flex: 1;
-}
-
-main > *:first-child {
-    margin-top: 0;
-}
-
-footer {
-    font-size: 0.75rem;
+    body {
+        padding: var(--line-height) 1ch;
+    }
 }
 
 h1,
@@ -60,27 +59,18 @@ h4,
 h5,
 h6 {
     font-weight: var(--font-weight-bold);
-    margin: var(--line-height) 0;
+    margin: calc(var(--line-height) * 2) 0 var(--line-height);
     line-height: var(--line-height);
 }
 
 h1 {
     font-size: 2rem;
     line-height: calc(2 * var(--line-height));
+    margin-bottom: calc(var(--line-height) * 2);
     text-transform: uppercase;
 }
-
-h1 a {
-    text-decoration: none;
-    color: inherit;
-}
-
-h2,
-h3 {
-    font-size: 1rem;
-}
-
 h2 {
+    font-size: 1rem;
     text-transform: uppercase;
 }
 
@@ -92,7 +82,6 @@ hr {
     border: none;
     color: var(--text-color);
 }
-
 hr:after {
     display: block;
     content: "";
@@ -113,10 +102,13 @@ a:visited {
     color: var(--text-color);
 }
 
+p {
+    margin-bottom: var(--line-height);
+}
+
 strong {
     font-weight: var(--font-weight-bold);
 }
-
 em {
     font-style: italic;
 }
@@ -134,7 +126,6 @@ sub {
 table {
     position: relative;
     top: calc(var(--line-height) / 2);
-    width: 100%;
     width: calc(round(down, 100%, 1ch));
     border-collapse: collapse;
     margin: 0 0 calc(var(--line-height) * 2);
@@ -147,10 +138,9 @@ td {
         calc(1ch - var(--border-thickness) / 2)
         calc((var(--line-height) / 2) - (var(--border-thickness)));
     line-height: var(--line-height);
-    vertical-align: middle;
-    text-align: center;
+    vertical-align: top;
+    text-align: left;
 }
-
 table tbody tr:first-child > * {
     padding-top: calc((var(--line-height) / 2) - var(--border-thickness));
 }
@@ -158,11 +148,9 @@ table tbody tr:first-child > * {
 th {
     font-weight: 700;
 }
-
 .width-min {
     width: 0%;
 }
-
 .width-auto {
     width: 100%;
 }
@@ -170,11 +158,9 @@ th {
 .header {
     margin-bottom: calc(var(--line-height) * 2);
 }
-
 .header h1 {
     margin: 0;
 }
-
 .header tr td:last-child {
     text-align: right;
 }
@@ -192,7 +178,6 @@ video {
     object-fit: contain;
     overflow: hidden;
 }
-
 img {
     font-style: italic;
     color: var(--text-color-alt);
@@ -208,7 +193,6 @@ summary {
     font-weight: var(--font-weight-medium);
     cursor: pointer;
 }
-
 details[open] summary {
     margin-bottom: var(--line-height);
 }
@@ -218,7 +202,6 @@ details ::marker {
     content: "▶";
     margin: 0;
 }
-
 details[open] ::marker {
     content: "▼";
 }
@@ -233,7 +216,6 @@ pre {
     margin: var(--line-height) 0;
     overflow-y: hidden;
 }
-
 figure pre {
     margin: 0;
 }
@@ -245,10 +227,6 @@ code {
 
 code {
     font-weight: var(--font-weight-medium);
-    opacity: 0.75;
-    word-break: break-all;
-    white-space: normal;
-    background-color: var(--background-color-alt);
 }
 
 figure {
@@ -273,13 +251,11 @@ ul {
     list-style-type: square;
     padding: 0 0 0 2ch;
 }
-
 ol {
     list-style-type: none;
     counter-reset: item;
     padding: 0;
 }
-
 ol ul,
 ol ol,
 ul ol,
@@ -287,7 +263,6 @@ ul ul {
     padding: 0 0 0 3ch;
     margin: 0;
 }
-
 ol li:before {
     content: counters(item, ".") ". ";
     counter-increment: item;
@@ -309,8 +284,7 @@ li::marker {
 
 input,
 button,
-textarea,
-select {
+textarea {
     border: var(--border-thickness) solid var(--text-color);
     padding: calc(var(--line-height) / 2 - var(--border-thickness))
         calc(1ch - var(--border-thickness));
@@ -318,6 +292,7 @@ select {
     font: inherit;
     font-weight: inherit;
     height: calc(var(--line-height) * 2);
+    width: auto;
     overflow: visible;
     background: var(--background-color);
     color: var(--text-color);
@@ -328,7 +303,8 @@ select {
     appearance: none;
 }
 
-input[type="checkbox"] {
+input[type="checkbox"],
+input[type="radio"] {
     display: inline-grid;
     place-content: center;
     vertical-align: top;
@@ -336,28 +312,16 @@ input[type="checkbox"] {
     height: var(--line-height);
     cursor: pointer;
 }
-
-input[type="checkbox"]:checked:before {
+input[type="checkbox"]:checked:before,
+input[type="radio"]:checked:before {
     content: "";
     width: 1ch;
     height: calc(var(--line-height) / 2);
     background: var(--text-color);
 }
-
-input[type="checkbox"]:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
-}
-
-input[type="file"] {
-    display: none;
-}
-
-input[type="file"] + label {
-    display: inline-block;
-    padding: calc(var(--line-height) / 2) 1ch;
-    border: var(--border-thickness) solid var(--text-color);
-    cursor: pointer;
+input[type="radio"],
+input[type="radio"]:before {
+    border-radius: 100%;
 }
 
 button:focus,
@@ -366,15 +330,16 @@ input:focus {
     outline: none;
 }
 
+input {
+    width: calc(round(down, 100%, 1ch));
+}
 ::placeholder {
     color: var(--text-color-alt);
     opacity: 1;
 }
-
 ::-ms-input-placeholder {
     color: var(--text-color-alt);
 }
-
 button::-moz-focus-inner {
     padding: 0;
     border: 0;
@@ -389,14 +354,12 @@ button {
 button:hover {
     background: var(--background-color-alt);
 }
-
 button:active {
     transform: translate(2px, 2px);
 }
 
 label {
     display: block;
-    width: 100%;
     width: calc(round(down, 100%, 1ch));
     height: auto;
     line-height: var(--line-height);
@@ -415,18 +378,15 @@ label input {
     list-style-type: none;
     line-height: var(--line-height);
 }
-
 .tree ul {
     margin: 0;
 }
-
 .tree ul li {
     position: relative;
     padding-left: 1.5ch;
     margin-left: 1.5ch;
     border-left: var(--border-thickness) solid var(--text-color);
 }
-
 .tree ul li:before {
     position: absolute;
     display: block;
@@ -436,11 +396,9 @@ label input {
     width: 1ch;
     border-bottom: var(--border-thickness) solid var(--text-color);
 }
-
 .tree ul li:last-child {
     border-left: none;
 }
-
 .tree ul li:last-child:after {
     position: absolute;
     display: block;
@@ -476,39 +434,65 @@ label input {
             )
         );
 }
-
 .grid:has(> :last-child:nth-child(1)) {
     --grid-cells: 1;
 }
-
 .grid:has(> :last-child:nth-child(2)) {
     --grid-cells: 2;
 }
-
 .grid:has(> :last-child:nth-child(3)) {
     --grid-cells: 3;
 }
-
 .grid:has(> :last-child:nth-child(4)) {
     --grid-cells: 4;
 }
-
 .grid:has(> :last-child:nth-child(5)) {
     --grid-cells: 5;
 }
-
 .grid:has(> :last-child:nth-child(6)) {
     --grid-cells: 6;
 }
-
 .grid:has(> :last-child:nth-child(7)) {
     --grid-cells: 7;
 }
-
 .grid:has(> :last-child:nth-child(8)) {
     --grid-cells: 8;
 }
-
 .grid:has(> :last-child:nth-child(9)) {
     --grid-cells: 9;
+}
+
+/* DEBUG UTILITIES */
+
+.debug .debug-grid {
+    --color: color-mix(
+        in srgb,
+        var(--text-color) 10%,
+        var(--background-color) 90%
+    );
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: -1;
+    background-image: repeating-linear-gradient(
+            var(--color) 0 1px,
+            transparent 1px 100%
+        ),
+        repeating-linear-gradient(
+            90deg,
+            var(--color) 0 1px,
+            transparent 1px 100%
+        );
+    background-size: 1ch var(--line-height);
+    margin: 0;
+}
+
+.debug .off-grid {
+    background: rgba(255, 0, 0, 0.1);
+}
+
+.debug-toggle-label {
+    text-align: right;
 }

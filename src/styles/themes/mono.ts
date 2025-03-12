@@ -13,7 +13,7 @@ export default createThemes(
         "--background-color": ["#fff", "#000"],
         "--background-color-alt": ["#eee", "#111"],
         "--text-color": ["#000", "#fff"],
-        "--text-color-alt": ["#666", "#ccc"],
+        "--text-color-alt": ["#666", "#aaa"],
         "--srclink": "https://owickstrom.github.io/the-monospace-web/",
         "--srctext": "Design implemented from The Monospace Web",
         "--srcopacity": 0.5,
