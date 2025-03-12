@@ -69,15 +69,14 @@ const schema = JSON.stringify({
         <header>
             <div class="main-header">
                 <h1>
-                    <a href="/" class="header latex"
+                    <a href="/" class="latex"
                         >L<span>a</span>T<span>e</span>X 4000 / L4K</a
                     >
                 </h1>
                 <ThemeSelector client:load />
             </div>
-            <h2 class="header-nav">
-                <span class="header-nav-ch"><a href="/random">!ch</a>&#32;</span
-                >
+            <nav>
+                <span class="ch"><a href="/random">!ch</a>&#32;</span>
                 <a href="/">Home</a>
                 |
                 <a href="/sounds">Sounds</a>
@@ -91,7 +90,7 @@ const schema = JSON.stringify({
                 <a href="/actions">Actions</a>
                 <!-- |
                 <a href="/things">Things</a> -->
-            </h2>
+            </nav>
             <h2>{header}</h2>
         </header>
         <main>
@@ -134,6 +133,18 @@ const schema = JSON.stringify({
 </html>
 
 <style>
+    header h1 {
+        margin: 0;
+    }
+
+    header h1 a {
+        text-decoration: none;
+    }
+
+    :global(body:not([data-theme^="latex"])) header {
+        margin: 1lh 0;
+    }
+
     .main-header {
         display: flex;
         justify-content: space-between;
@@ -141,11 +152,11 @@ const schema = JSON.stringify({
         gap: var(--line-height);
     }
 
-    .header-nav {
+    nav {
         position: relative;
     }
 
-    .header-nav-ch {
+    .ch {
         position: absolute;
         right: 100%;
         text-transform: none;
