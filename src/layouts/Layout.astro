@@ -163,6 +163,11 @@ const schema = JSON.stringify({
         white-space: pre;
     }
 
+    main {
+        /* For slotted components that need to use absolute positioning */
+        position: relative;
+    }
+
     footer {
         margin-block: var(--line-height);
     }
