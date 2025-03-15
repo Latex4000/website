@@ -95,39 +95,42 @@ const schema = JSON.stringify({
         </header>
         <main>
             <slot />
+        </main>
+        <footer>
             <div class="webring">
-                Webring:
+                <div>Web ring</div>
                 <div>
-                    <a href="/ring?action=prev&from=LaTeX 4000" title="Previous"
-                        >←</a
-                    >
-                    <a href="/ring?action=rand&from=LaTeX 4000" title="Random"
-                        >Random</a
-                    >
-                    <a href="/ring?action=next&from=LaTeX 4000" title="Next"
-                        >→</a
+                    <a
+                        class="webring__prev"
+                        href="/ring?action=prev&from=LaTeX 4000"
+                        title="Previous"></a>
+                    <a href="/ring?action=rand&from=LaTeX 4000">Random</a>
+                    <a
+                        class="webring__next"
+                        href="/ring?action=next&from=LaTeX 4000"
+                        title="Next"></a>
+                </div>
+            </div>
+            <div class="footer-info">
+                <div>
+                    <div class="latex">
+                        L<span>a</span>T<span>e</span>X 4000 Collective
+                    </div>
+                    <div>
+                        <a href="https://www.youtube.com/@latex4000">YouTube</a>
+                        |
+                        <a href="https://soundcloud.com/latex4000">SoundCloud</a
+                        >
+                        |
+                        <a href="https://github.com/Latex4000">GitHub</a>
+                    </div>
+                </div>
+                <div>
+                    <a href={defaultTheme.values["--srclink"]} id="style-source"
+                        >{defaultTheme.values["--srctext"]}</a
                     >
                 </div>
             </div>
-        </main>
-        <footer>
-            <div class="footer-links">
-                <a href="https://www.youtube.com/@latex4000" target="_blank"
-                    >YouTube</a
-                >
-                |
-                <a href="https://soundcloud.com/latex4000" target="_blank"
-                    >SoundCloud</a
-                >
-                |
-                <a href="https://github.com/Latex4000" target="_blank">GitHub</a
-                >
-            </div>
-            <a
-                href={defaultTheme.values["--srclink"]}
-                target="_blank"
-                id="style-source">{defaultTheme.values["--srctext"]}</a
-            >
         </footer>
     </body>
 </html>
@@ -169,7 +172,50 @@ const schema = JSON.stringify({
     }
 
     footer {
-        margin-block: var(--line-height);
+        margin-block: 2lh;
+    }
+
+    :global(body:not([data-theme^="mono"])) footer {
+        font-size: 0.8em;
+    }
+
+    .webring {
+        margin-bottom: 1lh;
+        text-align: center;
+    }
+
+    .webring__prev::after {
+        content: "<--";
+    }
+
+    :global(body[data-theme^="latex"]) .webring__prev::after {
+        content: "←";
+    }
+
+    .webring__next::after {
+        content: "-->";
+    }
+
+    :global(body[data-theme^="latex"]) .webring__next::after {
+        content: "→";
+    }
+
+    .footer-row {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .footer-info {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    @media only screen and (max-width: 767px) {
+        .footer-info {
+            flex-direction: column;
+            gap: 1lh;
+            text-align: center;
+        }
     }
 
     #style-source {
@@ -177,13 +223,6 @@ const schema = JSON.stringify({
     }
 
     @media only screen and (max-width: 600px) {
-        .webring {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
         header {
             display: flex;
             flex-direction: column;
@@ -192,13 +231,6 @@ const schema = JSON.stringify({
         }
 
         .header-nav {
-            justify-content: center;
-            align-items: center;
-        }
-
-        footer {
-            display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
         }
