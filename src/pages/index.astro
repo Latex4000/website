@@ -78,6 +78,7 @@ const members = await db
         display: grid;
         width: 100%;
         grid-template-columns: repeat(5, 1fr);
+        column-gap: 1ch;
     }
 
     :global(body[data-theme^="latex"]) ul {
@@ -85,7 +86,7 @@ const members = await db
     }
 
     :global(body[data-theme^="mono"]) ul {
-        gap: 0.5lh 1ch;
+        row-gap: 0.5lh;
         width: round(down, 100%, 5ch);
     }
 
