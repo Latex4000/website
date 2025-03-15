@@ -15,7 +15,6 @@ export default createThemes(
         "--text-color-alt": ["hsl(0, 5%, 10%)", "hsl(0, 0%, 86%)"],
         "--srclink": "https://latex.vercel.app/",
         "--srctext": "Design implemented from LaTeX.css",
-        "--srcopacity": 1,
 
         "--link-visited": ["hsl(0, 100%, 33%)", "hsl(196, 80%, 77%)"],
         "--link-focus-outline": ["hsl(220, 90%, 52%)", "hsl(215, 63%, 73%)"],

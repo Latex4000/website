@@ -16,6 +16,5 @@ export default createThemes(
         "--text-color-alt": ["#666", "#aaa"],
         "--srclink": "https://owickstrom.github.io/the-monospace-web/",
         "--srctext": "Design implemented from The Monospace Web",
-        "--srcopacity": 0.5,
     },
 );

@@ -15,6 +15,5 @@ export default createThemes(
         "--text-color-alt": "#d8ded3",
         "--srclink": "https://cs16.samke.me/",
         "--srctext": "Design implemented from cs16.css with font altered to Unifont",
-        "--srcopacity": 1,
     },
 );

@@ -7,7 +7,6 @@ type RequiredCssKeys =
     | "--border-thickness"
     | "--line-height"
     | "--srclink"
-    | "--srcopacity"
     | "--srctext"
     | "--text-color"
     | "--text-color-alt";
