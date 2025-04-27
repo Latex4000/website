@@ -77,8 +77,26 @@ const members = await db
         padding: 0;
         display: grid;
         width: 100%;
-        grid-template-columns: repeat(5, 1fr);
+        grid-template-columns: repeat(2, 1fr);
         column-gap: 1ch;
+    }
+
+    @media (min-width: 500px) {
+        ul {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    @media (min-width: 600px) {
+        ul {
+            grid-template-columns: repeat(4, 1fr);
+        }
+    }
+
+    @media (min-width: 700px) {
+        ul {
+            grid-template-columns: repeat(5, 1fr);
+        }
     }
 
     :global(body[data-theme^="latex"]) ul {
