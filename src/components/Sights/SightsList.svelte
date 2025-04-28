@@ -107,7 +107,10 @@
                         {/each}
                     </div>
                 {/each}
-                <h3>{sight.title}</h3>
+                <h3>
+                    {sight.title}
+                    {thumbsMode === "high" ? "(Original)" : "(Remix)"}
+                </h3>
                 <div class="sight__date" style="color: {sight.memberColor}">
                     {new Date(sight.date).toLocaleString()}
                 </div>
