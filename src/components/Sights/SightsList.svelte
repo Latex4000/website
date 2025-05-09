@@ -283,6 +283,6 @@
         white-space: nowrap;
     }
     .overlay-images {
-        width: max-content;
+        height: max-content;
     }
 </style>
