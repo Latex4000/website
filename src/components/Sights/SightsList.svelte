@@ -186,33 +186,31 @@
             </div>
             <div class="overlay-images">
                 {#if isLoading}
-                    <div class="loading-container">
-                        <div class="loading-spinner"></div>
-                        <p>Loading...</p>
-                    </div>
-                {:else}
-                    {#each selectedSight.fullFilenames as filename}
-                        {@const imageUrl = `/sights-uploads/${selectedSight.id}/original/${filename}`}
-                        <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-                        <img
-                            alt=""
-                            class={`${selectedSight.pixelated ? "pixelated" : ""} clickable-image`}
-                            src={imageUrl}
-                            onclick={(e) => {
+                    <p>Loading...</p>
+                {/if}
+                {#each selectedSight.fullFilenames as filename}
+                    {@const imageUrl = `/sights-uploads/${selectedSight.id}/original/${filename}`}
+                    <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+                    <img
+                        alt=""
+                        class={`${selectedSight.pixelated ? "pixelated" : ""} ${isLoading ? "loading-image" : ""} ${
+                            loadedImages[filename] ? "loaded" : ""
+                        } clickable-image`}
+                        src={imageUrl}
+                        onclick={(e) => {
+                            e.stopPropagation();
+                            openImageInNewTab(imageUrl);
+                        }}
+                        onkeydown={(e) => {
+                            if (e.key === "Enter") {
                                 e.stopPropagation();
                                 openImageInNewTab(imageUrl);
-                            }}
-                            onkeydown={(e) => {
-                                if (e.key === "Enter") {
-                                    e.stopPropagation();
-                                    openImageInNewTab(imageUrl);
-                                }
-                            }}
-                            onload={() => handleImageLoad(filename)}
-                            title="Click to open in new tab"
-                        />
-                    {/each}
-                {/if}
+                            }
+                        }}
+                        onload={() => handleImageLoad(filename)}
+                        title="Click to open in new tab"
+                    />
+                {/each}
             </div>
         </div>
         <div
@@ -275,6 +273,13 @@
     }
     .pixelated {
         image-rendering: pixelated;
+    }
+    .loading-image {
+        filter: blur(5px);
+        transition: filter 0.3s ease-in-out;
+    }
+    .loading-image.loaded {
+        filter: blur(0);
     }
     .clickable-image {
         cursor: pointer;
