@@ -27,8 +27,12 @@
 
     let selectedSight = $state<Sight & { fullFilenames: string[] }>();
     let thumbsMode = $state(initialThumbsMode as "high" | "low");
+    let isLoading = $state(false);
+    let loadedImages = $state<Record<string, boolean>>({});
 
     function selectSight(sight: Sight) {
+        isLoading = true;
+        loadedImages = {};
         const fullFilenames = fullFilenamesById[sight.id] ?? [];
         selectedSight = { ...sight, fullFilenames };
     }
@@ -39,6 +43,8 @@
     }
 
     function closeOverlay() {
+        isLoading = false;
+        loadedImages = {};
         selectedSight = undefined;
     }
 
@@ -49,6 +55,9 @@
     function sightsNav(direction: 1 | -1) {
         if (!selectedSight) return;
 
+        isLoading = true;
+        loadedImages = {};
+
         const index = sights.findIndex(
             (sight) => sight.id === selectedSight!.id,
         );
@@ -58,6 +67,15 @@
 
     function openImageInNewTab(imageUrl: string) {
         window.open(imageUrl, "_blank");
+    }
+
+    function handleImageLoad(filename: string) {
+        loadedImages[filename] = true;
+        if (
+            selectedSight &&
+            selectedSight.fullFilenames.every((f) => loadedImages[f])
+        )
+            isLoading = false;
     }
 
     onMount(() => {
@@ -167,26 +185,34 @@
                 </div>
             </div>
             <div class="overlay-images">
-                {#each selectedSight.fullFilenames as filename}
-                    {@const imageUrl = `/sights-uploads/${selectedSight.id}/original/${filename}`}
-                    <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-                    <img
-                        alt=""
-                        class={`${selectedSight.pixelated ? "pixelated" : ""} clickable-image`}
-                        src={imageUrl}
-                        onclick={(e) => {
-                            e.stopPropagation();
-                            openImageInNewTab(imageUrl);
-                        }}
-                        onkeydown={(e) => {
-                            if (e.key === "Enter") {
+                {#if isLoading}
+                    <div class="loading-container">
+                        <div class="loading-spinner"></div>
+                        <p>Loading...</p>
+                    </div>
+                {:else}
+                    {#each selectedSight.fullFilenames as filename}
+                        {@const imageUrl = `/sights-uploads/${selectedSight.id}/original/${filename}`}
+                        <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+                        <img
+                            alt=""
+                            class={`${selectedSight.pixelated ? "pixelated" : ""} clickable-image`}
+                            src={imageUrl}
+                            onclick={(e) => {
                                 e.stopPropagation();
                                 openImageInNewTab(imageUrl);
-                            }
-                        }}
-                        title="Click to open in new tab"
-                    />
-                {/each}
+                            }}
+                            onkeydown={(e) => {
+                                if (e.key === "Enter") {
+                                    e.stopPropagation();
+                                    openImageInNewTab(imageUrl);
+                                }
+                            }}
+                            onload={() => handleImageLoad(filename)}
+                            title="Click to open in new tab"
+                        />
+                    {/each}
+                {/if}
             </div>
         </div>
         <div
