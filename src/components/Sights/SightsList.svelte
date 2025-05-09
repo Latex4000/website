@@ -270,7 +270,7 @@
         scrollbar-width: none;
     }
     .overlay-nav {
-        font-size: 10rem;
+        font-size: 10vw;
         margin: auto;
         padding: 1rem;
         cursor: pointer;
