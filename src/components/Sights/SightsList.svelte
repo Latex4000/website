@@ -56,6 +56,10 @@
         selectSight(sights[newIndex]!);
     }
 
+    function openImageInNewTab(imageUrl: string) {
+        window.open(imageUrl, "_blank");
+    }
+
     onMount(() => {
         window.addEventListener("keydown", handleKeydown);
 
@@ -164,10 +168,23 @@
             </div>
             <div class="overlay-images">
                 {#each selectedSight.fullFilenames as filename}
+                    {@const imageUrl = `/sights-uploads/${selectedSight.id}/original/${filename}`}
+                    <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
                     <img
                         alt=""
-                        class={selectedSight.pixelated ? "pixelated" : ""}
-                        src={`/sights-uploads/${selectedSight.id}/original/${filename}`}
+                        class={`${selectedSight.pixelated ? "pixelated" : ""} clickable-image`}
+                        src={imageUrl}
+                        onclick={(e) => {
+                            e.stopPropagation();
+                            openImageInNewTab(imageUrl);
+                        }}
+                        onkeydown={(e) => {
+                            if (e.key === "Enter") {
+                                e.stopPropagation();
+                                openImageInNewTab(imageUrl);
+                            }
+                        }}
+                        title="Click to open in new tab"
                     />
                 {/each}
             </div>
