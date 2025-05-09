@@ -250,6 +250,9 @@
     .pixelated {
         image-rendering: pixelated;
     }
+    .clickable-image {
+        cursor: pointer;
+    }
     /* Overlay Styles */
     .overlay {
         position: fixed;
