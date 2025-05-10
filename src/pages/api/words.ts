@@ -12,7 +12,7 @@ import { finished } from "stream/promises";
 import { thingDeletion, thingGet } from "../../server/thingUtils";
 import { serverHTMLPurify } from "../../components/DOMPurify/server";
 import { getMap } from "../../data/emoji";
-import db, { wordId } from "../../database/db";
+import db, { dbOperation, wordId } from "../../database/db";
 import { Member, Word } from "../../database/schema";
 
 export const prerender = false;
@@ -98,19 +98,21 @@ export const POST: APIRoute = async (context) => {
     // Store to DB
     let word: InferSelectModel<typeof Word>;
     try {
-        word = await db
-            .insert(Word)
-            .values({
-                memberDiscord: discord,
-                tags:
-                    tags.length === 0
-                        ? []
-                        : tags.split(",").map((tag) => tag.trim()),
-                title,
-                showColour,
-            })
-            .returning()
-            .get();
+        word = await dbOperation(() =>
+            db
+                .insert(Word)
+                .values({
+                    memberDiscord: discord,
+                    tags:
+                        tags.length === 0
+                            ? []
+                            : tags.split(",").map((tag) => tag.trim()),
+                    title,
+                    showColour,
+                })
+                .returning()
+                .get()
+        );
     } catch (error) {
         if (error instanceof LibsqlError) {
             if (error.code === "SQLITE_CONSTRAINT_UNIQUE") {
