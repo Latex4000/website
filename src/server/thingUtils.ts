@@ -3,7 +3,7 @@ import type { APIContext } from "astro";
 import { and, eq } from "drizzle-orm";
 import { jsonError, jsonResponse } from "./responses";
 import { paginationQuery, parseNumberCursor } from "./pagination";
-import db from "../database/db";
+import db, { dbOperation } from "../database/db";
 import { Action, Motion, Sight, Sound, Word } from "../database/schema";
 
 const thingTypeToTable = {
@@ -64,11 +64,13 @@ export async function thingDeletion({ url }: APIContext, thingType: ThingType, i
     thing.deleted = isDeleted;
 
     try {
-        const thingRes = await db
-            .update(table)
-            .set(thing)
-            .where(eq(table.id, parseInt(id)))
-            .returning();
+        const thingRes = await dbOperation(() =>
+            db
+                .update(table)
+                .set(thing)
+                .where(eq(table.id, parseInt(id)))
+                .returning()
+        );
 
         return jsonResponse(thingRes);
     } catch (err: any) {
