@@ -92,4 +92,3 @@ for (const action of actions.rows) {
 console.error(`Added ${newItems} new items in ${Date.now() - start}ms`);
 
 sqliteClient.close();
-process.exit(0);
