@@ -14,24 +14,26 @@ export function wordId(word: Pick<InferSelectModel<typeof schema.Word>, "date">)
     return Math.floor(word.date.getTime() / 1000).toString(10);
 }
 
-export async function dbOperation<T>(operation: () => Promise<T>, maxRetries = 5) {
-    let retries = 0;
-    while (true) {
+/**
+ * Perform a database operation, retrying with increasing delay if it fails with `SQLITE_BUSY`.
+ */
+export async function retryIfDbBusy<T>(fn: () => Promise<T>, maxAttempts = 5): Promise<T> {
+    let lastError: unknown = new Error();
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
         try {
-            return await operation();
+            return await fn();
         } catch (error) {
-            if (
-                error instanceof LibsqlError &&
-                error.code === "SQLITE_BUSY" &&
-                retries < maxRetries
-            ) {
-                retries++;
-                // 100ms, then 200ms, then 400ms, then 800ms, then 1600ms
-                const delay = 100 * 2 ** (retries - 1);
-                await new Promise((resolve) => setTimeout(resolve, delay));
-                continue;
+            lastError = error;
+
+            if (!(error instanceof LibsqlError) || error.code !== "SQLITE_BUSY") {
+                break;
             }
-            throw error;
+
+            const delayMs = 100 * 2 ** attempt; // 100ms, 200ms, 400ms, ...
+            await new Promise((resolve) => setTimeout(resolve, delayMs));
         }
     }
+
+    throw lastError;
 }

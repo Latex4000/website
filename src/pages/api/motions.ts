@@ -2,7 +2,7 @@ import { LibsqlError } from "@libsql/client";
 import type { APIRoute } from "astro";
 import { jsonError, jsonResponse } from "../../server/responses";
 import { thingDeletion, thingGet } from "../../server/thingUtils";
-import db, { dbOperation } from "../../database/db";
+import db, { retryIfDbBusy } from "../../database/db";
 import { Member, Motion } from "../../database/schema";
 import { eq } from "drizzle-orm";
 
@@ -50,7 +50,7 @@ export const POST: APIRoute = async ({ request }) => {
     // Store to DB
     try {
         return jsonResponse(
-            await dbOperation(() =>
+            await retryIfDbBusy(() =>
                 db
                     .insert(Motion)
                     .values({

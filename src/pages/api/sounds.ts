@@ -8,7 +8,7 @@ import { extname } from "path";
 import { getFileOrDiscordAttachment, getTags } from "../../server/validation";
 import { writeBlobToFile } from "../../server/webApi";
 import { thingDeletion, thingGet } from "../../server/thingUtils";
-import db, { dbOperation } from "../../database/db";
+import db, { retryIfDbBusy } from "../../database/db";
 import { Member, Sound } from "../../database/schema";
 
 export const prerender = false;
@@ -79,7 +79,7 @@ export const POST: APIRoute = async ({ request }) => {
     // Store to DB
     let sound: InferSelectModel<typeof Sound>;
     try {
-        sound = await dbOperation(() =>
+        sound = await retryIfDbBusy(() =>
             db
                 .insert(Sound)
                 .values({

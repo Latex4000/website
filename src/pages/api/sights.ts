@@ -4,7 +4,7 @@ import { eq, type InferSelectModel } from "drizzle-orm";
 import { jsonError, jsonResponse } from "../../server/responses";
 import { execFileSync } from "child_process";
 import { thingDeletion, thingGet } from "../../server/thingUtils";
-import db, { dbOperation } from "../../database/db";
+import db, { retryIfDbBusy } from "../../database/db";
 import type { Sharp } from "sharp";
 import { Member, Sight } from "../../database/schema";
 import { getSightSharpInstance, processSightImage } from "../../server/thumbnail-sights";
@@ -83,7 +83,7 @@ export const POST: APIRoute = async (context) => {
     // Store to DB
     let sight: InferSelectModel<typeof Sight>;
     try {
-        sight = await dbOperation(() =>
+        sight = await retryIfDbBusy(() =>
             db
                 .insert(Sight)
                 .values({

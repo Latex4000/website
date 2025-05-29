@@ -3,7 +3,7 @@ import type { APIContext } from "astro";
 import { and, eq } from "drizzle-orm";
 import { jsonError, jsonResponse } from "./responses";
 import { paginationQuery, parseNumberCursor } from "./pagination";
-import db, { dbOperation } from "../database/db";
+import db, { retryIfDbBusy } from "../database/db";
 import { Action, Motion, Sight, Sound, Word } from "../database/schema";
 
 const thingTypeToTable = {
@@ -64,7 +64,7 @@ export async function thingDeletion({ url }: APIContext, thingType: ThingType, i
     thing.deleted = isDeleted;
 
     try {
-        const thingRes = await dbOperation(() =>
+        const thingRes = await retryIfDbBusy(() =>
             db
                 .update(table)
                 .set(thing)

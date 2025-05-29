@@ -12,7 +12,7 @@ import { finished } from "stream/promises";
 import { thingDeletion, thingGet } from "../../server/thingUtils";
 import { serverHTMLPurify } from "../../components/DOMPurify/server";
 import { getMap } from "../../data/emoji";
-import db, { dbOperation, wordId } from "../../database/db";
+import db, { retryIfDbBusy, wordId } from "../../database/db";
 import { Member, Word } from "../../database/schema";
 
 export const prerender = false;
@@ -98,7 +98,7 @@ export const POST: APIRoute = async (context) => {
     // Store to DB
     let word: InferSelectModel<typeof Word>;
     try {
-        word = await dbOperation(() =>
+        word = await retryIfDbBusy(() =>
             db
                 .insert(Word)
                 .values({

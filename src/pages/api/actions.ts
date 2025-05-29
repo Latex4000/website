@@ -3,7 +3,7 @@ import type { APIRoute } from "astro";
 import { eq, type InferSelectModel } from "drizzle-orm";
 import { jsonError, jsonResponse } from "../../server/responses";
 import Parser from "rss-parser";
-import db, { dbOperation } from "../../database/db";
+import db, { retryIfDbBusy } from "../../database/db";
 import { Action, ActionItem, Member } from "../../database/schema";
 import { thingDeletion, thingGet } from "../../server/thingUtils";
 
@@ -58,7 +58,7 @@ export const POST: APIRoute = async (context) => {
     }
 
     if (!action.isRSS) {
-        const actionRes = await dbOperation(() =>
+        const actionRes = await retryIfDbBusy(() =>
             db
                 .insert(Action)
                 .values(action)
@@ -76,7 +76,7 @@ export const POST: APIRoute = async (context) => {
         if (rss.items.length && !rss.items[0]!.link)
             return jsonError("Invalid RSS feed item missing title or link");
 
-        const actionRes = await dbOperation(() =>
+        const actionRes = await retryIfDbBusy(() =>
             db
                 .insert(Action)
                 .values(action)
@@ -85,7 +85,7 @@ export const POST: APIRoute = async (context) => {
         );
         let items: InferSelectModel<typeof ActionItem>[] = [];
         if (rss.items.length)
-            items = await dbOperation(() =>
+            items = await retryIfDbBusy(() =>
                 db
                     .insert(ActionItem)
                     .values(rss.items.map((item) => ({

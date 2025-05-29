@@ -2,7 +2,7 @@ import { LibsqlError } from "@libsql/client";
 import type { APIRoute } from "astro";
 import { eq, type InferInsertModel, type InferSelectModel } from "drizzle-orm";
 import { jsonError, jsonResponse } from "../../server/responses";
-import db, { dbOperation } from "../../database/db";
+import db, { retryIfDbBusy } from "../../database/db";
 import { Member } from "../../database/schema";
 
 export const prerender = false;
@@ -86,7 +86,7 @@ export const POST: APIRoute = async ({ request }) => {
                     .padStart(6, "0");
         }
 
-        const memberRes = await dbOperation(() =>
+        const memberRes = await retryIfDbBusy(() =>
             db
                 .insert(Member)
                 .values(member as InferInsertModel<typeof Member>)
