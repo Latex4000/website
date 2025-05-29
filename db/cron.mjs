@@ -83,8 +83,6 @@ for (const action of actions.rows) {
         } catch (e) {
             await transaction.rollback();
             console.error(e);
-        } finally {
-            transaction.close();
         }
 
         actionsDone++;
