@@ -2,8 +2,6 @@ import { access, constants } from "node:fs/promises";
 import { createClient, LibsqlError } from "@libsql/client";
 import Parser from "rss-parser";
 
-const rssParser = new Parser();
-
 function printUsageAndExit() {
     console.error(`Usage: \x1b[4m${process.argv[1]}\x1b[m <database>`);
     process.exit(1);
@@ -24,6 +22,7 @@ if (
     printUsageAndExit();
 }
 
+const rssParser = new Parser();
 const sqliteClient = createClient({ url: `file:${database}` });
 
 const actions = await sqliteClient.execute(
@@ -69,12 +68,8 @@ for (const action of actions.rows) {
                     );
                     newItems++;
                 } catch (error) {
-                    if (
-                        !(
-                            error instanceof LibsqlError &&
-                            error.code === "SQLITE_CONSTRAINT_UNIQUE"
-                        )
-                    ) {
+                    // Skip inserting duplicate items
+                    if (!(error instanceof LibsqlError) || error.code !== "SQLITE_CONSTRAINT_UNIQUE") {
                         throw error;
                     }
                 }
