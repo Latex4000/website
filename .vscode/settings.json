@@ -9,6 +9,7 @@
     ],
     "editor.formatOnSave": true,
     "editor.defaultFormatter": "astro-build.astro-vscode",
+    "typescript.tsdk": "node_modules/typescript/lib",
     "[svelte]": {
         "editor.defaultFormatter": "svelte.svelte-vscode"
     },
