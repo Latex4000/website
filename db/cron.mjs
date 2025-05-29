@@ -77,7 +77,7 @@ for (const action of actions.rows) {
             await transaction.commit();
         } catch (e) {
             await transaction.rollback();
-            console.error(e);
+            throw e;
         }
 
         actionsDone++;
