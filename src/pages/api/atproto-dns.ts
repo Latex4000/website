@@ -36,7 +36,7 @@ export const PUT: APIRoute = async ({ request }) => {
         type: "TXT",
     });
 
-    return new Response(null, { status: 204 });
+    return jsonResponse(null);
 };
 
 export const DELETE: APIRoute = async ({ request }) => {
