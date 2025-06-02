@@ -10,6 +10,7 @@ fi
 database='dev/latex.db'
 
 export DATABASE_URL="file:./$database"
+export DIGITALOCEAN_DNS_TOKEN=
 export LATEX_WEB_SYSTEMD_UNIT=
 export SECRET_HMAC_KEY='dev'
 export SIGHTS_RUN_AFTER_UPLOAD=
