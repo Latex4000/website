@@ -42,11 +42,12 @@ async function apiRequest<T = void>(url: string | URL, init?: RequestInit, ok?: 
 }
 
 export async function getRecords(options: { name?: string, type?: DnsRecordType }): Promise<DnsRecord[]> {
+    const searchParams = new URLSearchParams(options);
+
     if (options.name != null) {
-        options.name += ".nonacademic.net";
+        searchParams.set("name", options.name === "@" ? "nonacademic.net" : `${options.name}.nonacademic.net`);
     }
 
-    const searchParams = new URLSearchParams(options);
     const url = `/v2/domains/nonacademic.net/records?${searchParams.toString()}`;
 
     const response = await apiRequest<{ domain_records: DnsRecord[] }>(url);
