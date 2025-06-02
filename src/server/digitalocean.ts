@@ -66,6 +66,7 @@ export async function createOrUpdateRecord(options: Pick<DnsRecord, "data" | "na
     }
 
     const response = await apiRequest<{ domain_record: DnsRecord }>(url, {
+        body: JSON.stringify(options),
         method: existingRecordId == null ? "POST" : "PUT",
     });
 
