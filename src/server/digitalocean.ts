@@ -40,15 +40,8 @@ async function apiRequest<T = void>(url: string | URL, init?: RequestInit, ok?: 
 }
 
 export async function getRecords(options: { name?: string, type?: DnsRecordType }): Promise<DnsRecord[]> {
-    const url = new URL("/v2/domains/nonacademic.net/records");
-
-    if (options.name != null) {
-        url.searchParams.set("name", options.name);
-    }
-
-    if (options.type != null) {
-        url.searchParams.set("type", options.type);
-    }
+    const searchParams = new URLSearchParams(options);
+    const url = `/v2/domains/nonacademic.net/records?${searchParams.toString()}`;
 
     const response = await apiRequest<{ domain_records: DnsRecord[] }>(url);
 
@@ -59,10 +52,10 @@ export async function createOrUpdateRecord(options: Pick<DnsRecord, "data" | "na
     const existingRecords = await getRecords(options);
     const existingRecordId = existingRecords[0]?.id;
 
-    const url = new URL("/v2/domains/nonacademic.net/records");
+    let url = "/v2/domains/nonacademic.net/records";
 
     if (existingRecordId != null) {
-        url.pathname += `/${existingRecordId}`;
+        url += `/${existingRecordId}`;
     }
 
     const response = await apiRequest<{ domain_record: DnsRecord }>(url, {
