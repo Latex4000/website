@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { jsonError } from "../../server/responses";
+import { jsonError, jsonResponse } from "../../server/responses";
 import { createOrUpdateRecord, deleteRecord, getRecords } from "../../server/digitalocean";
 
 export const prerender = false;
@@ -61,5 +61,5 @@ export const DELETE: APIRoute = async ({ request }) => {
         await deleteRecord(txtRecord.id);
     }
 
-    return new Response(null, { status: 204 });
+    return jsonResponse(txtRecord?.data.replace(/^did=/, "") ?? null);
 };
