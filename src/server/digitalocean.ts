@@ -1,3 +1,5 @@
+import { inspect } from "node:util";
+
 type DnsRecordType =
     | "A"
     | "AAAA"
@@ -36,7 +38,7 @@ async function apiRequest<T = void>(url: string | URL, init?: RequestInit, ok?: 
         return response.json().catch(() => undefined);
     }
 
-    throw new Error(`Error from DigitalOcean:\n${await response.json()}`);
+    throw new Error(`Error from DigitalOcean:\n${inspect(await response.json())}`);
 }
 
 export async function getRecords(options: { name?: string, type?: DnsRecordType }): Promise<DnsRecord[]> {
