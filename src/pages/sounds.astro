@@ -30,7 +30,7 @@ const sounds = await db
     <div class="sounds">
         {
             sounds.map((sound) => (
-                <div class="sound">
+                <div class="sound" data-sound-id={sound.id}>
                     <img
                         alt=""
                         src={`/sounds-uploads/${sound.id}/cover.${sound.coverType}`}
@@ -41,7 +41,13 @@ const sounds = await db
                         }}
                     />
                     <div class="details">
-                        <h2>{sound.title}</h2>
+                        <h2>
+                            <a
+                                href={`/sounds/${sound.id}-${sound.title.toLowerCase().replaceAll(/[\s_-]+/g, "-")}`}
+                            >
+                                {sound.title}
+                            </a>
+                        </h2>
                         {/* prettier-ignore */}
                         <div>
                             {sound.youtubeUrl != null && (
@@ -75,6 +81,14 @@ const sounds = await db
         }
     </div>
 </Layout>
+
+<script is:inline define:vars={{ soundId: Astro.locals.soundId }}>
+    if (soundId != null) {
+        document
+            .querySelector(`.sound[data-sound-id="${soundId}"]`)
+            ?.scrollIntoView();
+    }
+</script>
 
 <style>
     .sounds {
@@ -125,6 +139,11 @@ const sounds = await db
         height: 2lh;
         margin: 0;
         text-transform: none;
+    }
+
+    h2 > a {
+        color: inherit;
+        text-decoration: none;
     }
 
     .tags {
