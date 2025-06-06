@@ -1,8 +1,5 @@
 import "./AudioPlayer.css";
-import { useEffect, useRef, useState, type MouseEventHandler, type RefObject } from "react";
-
-import { useStore } from '@nanostores/react';
-import { prevAudioRef } from '../../store/soundsState.ts';
+import { useCallback, useEffect, useRef, useState, type MouseEventHandler } from "react";
 
 function formatTimestamp(seconds?: number): string {
 	if (seconds == null) {
@@ -20,6 +17,18 @@ function sanitizeFilename(filename: string): string {
 	return filename.replaceAll(/[^a-z0-9\.()\[\] _-]+/gi, "_");
 }
 
+function timestampHtml(currentTime: number, duration: number | undefined): string {
+	if (Number.isNaN(duration) || !Number.isFinite(duration)) {
+		duration = undefined;
+	}
+
+	return (
+		`<span>${formatTimestamp(duration && currentTime)}</span>` +
+		"/" +
+		`<span>${formatTimestamp(duration)}</span>`
+	);
+}
+
 interface AudioPlayerProps {
 	durationGuess?: number;
 	src: string;
@@ -27,61 +36,12 @@ interface AudioPlayerProps {
 	trackType: string;
 }
 
-export default function AudioPlayer({ durationGuess, src, title, trackType }: AudioPlayerProps) {
-	const [buffered, setBuffered] = useState(0);
-	const [currentTime, setCurrentTime] = useState(0);
-	const [duration, setDuration] = useState(durationGuess);
-	const [muted, setMuted] = useState(false);
-	const [playing, setPlaying] = useState(false);
-	const [volume, setVolume] = useState(1);
+export function AudioPlayer({ durationGuess, src, title, trackType }: AudioPlayerProps) {
+	// const onBookmarkClick: MouseEventHandler<HTMLButtonElement> = (event) => {
+	// 	event.preventDefault();
 
-	// The typing here is safe as long as all usage of audioRef happens in event handlers
-	const audioRef = useRef<HTMLAudioElement>(null) as RefObject<HTMLAudioElement>;
-	const volumeRef = useRef<HTMLDivElement>(null);
-
-	const prev = useStore(prevAudioRef) as RefObject<HTMLAudioElement>
-	const setPrev = (ref: RefObject<HTMLAudioElement>) => { prevAudioRef.set(ref) }
-
-	const syncCurrentTime = () => setCurrentTime(audioRef.current.currentTime);
-
-	const playTrack = () => {
-		audioRef.current.play().catch();
-		if (prev === null) {
-			setPrev(audioRef);
-		} else if (prev !== audioRef) {
-			prev.current.pause();
-			setPrev(audioRef);
-		}
-	}
-
-	useRequestAnimationFrame(syncCurrentTime, playing);
-
-	useEffect(() => {
-		if (volumeRef.current == null) {
-			return;
-		}
-
-		volumeRef.current.addEventListener("wheel", onVolumeWheel, { passive: false });
-
-		return () => volumeRef.current?.removeEventListener("wheel", onVolumeWheel);
-	}, [volumeRef.current]);
-
-	// UI event handlers
-	const onBarMouseUp: MouseEventHandler<HTMLDivElement> = (event) => {
-		event.preventDefault();
-
-		if (isNaN(audioRef.current.duration)) {
-			return;
-		}
-
-		const targetRect = event.currentTarget.getBoundingClientRect();
-		const x = event.clientX - targetRect.x;
-		const xRelative = x / targetRect.width;
-
-		audioRef.current.currentTime = xRelative * audioRef.current.duration;
-		syncCurrentTime();
-		playTrack();
-	};
+	// 	// TODO
+	// };
 
 	const onDownloadClick: MouseEventHandler<HTMLButtonElement> = (event) => {
 		event.preventDefault();
@@ -94,19 +54,340 @@ export default function AudioPlayer({ durationGuess, src, title, trackType }: Au
 		downloadLink.remove();
 	};
 
+	return (
+		<div
+			className="audio-player js-audio-player"
+			data-audio-src={src}
+			data-audio-title={title}
+			style={{ "--duration": durationGuess }}
+		>
+			<button className="audio-player-play js-audio-player-play">{"|>"}</button>
+			<div className="audio-player-bar js-audio-player-bar">
+				{/* <div className="audio-player-bar-fill audio-player-bar-fill-buffered" /> */}
+				<div className="audio-player-bar-fill audio-player-bar-fill-current-time" />
+				<div
+					className="audio-player-timestamps js-audio-player-timestamps"
+					dangerouslySetInnerHTML={{ __html: timestampHtml(0, durationGuess) }}
+				/>
+			</div>
+			{/* <button onClick={onBookmarkClick} className="audio-player-bookmark">*</button> */}
+			<button onClick={onDownloadClick} className="audio-player-download">↓</button>
+		</div>
+	);
+}
+
+let renderedMasterAudioPlayer = false;
+
+export function MasterAudioPlayer() {
+	useEffect(() => {
+		if (renderedMasterAudioPlayer) {
+			throw new Error("Tried to render more than one MasterAudioPlayer");
+		}
+
+		renderedMasterAudioPlayer = true;
+	}, []);
+
+	// const [buffered, setBuffered] = useState(0);
+	const [currentTime, setCurrentTime] = useState(0);
+	const [duration, setDuration] = useState<number | undefined>();
+	const [muted, setMuted] = useState(false);
+	const [playing, setPlaying] = useState(false);
+	const [title, setTitle] = useState("<no sound playing>");
+	const [volume, setVolume] = useState(0.35);
+
+	const allPlayers = useRef<HTMLDivElement[]>(null);
+	const currentPlayer = useRef<HTMLDivElement>(null);
+	const audio = useRef(new Audio());
+	const volumeRef = useRef<HTMLDivElement>(null);
+
+	const syncPlayer = () => {
+		if (currentPlayer.current == null) {
+			return;
+		}
+
+		// const buffered =
+		const currentTime = audio.current.currentTime;
+		let duration: number | undefined = audio.current.duration;
+		const playing = !audio.current.paused;
+
+		if (Number.isNaN(duration) || !Number.isFinite(duration)) {
+			duration = undefined;
+		}
+
+		currentPlayer.current.dataset.audioCurrentTime = currentTime.toString();
+
+		// currentPlayer.current.style.setProperty("--buffered", buffered.toString());
+		currentPlayer.current.style.setProperty("--current-time", currentTime.toString());
+		currentPlayer.current.style.setProperty("--duration", duration?.toString() ?? null);
+
+		const timestamps = currentPlayer.current.querySelector<HTMLDivElement>(".js-audio-player-timestamps");
+
+		if (timestamps != null) {
+			timestamps.innerHTML = timestampHtml(currentTime, duration);
+		}
+
+		const button = currentPlayer.current.querySelector<HTMLButtonElement>(".js-audio-player-play");
+
+		if (button != null) {
+			button.innerText = playing ? "||" : "|>";
+		}
+	};
+
+	const syncCurrentTime = useCallback(() => {
+		setCurrentTime(audio.current.currentTime);
+		syncPlayer();
+	}, []);
+
+	const loadNewPlayer = (player: Element | null, startTime?: (duration: number) => number): void => {
+		if (
+			!(player instanceof HTMLDivElement) ||
+			!player.dataset.audioSrc ||
+			!player.dataset.audioTitle
+		) {
+			throw new Error("Invalid player");
+		}
+
+		const newPlayerCurrentTime = player.dataset.audioCurrentTime != null
+			? Number.parseInt(player.dataset.audioCurrentTime, 10)
+			: 0;
+
+		// Stop current audio and sync state of player
+		audio.current.pause();
+		syncCurrentTime();
+
+		// Load new player
+		currentPlayer.current = player;
+		audio.current.src = player.dataset.audioSrc;
+		audio.current.pause();
+		setTitle(player.dataset.audioTitle);
+
+		// TODO this barely works and should probably just keep around old Audio to switch back to
+		audio.current.addEventListener("durationchange", () => {
+			const currentTime = startTime?.(audio.current.duration) ?? newPlayerCurrentTime;
+
+			const intervalId = setInterval(() => {
+				const bufferedEnd = audio.current.buffered.end(audio.current.buffered.length - 1);
+
+				if (bufferedEnd >= currentTime) {
+					clearInterval(intervalId);
+					audio.current.currentTime = currentTime;
+					audio.current.play().catch();
+				}
+			}, 25);
+		}, { once: true });
+	};
+
+	useRequestAnimationFrame(syncCurrentTime, playing);
+
+	// Set initial player preferences
+	useEffect(() => {
+		// TODO from localstorage
+		audio.current.muted = muted;
+		audio.current.volume = volume;
+	}, []);
+
+	useEffect(() => {
+		const findAllPlayers = () => {
+			allPlayers.current = [...document.querySelectorAll<HTMLDivElement>(".js-audio-player")];
+		};
+
+		const observer = new MutationObserver(findAllPlayers);
+
+		observer.observe(document, {
+			childList: true,
+			subtree: true,
+		});
+
+		findAllPlayers();
+
+		return () => observer.disconnect();
+	}, []);
+
+	useEffect(() => {
+		const onClick = (event: MouseEvent) => {
+			if (
+				!(event.target instanceof HTMLButtonElement) ||
+				!event.target.classList.contains("js-audio-player-play")
+			) {
+				return;
+			}
+
+			const player = event.target.closest(".js-audio-player");
+
+			if (!(player instanceof HTMLDivElement)) {
+				throw new Error("Invalid player");
+			}
+
+			event.preventDefault();
+
+			// If the player is the current player, toggle play/pause state
+			if (player === currentPlayer.current) {
+				if (audio.current.paused) {
+					audio.current.play().catch();
+				} else {
+					audio.current.pause();
+				}
+				return;
+			}
+
+			// Otherwise, load the new player
+			loadNewPlayer(player);
+		};
+
+		const onMouseUp = (event: MouseEvent) => {
+			if (!(event.target instanceof HTMLElement)) {
+				return;
+			}
+
+			const bar = event.target.closest(".js-audio-player-bar");
+
+			if (bar == null) {
+				return;
+			}
+
+			event.preventDefault();
+
+			const player = event.target.closest(".js-audio-player");
+			const targetRect = bar.getBoundingClientRect();
+			const x = event.clientX - targetRect.x;
+			const xRelative = x / targetRect.width;
+
+			// If the player is the current player, set and sync currentTime
+			if (player === currentPlayer.current) {
+				if (Number.isNaN(audio.current.duration) || !Number.isFinite(audio.current.duration)) {
+					return;
+				}
+
+				audio.current.currentTime = xRelative * audio.current.duration;
+				audio.current.play().catch();
+				return;
+			}
+
+			// Otherwise, load the new player starting at requested time
+			loadNewPlayer(
+				player,
+				(duration) => Number.isNaN(duration) || !Number.isFinite(duration)
+					? 0
+					: xRelative * duration,
+			);
+		};
+
+		document.addEventListener("click", onClick);
+		document.addEventListener("mouseup", onMouseUp);
+
+		return () => {
+			document.removeEventListener("click", onClick);
+			document.removeEventListener("mouseup", onMouseUp);
+		};
+	}, []);
+
+	useEffect(() => {
+		// const onCanPlayThrough = () => {
+		// 	setBuffered(audio.current.duration);
+
+		// 	if (currentPlayer.current != null) {
+		// 		currentPlayer.current.dataset.buffered = audio.current.duration.toString();
+		// 		currentPlayer.current.style.setProperty("--buffered", audio.current.duration.toString());
+		// 	}
+		// };
+
+		const onDurationChange = () => {
+			setDuration(audio.current.duration);
+			syncPlayer();
+		};
+
+		const onEnded = () => {
+			audio.current.pause();
+			audio.current.currentTime = 0;
+			syncCurrentTime();
+
+			if (allPlayers.current == null) {
+				throw new Error("Invalid players list");
+			}
+
+			const playerIndex = allPlayers.current.findIndex((player) => player === currentPlayer.current);
+
+			if (playerIndex < 0) {
+				throw new Error("Invalid players list");
+			}
+
+			loadNewPlayer(allPlayers.current[(playerIndex + 1) % allPlayers.current.length]!);
+		};
+
+		const onPlayAndPause = () => {
+			setPlaying(!audio.current.paused);
+			syncCurrentTime();
+		};
+
+		// const onProgress = () => {
+		// 	const bufferedLength = audio.current.buffered.length;
+
+		// 	for (let i = 0; i < bufferedLength; i++) {
+		// 		const currentTime = audio.current.currentTime;
+		// 		const rangeStartTime = audio.current.buffered.start(i);
+		// 		const rangeEndTime = audio.current.buffered.end(i);
+
+		// 		if (rangeStartTime <= currentTime && rangeEndTime >= currentTime) {
+		// 			setBuffered((prev) => Math.max(prev, rangeEndTime));
+		// 			currentPlayer.current?.style.setProperty("--buffered", rangeEndTime.toString()); // TODO missing prev handling like above
+		// 			return;
+		// 		}
+		// 	}
+		// };
+
+		const onVolumeChange = () => {
+			setMuted(audio.current.muted);
+			setVolume(audio.current.volume);
+		};
+
+		// audio.current.addEventListener("canplaythrough", onCanPlayThrough);
+		audio.current.addEventListener("durationchange", onDurationChange);
+		audio.current.addEventListener("ended", onEnded);
+		audio.current.addEventListener("pause", onPlayAndPause);
+		audio.current.addEventListener("play", onPlayAndPause);
+		// audio.current.addEventListener("progress", onProgress);
+		audio.current.addEventListener("volumechange", onVolumeChange);
+
+		return () => {
+			// audio.current.removeEventListener("canplaythrough", onCanPlayThrough);
+			audio.current.removeEventListener("durationchange", onDurationChange);
+			audio.current.removeEventListener("ended", onEnded);
+			audio.current.removeEventListener("pause", onPlayAndPause);
+			audio.current.removeEventListener("play", onPlayAndPause);
+			// audio.current.removeEventListener("progress", onProgress);
+			audio.current.removeEventListener("volumechange", onVolumeChange);
+		};
+	}, []);
+
+	// UI event handlers
+	const onBarMouseUp: MouseEventHandler<HTMLDivElement> = (event) => {
+		event.preventDefault();
+
+		if (Number.isNaN(audio.current.duration) || !Number.isFinite(audio.current.duration)) {
+			return;
+		}
+
+		const targetRect = event.currentTarget.getBoundingClientRect();
+		const x = event.clientX - targetRect.x;
+		const xRelative = x / targetRect.width;
+
+		audio.current.currentTime = xRelative * audio.current.duration;
+		audio.current.play().catch();
+	};
+
 	const onMuteClick: MouseEventHandler<HTMLButtonElement> = (event) => {
 		event.preventDefault();
 
-		audioRef.current.muted = !audioRef.current.muted;
+		audio.current.muted = !audio.current.muted;
 	};
 
 	const onPlayPauseClick: MouseEventHandler<HTMLButtonElement> = (event) => {
 		event.preventDefault();
 
-		if (playing) {
-			audioRef.current.pause();
+		if (audio.current.paused) {
+			audio.current.play().catch();
 		} else {
-			playTrack();
+			audio.current.pause();
 		}
 	};
 
@@ -115,90 +396,48 @@ export default function AudioPlayer({ durationGuess, src, title, trackType }: Au
 
 		const step = event.ctrlKey || event.shiftKey ? 0.01 : 0.05;
 
-		audioRef.current.volume = Math.min(Math.max((event.deltaY < 0 ? 1 : -1) * step + audioRef.current.volume, 0), 1);
+		audio.current.volume = Math.min(Math.max((event.deltaY < 0 ? 1 : -1) * step + audio.current.volume, 0), 1);
 	};
 
-	// Audio event handlers
-	const onCanPlayThrough = () => {
-		setBuffered(audioRef.current.duration);
-	};
-
-	const onDurationChange = () => {
-		setDuration(audioRef.current.duration);
-	};
-
-	const onEnded = () => {
-		audioRef.current.pause();
-		audioRef.current.currentTime = 0;
-		syncCurrentTime();
-	};
-
-	const onPause = () => {
-		setPlaying(false);
-	};
-
-	const onPlay = () => {
-		setPlaying(true);
-	};
-
-	const onProgress = () => {
-		const bufferedLength = audioRef.current.buffered.length;
-
-		for (let i = 0; i < bufferedLength; i++) {
-			const currentTime = audioRef.current.currentTime;
-			const rangeStartTime = audioRef.current.buffered.start(i);
-			const rangeEndTime = audioRef.current.buffered.end(i);
-
-			if (rangeStartTime <= currentTime && rangeEndTime >= currentTime) {
-				setBuffered((prev) => Math.max(prev, rangeEndTime));
-				return;
-			}
+	useEffect(() => {
+		if (volumeRef.current == null) {
+			return;
 		}
-	};
 
-	const onVolumeChange = () => {
-		setMuted(audioRef.current.muted);
-		setVolume(audioRef.current.volume);
-	};
+		volumeRef.current.addEventListener("wheel", onVolumeWheel, { passive: false });
+
+		return () => volumeRef.current?.removeEventListener("wheel", onVolumeWheel);
+	}, [volumeRef.current]);
 
 	// Render
-	const progress = duration ? currentTime / duration : 0;
-	const bufferProgress = duration ? buffered / duration : 0;
-
 	return (
-		<div className="audio-player">
-			<button onClick={onPlayPauseClick}>{playing ? "||" : "|>"}</button>
-			<div className="audio-player-bar" onMouseUp={onBarMouseUp}>
-				<div className="audio-player-bar-fill audio-player-bar-fill-buffered" style={{ "--progress": bufferProgress }} />
-				<div className="audio-player-bar-fill" style={{ "--progress": progress }} />
-				<div className="audio-player-timestamps">
-					<span>{formatTimestamp(duration && currentTime)}</span>
-					/
-					<span>{formatTimestamp(duration)}</span>
-				</div>
-			</div>
+		<div className="audio-player-master-container">
+			<h2>{title}</h2>
 			<div
-				className={`audio-player-volume-control ${muted ? "audio-player-volume-control-muted" : ""}`}
-				ref={volumeRef}
+				className="audio-player"
+				style={{
+					// "--buffered": buffered,
+					"--current-time": currentTime,
+					"--duration": duration,
+				}}
 			>
-				{Math.round(volume * 100)}%
+				<button onClick={onPlayPauseClick}>{playing ? "||" : "|>"}</button>
+				<div className="audio-player-bar" onMouseUp={onBarMouseUp}>
+					{/* <div className="audio-player-bar-fill audio-player-bar-fill-buffered" /> */}
+					<div className="audio-player-bar-fill audio-player-bar-fill-current-time" />
+					<div
+						className="audio-player-timestamps"
+						dangerouslySetInnerHTML={{ __html: timestampHtml(currentTime, duration) }}
+					/>
+				</div>
+				<div
+					className={`audio-player-volume-control ${muted ? "audio-player-volume-control-muted" : ""}`}
+					ref={volumeRef}
+				>
+					{Math.round(volume * 100)}%
+				</div>
+				<button onClick={onMuteClick} className="audio-player-mute">{muted ? "U" : "M"}</button>
 			</div>
-			<button onClick={onMuteClick} className="audio-player-mute">{muted ? "U" : "M"}</button>
-			<button onClick={onDownloadClick} className="audio-player-download">↓</button>
-			<audio
-				src={src}
-				preload="none"
-				ref={audioRef}
-
-				onCanPlayThrough={onCanPlayThrough}
-				onDurationChange={onDurationChange}
-				onEnded={onEnded}
-				onError={onEnded}
-				onPause={onPause}
-				onPlay={onPlay}
-				onProgress={onProgress}
-				onVolumeChange={onVolumeChange}
-			/>
 		</div>
 	);
 }
@@ -223,5 +462,5 @@ function useRequestAnimationFrame(callback: FrameRequestCallback, active: boolea
 				cancelAnimationFrame(requestIdRef.current);
 			}
 		};
-	}, [active]);
+	}, [active, callback]);
 }

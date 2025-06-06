@@ -1,7 +1,10 @@
 ---
 import { desc, eq, getTableColumns } from "drizzle-orm";
 import Layout from "../layouts/Layout.astro";
-import AudioPlayer from "../components/Sounds/AudioPlayer";
+import {
+    AudioPlayer,
+    MasterAudioPlayer,
+} from "../components/Sounds/AudioPlayer";
 import db from "../database/db";
 import { Member, Sound } from "../database/schema";
 import { thingColourHandler } from "../server/thingUtils";
@@ -80,6 +83,8 @@ const sounds = await db
             ))
         }
     </div>
+
+    <MasterAudioPlayer client:only="react" />
 </Layout>
 
 <script is:inline define:vars={{ soundId: Astro.locals.soundId }}>
@@ -91,6 +96,10 @@ const sounds = await db
 </script>
 
 <style>
+    body {
+        margin-bottom: 4lh !important;
+    }
+
     .sounds {
         margin: 1lh 0;
         display: flex;
