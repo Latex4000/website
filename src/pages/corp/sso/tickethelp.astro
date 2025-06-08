@@ -1,0 +1,28 @@
+---
+import Layout from "./_Layout.astro";
+
+export const prerender = false;
+---
+
+<Layout>
+    <h2>
+        <div>Sign On Ticket help</div>
+    </h2>
+    <p>
+        Use the <code>/ticket</code> command in the Discord server to retrieve a
+        sign on ticket. On the sign on page, click "Use Ticket", then enter the code
+        provided on the ticket. If you need further assistance, please contact techstop.
+    </p>
+    <a href="begin">Return to Sign On</a>
+</Layout>
+
+<style is:global>
+    form {
+        width: 374px;
+        text-align: center;
+    }
+
+    p {
+        text-align: left;
+    }
+</style>

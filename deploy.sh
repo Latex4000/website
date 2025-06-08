@@ -2,6 +2,8 @@
 
 set -eu
 
+export CORPORATE_URL=https://corp.nonacademic.net
+
 ./build.sh
 
 rm -rf public/emoji

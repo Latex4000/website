@@ -9,6 +9,7 @@ fi
 
 database='dev/latex.db'
 
+export CORPORATE_URL=
 export DATABASE_URL="file:./$database"
 export DIGITALOCEAN_DNS_TOKEN=
 export LATEX_WEB_SYSTEMD_UNIT=

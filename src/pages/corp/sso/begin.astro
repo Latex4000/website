@@ -1,0 +1,149 @@
+---
+import Layout from "./_Layout.astro";
+
+export const prerender = false;
+
+function unCorpUrl(url: string | URL): URL {
+    return import.meta.env.CORPORATE_URL
+        ? new URL(url, Astro.site)
+        : new URL(url, Astro.url);
+}
+
+/* eslint-disable astro/jsx-a11y/anchor-is-valid */
+---
+
+<Layout>
+    <h2>
+        <div>Use your SSO username and password</div>
+        <div>(* fields are required)</div>
+    </h2>
+    <table class="inputs" role="presentation">
+        <tr>
+            <td style="text-align: right;">
+                <label for="username">Username*:</label>
+            </td>
+            <td>
+                <input
+                    type="text"
+                    name="username"
+                    size="15"
+                    id="username"
+                    required
+                />
+                <span style="position: relative; bottom: 2px;"
+                    ><span style="padding: 0 3px 0 5px;">@</span> nonacademic.net</span
+                >
+            </td>
+        </tr>
+        <tr class="js-password">
+            <td style="text-align: right;">
+                <label for="password">Password*:</label>
+            </td>
+            <td>
+                <input
+                    type="password"
+                    name="password"
+                    size="15"
+                    id="password"
+                    required
+                />
+            </td>
+        </tr>
+        <tr class="js-ticket" style="display: none;">
+            <td style="text-align: right;">
+                <label for="ticket">Ticket*:</label>
+            </td>
+            <td>
+                <input
+                    type="hidden"
+                    name="ticket"
+                    size="15"
+                    id="ticket"
+                    required
+                />
+            </td>
+        </tr>
+    </table>
+    <div class="submit">
+        <input type="submit" value="Sign in" />
+    </div>
+    <div class="error">{Astro.url.searchParams.get("e")}</div>
+    <table class="help" role="presentation">
+        <tr>
+            <td><a class="js-ticket-button" href="#">Use Ticket</a></td>
+            <td style="text-align: right;"
+                ><a href="tickethelp">Ticket help</a></td
+            >
+        </tr>
+        <tr>
+            <td><a href={unCorpUrl("/")}>Return to Nonacademic.net</a></td>
+            <td style="text-align: right;"
+                ><a class="js-password-button" href="#">Password help</a></td
+            >
+        </tr>
+    </table>
+</Layout>
+
+<style>
+    .inputs {
+        margin: 12px 0 34px;
+    }
+
+    .inputs label {
+        text-align: right;
+    }
+
+    .inputs td {
+        padding: 5px;
+    }
+
+    .submit {
+        text-align: center;
+    }
+
+    .submit input {
+        padding: 2px;
+    }
+
+    .error {
+        color: red;
+        font-weight: bold;
+        height: 20px;
+        text-align: center;
+    }
+
+    .help {
+        width: 100%;
+        margin-top: 30px;
+    }
+</style>
+
+<script>
+    document
+        .querySelector(".js-ticket-button")
+        ?.addEventListener("click", (event) => {
+            event.preventDefault();
+
+            const password =
+                document.querySelector<HTMLElement>(".js-password")!;
+            const ticket = document.querySelector<HTMLElement>(".js-ticket")!;
+
+            password.style.display = "none";
+            password.querySelector("input")!.type = "hidden";
+            ticket.style.display = "";
+            ticket.querySelector("input")!.type = "text";
+            (event.currentTarget as HTMLElement).remove();
+        });
+
+    document
+        .querySelector(".js-password-button")
+        ?.addEventListener("click", (event) => {
+            event.preventDefault();
+
+            (event.currentTarget as HTMLElement).replaceWith("No");
+        });
+
+    if (window.location.search) {
+        window.history.replaceState(null, "", window.location.pathname);
+    }
+</script>
