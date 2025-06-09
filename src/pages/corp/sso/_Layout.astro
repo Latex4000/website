@@ -3,8 +3,6 @@ import type { ImageMetadata } from "astro";
 import footerImage from "../../../assets/corp/footer.gif";
 import logoImage from "../../../assets/corp/logo.png";
 
-export const prerender = false;
-
 const bannerImages = Object.values(
     import.meta.glob<{ default: ImageMetadata }>(
         "../../../assets/corp/ssobanner*.jpg",
