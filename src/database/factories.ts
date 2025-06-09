@@ -25,7 +25,7 @@ export const MemberFactory = defineFactory(Member, {
     discord: () => faker.string.numeric(18),
     alias: () => faker.person.firstName(),
     site: () => faker.helpers.maybe(() => faker.internet.url()),
-    color: () => faker.internet.color(),
+    color: () => faker.color.rgb(),
 
     addedRingToSite: ({ site }) => site != null && faker.datatype.boolean(),
 });
