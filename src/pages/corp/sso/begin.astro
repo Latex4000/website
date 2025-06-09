@@ -9,6 +9,10 @@ function unCorpUrl(url: string | URL): URL {
         : new URL(url, Astro.url);
 }
 
+if (Astro.locals.session.data.memberDiscord != null) {
+    return Astro.redirect("complete", 307);
+}
+
 /* eslint-disable astro/jsx-a11y/anchor-is-valid */
 ---
 

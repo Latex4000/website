@@ -1,5 +1,6 @@
 import { relations, sql } from "drizzle-orm";
-import { sqliteTable, integer, text, customType } from "drizzle-orm/sqlite-core";
+import { sqliteTable, integer, text, customType, uniqueIndex } from "drizzle-orm/sqlite-core";
+import type { SessionData } from "../server/session";
 
 const date = customType<{ data: Date; driverData: string }>({
     dataType: () => "text",
@@ -61,6 +62,7 @@ export const MemberRelations = relations(Member, ({ many }) => ({
     motions: many(Motion),
     sights: many(Sight),
     sounds: many(Sound),
+    tickets: many(Ticket),
     words: many(Word),
 }));
 
@@ -81,6 +83,12 @@ export const MotionRelations = relations(Motion, ({ one }) => ({
         references: [Member.discord],
     }),
 }));
+
+export const Session = sqliteTable("Session", {
+    id: text().primaryKey(),
+    expiresAt: date().notNull(),
+    data: text({ mode: "json" }).$type<SessionData>().default({}).notNull(),
+});
 
 export const Sight = sqliteTable("Sight", {
     id: integer().primaryKey({ autoIncrement: true }),
@@ -118,6 +126,22 @@ export const Sound = sqliteTable("Sound", {
 export const SoundRelations = relations(Sound, ({ one }) => ({
     member: one(Member, {
         fields: [Sound.memberDiscord],
+        references: [Member.discord],
+    }),
+}));
+
+export const Ticket = sqliteTable("Ticket", {
+    id: integer().primaryKey({ autoIncrement: true }),
+    memberDiscord: text().notNull().references(() => Member.discord),
+    createdAt: date().default(sql`CURRENT_TIMESTAMP`).notNull(),
+    hash: text().notNull(),
+}, (table) => [
+    uniqueIndex("Ticket_memberDiscord_hash").on(table.memberDiscord, table.hash),
+]);
+
+export const TicketRelations = relations(Ticket, ({ one }) => ({
+    member: one(Member, {
+        fields: [Ticket.memberDiscord],
         references: [Member.discord],
     }),
 }));

@@ -1,0 +1,38 @@
+---
+import Layout from "./_Layout.astro";
+
+export const prerender = false;
+
+function unCorpUrl(url: string | URL): URL {
+    return import.meta.env.CORPORATE_URL
+        ? new URL(url, Astro.site)
+        : new URL(url, Astro.url);
+}
+
+if (Astro.locals.session.data.memberDiscord == null) {
+    return Astro.redirect("begin", 307);
+}
+---
+
+<Layout>
+    <h2>
+        <div>Sign On complete</div>
+    </h2>
+    <p>
+        You are now signed on to corporate as <code
+            >{Astro.locals.session.data.memberDiscord}</code
+        >. Additional functions are available on Nonacademic.net.
+    </p>
+    <a href={unCorpUrl("/")}>Return to Nonacademic.net</a>
+</Layout>
+
+<style is:global>
+    form {
+        width: 374px;
+        text-align: center;
+    }
+
+    p {
+        text-align: left;
+    }
+</style>

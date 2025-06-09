@@ -2,6 +2,7 @@ import { validateHmac } from "@latex4000/fetch-hmac";
 import { defineMiddleware, sequence } from "astro:middleware";
 import { jsonError, ResponseError } from "./server/responses";
 import { openAsBlob } from "fs";
+import { loadSession, saveSession } from "./server/session";
 
 const checkHmacForApi = defineMiddleware(async (context, next) => {
     if (!context.url.pathname.startsWith("/api/")) {
@@ -41,6 +42,12 @@ const handleResponseErrors = defineMiddleware(async (_, next) => {
 
         throw error;
     }
+});
+
+const loadAndSaveSession = defineMiddleware(async (context, next) => {
+    await loadSession(context);
+    await next();
+    await saveSession(context);
 });
 
 const serveUploadedFilesInDev = defineMiddleware(async (context, next) => {
@@ -83,6 +90,10 @@ const handlers = [handleResponseErrors, checkHmacForApi];
 
 if (process.env.NODE_ENV === "development") {
     handlers.push(serveUploadedFilesInDev);
+}
+
+if (!process.env.PRERENDERING) {
+    handlers.push(loadAndSaveSession);
 }
 
 export const onRequest = sequence(...handlers);
