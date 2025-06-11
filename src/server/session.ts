@@ -52,6 +52,44 @@ export async function loadSession(context: APIContext): Promise<void> {
 }
 
 export async function saveSession(context: APIContext): Promise<void> {
+    const cookieOptions = {
+        domain: (process.env.CORPORATE_URL ? context.site! : context.url).hostname,
+        httpOnly: true,
+        path: "/",
+        sameSite: "lax",
+        secure: import.meta.env.PROD,
+    } as const;
+
+    let sessionDataEmpty = true;
+
+    for (const property in context.locals.session.data) {
+        if (Object.hasOwn(context.locals.session.data, property)) {
+            sessionDataEmpty = false;
+            break;
+        }
+    }
+
+    // Don't save sessions that have no data attached
+    if (sessionDataEmpty) {
+        const cookieValue = context.cookies.get(cookieName)?.value;
+
+        // If the session was loaded from database, delete it
+        if (cookieValue === context.locals.sessionRawId) {
+            await retryIfDbBusy(() =>
+                db
+                    .delete(Session)
+                    .where(eq(Session.id, context.locals.session.id)),
+            );
+        }
+
+        // If a session cookie is present, delete it
+        if (cookieValue != null) {
+            context.cookies.delete(cookieName, cookieOptions);
+        }
+
+        return;
+    }
+
     context.locals.session.expiresAt = new Date(Date.now() + maxAgeMs);
 
     await retryIfDbBusy(() =>
@@ -65,11 +103,7 @@ export async function saveSession(context: APIContext): Promise<void> {
     );
 
     context.cookies.set(cookieName, context.locals.sessionRawId, {
-        domain: (process.env.CORPORATE_URL ? context.site! : context.url).hostname,
-        httpOnly: true,
+        ...cookieOptions,
         expires: context.locals.session.expiresAt,
-        path: "/",
-        sameSite: "lax",
-        secure: import.meta.env.PROD,
     });
 }
