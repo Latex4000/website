@@ -2,29 +2,44 @@ import { faker } from "@faker-js/faker";
 import defineFactory from "./defineFactory";
 import { Action, ActionItem, Member, Motion, Session, Sight, Sound, Ticket, Word } from "./schema";
 
+function unique<T>(fn: () => T): () => T {
+    const used = new Set<T>();
+
+    return () => {
+        while (true) {
+            const value = fn();
+
+            if (!used.has(value)) {
+                used.add(value);
+                return value;
+            }
+        }
+    };
+}
+
 const tags = () => faker.helpers.multiple(() => faker.word.adjective(), { count: { min: 0, max: 5 } });
 
 export const ActionFactory = defineFactory(Action, {
     memberDiscord: () => { throw new Error("Not implemented"); },
     title: () => faker.commerce.department(),
     description: () => faker.lorem.sentence(),
-    url: () => faker.internet.url(),
-    siteUrl: () => faker.internet.url(),
+    url: unique(() => faker.internet.url()),
+    siteUrl: unique(() => faker.internet.url()),
     isRSS: () => faker.datatype.boolean(),
 });
 
 export const ActionItemFactory = defineFactory(ActionItem, {
     actionID: () => { throw new Error("Not implemented"); },
     title: () => faker.helpers.maybe(() => faker.commerce.product()),
-    url: () => faker.internet.url(),
+    url: unique(() => faker.internet.url()),
     description: () => faker.lorem.sentence(),
     date: () => faker.date.recent(),
 });
 
 export const MemberFactory = defineFactory(Member, {
     discord: () => faker.string.numeric(18),
-    alias: () => faker.person.firstName(),
-    site: () => faker.helpers.maybe(() => faker.internet.url()),
+    alias: unique(() => faker.person.firstName()),
+    site: () => faker.helpers.maybe(unique(() => faker.internet.url())),
     color: () => faker.color.rgb(),
 
     addedRingToSite: ({ site }) => site != null && faker.datatype.boolean(),
@@ -71,6 +86,6 @@ export const TicketFactory = defineFactory(Ticket, {
 export const WordFactory = defineFactory(Word, {
     title: () => faker.book.title(),
     memberDiscord: () => { throw new Error("Not implemented"); },
-    date: () => faker.date.recent(),
+    date: unique(() => faker.date.recent()),
     tags,
 });
