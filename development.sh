@@ -20,15 +20,17 @@ export SOUNDS_RUN_AFTER_UPLOAD=
 export SOUNDS_UPLOAD_DIRECTORY='dev/sounds'
 export WORDS_RUN_AFTER_UPLOAD=
 export WORDS_UPLOAD_DIRECTORY='dev/words'
+export TUNICWILDS_DIRECTORY='dev/tunicwilds'
 export PUBLIC_DIRECTORY='public'
 
 # Clean up files from last run
-rm -rf "$database" "$SIGHTS_UPLOAD_DIRECTORY" "$SOUNDS_UPLOAD_DIRECTORY" "$WORDS_UPLOAD_DIRECTORY"
+rm -rf "$database" "$SIGHTS_UPLOAD_DIRECTORY" "$SOUNDS_UPLOAD_DIRECTORY" "$WORDS_UPLOAD_DIRECTORY" "$TUNICWILDS_DIRECTORY" 
 
 # Create directories
 mkdir -p "$SIGHTS_UPLOAD_DIRECTORY"
 mkdir -p "$SOUNDS_UPLOAD_DIRECTORY"
 mkdir -p "$WORDS_UPLOAD_DIRECTORY"
+mkdir -p "$TUNICWILDS_DIRECTORY"
 
 # Create database
 node db/migrate.mjs "$database"

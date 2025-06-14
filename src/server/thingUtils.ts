@@ -4,7 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { jsonError, jsonResponse } from "./responses";
 import { paginationQuery, parseNumberCursor } from "./pagination";
 import db, { retryIfDbBusy } from "../database/db";
-import { Action, Motion, Sight, Sound, Word } from "../database/schema";
+import { Action, Motion, Sight, Sound, Tunicwild, Word } from "../database/schema";
 
 const thingTypeToTable = {
     words: Word,
@@ -12,6 +12,7 @@ const thingTypeToTable = {
     motions: Motion,
     sights: Sight,
     actions: Action,
+    tunicwilds: Tunicwild,
 };
 type ThingType = keyof typeof thingTypeToTable;
 const thingTypes = Object.keys(thingTypeToTable);
