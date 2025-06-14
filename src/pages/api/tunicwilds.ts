@@ -2,21 +2,12 @@ import { LibsqlError } from "@libsql/client";
 import type { APIRoute } from "astro";
 import { eq, type InferSelectModel } from "drizzle-orm";
 import { jsonError, jsonResponse } from "../../server/responses";
-import { mkdir, writeFile } from "fs/promises";
 import { createWriteStream, ReadStream } from "fs";
-import { Marked } from "marked";
-import { baseUrl as markedBaseUrl } from "marked-base-url";
-import { markedEmoji } from "marked-emoji";
-import { execFileSync } from "child_process";
-import { finished } from "stream/promises";
 import { thingDeletion, thingGet } from "../../server/thingUtils";
-import { serverHTMLPurify } from "../../components/DOMPurify/server";
-import { getMap } from "../../data/emoji";
 import db, { retryIfDbBusy } from "../../database/db";
 import { Member, Tunicwild } from "../../database/schema";
 
 export const prerender = false;
-
 
 export const GET: APIRoute = async (context) => thingGet(context, "tunicwilds");
 
@@ -58,10 +49,6 @@ export const POST: APIRoute = async (context) => {
     }
     if (releaseDateParsed.getTime() > Date.now()) {
         return jsonError("Release date cannot be in the future");
-    }
-
-    if (file.size > fileSizeLimit) {
-        return jsonError("File size exceeds limit of 1 MB");
     }
 
     const member = await db
@@ -131,7 +118,9 @@ export const POST: APIRoute = async (context) => {
     // Upload files
     ReadStream.fromWeb(file.stream()).pipe(
         createWriteStream(`${process.env.TUNICWILDS_DIRECTORY}/${tunicwild.id}.${file.name.split('.').pop()}`),
-    )
+    );
+
+    return jsonResponse(tunicwild);
 };
 
 export const PUT: APIRoute = async (context) => thingDeletion(context, "tunicwilds", false);
