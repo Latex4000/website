@@ -32,5 +32,5 @@ const songData =
     title="Tunicwilds"
     description="CAN YOU GUESS THE SONG? CAN YOU GUESS THE GAME? CAN YOU GUESS THE TUNICWILDS?"
 >
-    <TunicwildsApp {songData} {songList} client:visible />
+    {songData && <TunicwildsApp {songData} {songList} client:visible />}
 </Layout>
