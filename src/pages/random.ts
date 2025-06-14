@@ -9,7 +9,7 @@ const urls = [
     "/words",
     "/motions",
     "/sights",
-    // "/things",
+    "/things",
 ];
 
 export const GET: APIRoute = (context) => {

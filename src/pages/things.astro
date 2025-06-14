@@ -1,0 +1,29 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout
+    header="Things"
+    title="Things"
+    description="Things created by the LaTeX 4000 Collective"
+>
+    <p>
+        Pages we have made on this site with unique and specific
+        features/content
+    </p>
+    <ul>
+        <li><a href="/visions">Visions</a></li>
+        <li><a href="/sensations">Sensations</a></li>
+    </ul>
+</Layout>
+
+<style>
+    li {
+        white-space: nowrap;
+        list-style-position: inside;
+    }
+
+    li::marker {
+        white-space: nowrap;
+    }
+</style>
