@@ -1,6 +1,6 @@
 import { LibsqlError } from "@libsql/client";
 import type { APIRoute } from "astro";
-import { eq, type InferSelectModel } from "drizzle-orm";
+import { and, eq, type InferSelectModel } from "drizzle-orm";
 import { jsonError, jsonResponse } from "../../../server/responses";
 import { createWriteStream, ReadStream } from "fs";
 import { thingDeletion, thingGet } from "../../../server/thingUtils";
@@ -86,8 +86,12 @@ export const POST: APIRoute = async (context) => {
     const existingTunicwild = await db
         .select()
         .from(Tunicwild)
-        .where(eq(Tunicwild.title, title))
-        .and(eq(Tunicwild.game, game))
+        .where(
+            and(
+                eq(Tunicwild.title, title),
+                eq(Tunicwild.game, game)
+            )
+        )
         .get();
     if (existingTunicwild) {
         return jsonError("A Tunicwild with the same title and game already exists");
