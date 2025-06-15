@@ -1,11 +1,11 @@
 import { LibsqlError } from "@libsql/client";
 import type { APIRoute } from "astro";
 import { eq, type InferSelectModel } from "drizzle-orm";
-import { jsonError, jsonResponse } from "../../server/responses";
+import { jsonError, jsonResponse } from "../../../server/responses";
 import { createWriteStream, ReadStream } from "fs";
-import { thingDeletion, thingGet } from "../../server/thingUtils";
-import db, { retryIfDbBusy } from "../../database/db";
-import { Member, Tunicwild } from "../../database/schema";
+import { thingDeletion, thingGet } from "../../../server/thingUtils";
+import db, { retryIfDbBusy } from "../../../database/db";
+import { Member, Tunicwild } from "../../../database/schema";
 
 export const prerender = false;
 
@@ -80,6 +80,17 @@ export const POST: APIRoute = async (context) => {
     // File validation
     if (!file.name.endsWith(".ogg") && !file.name.endsWith(".opus") && !file.name.endsWith(".wav") && !file.name.endsWith(".mp3")) {
         return jsonError("File must be an OGG, Opus, WAV, or MP3 file");
+    }
+
+    // Check if a Tunicwild with the same title and game already exists
+    const existingTunicwild = await db
+        .select()
+        .from(Tunicwild)
+        .where(eq(Tunicwild.title, title))
+        .and(eq(Tunicwild.game, game))
+        .get();
+    if (existingTunicwild) {
+        return jsonError("A Tunicwild with the same title and game already exists");
     }
 
     // Store to DB
