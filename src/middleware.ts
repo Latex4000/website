@@ -9,7 +9,11 @@ const checkHmacForApi = defineMiddleware(async (context, next) => {
         return next();
     }
 
-    if (context.url.pathname.startsWith("/api/action") && context.request.method === "GET") {
+    if (
+        (
+            context.url.pathname.startsWith("/api/action") ||
+            context.url.pathname.startsWith("/api/tunicwild")
+        ) && context.request.method === "GET") {
         return next();
     }
 
