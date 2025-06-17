@@ -11,6 +11,7 @@ database='dev/latex.db'
 
 export CORPORATE_URL=
 export DATABASE_URL="file:./$database"
+export TUNICWILDS_URL=
 export DIGITALOCEAN_DNS_TOKEN=
 export LATEX_WEB_SYSTEMD_UNIT=
 export SECRET_HMAC_KEY='dev'
