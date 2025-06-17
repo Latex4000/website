@@ -22,7 +22,7 @@ if (
     printUsageAndExit();
 }
 
-const rssParser = new Parser();
+const rssParser = new Parser({ timeout: 5000 });
 const sqliteClient = createClient({ url: `file:${database}` });
 
 const actions = await sqliteClient.execute(
