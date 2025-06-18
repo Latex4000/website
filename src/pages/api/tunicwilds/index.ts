@@ -43,8 +43,8 @@ export const GET: APIRoute = async ({ url }) => {
 }
 
 export const POST: APIRoute = async (context) => {
-    if (process.env.NODE_ENV === "development" && !process.env.TUNICWILDS_DIRECTORY) {
-        return jsonError("TUNICWILDS_DIRECTORY not set", 500);
+    if (process.env.NODE_ENV === "development" && !process.env.TUNICWILDS_UPLOAD_DIRECTORY) {
+        return jsonError("TUNICWILDS_UPLOAD_DIRECTORY not set", 500);
     }
 
     let formData: FormData;
@@ -172,7 +172,7 @@ export const POST: APIRoute = async (context) => {
         if (process.env.NODE_ENV === "development") {
             // Get file extension properly
             const extension = fileExtension.substring(1); // Remove the dot
-            const filePath = `${process.env.TUNICWILDS_DIRECTORY}/${tunicwild.id}.${extension}`;
+            const filePath = `${process.env.TUNICWILDS_UPLOAD_DIRECTORY}/${tunicwild.id}.${extension}`;
 
             const fileStream = file.stream();
             const writeStream = createWriteStream(filePath);
@@ -196,7 +196,7 @@ export const POST: APIRoute = async (context) => {
             await pump();
         } else {
             const uploadResponse = await fetch(
-                `${process.env.TUNICWILDS_URL}/upload/${encodeURIComponent(game)}/${encodeURIComponent(title)}`,
+                `${process.env.TUNICWILDS_UPLOAD_URL}/upload/${encodeURIComponent(game)}/${encodeURIComponent(title)}`,
                 {
                     method: "POST",
                     body: file.stream(),

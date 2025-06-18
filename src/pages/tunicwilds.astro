@@ -6,10 +6,10 @@ import { Tunicwild } from "../database/schema";
 
 export const prerender = false;
 
-if (!process.env.TUNICWILDS_DIRECTORY) {
+if (!process.env.TUNICWILDS_UPLOAD_DIRECTORY) {
     Astro.response.status = 500;
     Astro.response.statusText =
-        "TUNICWILDS_DIRECTORY environment variable is not set";
+        "TUNICWILDS_UPLOAD_DIRECTORY environment variable is not set";
 }
 
 const startDate = new Date("2025-06-14");
