@@ -24,18 +24,24 @@
     const gameHintAfter = 3;
 
     const showGameHint = $derived(guesses.length >= gameHintAfter && !gameWon);
-    const filteredSongs: { title: string; game: string; composer: string }[] =
-        $derived(
-            currentGuess.trim()
-                ? songList
-                      .filter((song) =>
-                          song.title
-                              .toLowerCase()
-                              .includes(currentGuess.toLowerCase().trim()),
-                      )
-                      .slice(0, 8)
-                : [],
-        );
+    const filteredSongs = $derived(
+        currentGuess.trim()
+            ? (["title", "game", "composer"] as const)
+                  .map((property) =>
+                      songList
+                          .filter((song) =>
+                              song[property]
+                                  .toLowerCase()
+                                  .includes(currentGuess.trim().toLowerCase()),
+                          )
+                          .sort((a, b) =>
+                              a[property].localeCompare(b[property]),
+                          ),
+                  )
+                  .flat(1)
+                  .slice(0, 8)
+            : [],
+    );
 
     $effect(() => {
         if (currentGuess.trim()) showDropdown = true;
