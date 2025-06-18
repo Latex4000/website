@@ -24,21 +24,31 @@
     const gameHintAfter = 3;
 
     const showGameHint = $derived(guesses.length >= gameHintAfter && !gameWon);
+
+    const filterProperties = ["title", "game", "composer"] as const;
     const filteredSongs = $derived(
-        currentGuess.trim()
-            ? (["title", "game", "composer"] as const)
-                  .map((property) =>
-                      songList
-                          .filter((song) =>
-                              song[property]
-                                  .toLowerCase()
-                                  .includes(currentGuess.trim().toLowerCase()),
-                          )
-                          .sort((a, b) =>
-                              a[property].localeCompare(b[property]),
-                          ),
+        currentGuess.trim().length >= 2
+            ? songList
+                  .filter((song) =>
+                      filterProperties.some((property) =>
+                          song[property]
+                              .toLowerCase()
+                              .includes(currentGuess.trim().toLowerCase()),
+                      ),
                   )
-                  .flat(1)
+                  .sort((a, b) => {
+                      for (const property of filterProperties) {
+                          const comparison = a[property].localeCompare(
+                              b[property],
+                          );
+
+                          if (comparison) {
+                              return comparison;
+                          }
+                      }
+
+                      return 0;
+                  })
                   .slice(0, 8)
             : [],
     );
