@@ -43,8 +43,12 @@ export const GET: APIRoute = async ({ url }) => {
 }
 
 export const POST: APIRoute = async (context) => {
-    if (process.env.NODE_ENV === "development" && !process.env.TUNICWILDS_UPLOAD_DIRECTORY) {
-        return jsonError("TUNICWILDS_UPLOAD_DIRECTORY not set", 500);
+    if (
+        import.meta.env.DEV
+            ? !process.env.TUNICWILDS_UPLOAD_DIRECTORY
+            : !process.env.TUNICWILDS_UPLOAD_URL
+    ) {
+        return jsonError("TUNICWILDS env not set", 500);
     }
 
     let formData: FormData;
