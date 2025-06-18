@@ -1,12 +1,46 @@
 import { LibsqlError } from "@libsql/client";
 import type { APIRoute } from "astro";
-import { and, eq, type InferSelectModel } from "drizzle-orm";
+import { and, eq, type InferSelectModel, type SQLWrapper } from "drizzle-orm";
 import { jsonError, jsonResponse } from "../../../server/responses";
 import { createWriteStream, ReadStream } from "fs";
 import db, { retryIfDbBusy } from "../../../database/db";
 import { Tunicwild } from "../../../database/schema";
+import { paginationQuery, parseNumberCursor } from "../../../server/pagination";
 
 export const prerender = false;
+
+export const GET: APIRoute = async ({ url }) => {
+    const conditions: SQLWrapper[] = [];
+    const params = url.searchParams;
+
+    const game = params.get("game");
+    if (game)
+        conditions.push(eq(Tunicwild.game, game));
+
+    const composer = params.get("composer");
+    if (composer)
+        conditions.push(eq(Tunicwild.composer, composer));
+
+    const title = params.get("title");
+    if (title)
+        conditions.push(eq(Tunicwild.title, title));
+
+    const releaseDate = params.get("releaseDate");
+    if (releaseDate) {
+        const date = new Date(releaseDate);
+        if (isNaN(date.getTime()))
+            return jsonError("Invalid release date");
+        conditions.push(eq(Tunicwild.releaseDate, date));
+    }
+
+    return paginationQuery(
+        params,
+        Tunicwild,
+        "id",
+        parseNumberCursor,
+        ...conditions,
+    );
+}
 
 export const POST: APIRoute = async (context) => {
     if (!process.env.TUNICWILDS_DIRECTORY) {
