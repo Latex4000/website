@@ -14,25 +14,18 @@ if (
     return new Response("TUNICWILDS env not set", { status: 500 });
 }
 
-const startDate = new Date("2025-06-14");
-const date = new Date();
-
-const songList = await db.select().from(Tunicwild);
-
-// Get the song for today's challenge
-// Really shitty placeholder
-const songData =
-    songList[
-        Math.floor(
-            ((date.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) %
-                songList.length
-        )
-    ];
+const songList = await db
+    .select({
+        composer: Tunicwild.composer,
+        game: Tunicwild.game,
+        title: Tunicwild.title,
+    })
+    .from(Tunicwild);
 ---
 
 <Layout
     title="Tunicwilds"
     description="CAN YOU GUESS THE SONG? CAN YOU GUESS THE GAME? CAN YOU GUESS THE TUNICWILDS?"
 >
-    {songData && <TunicwildsApp {songData} {songList} client:load />}
+    <TunicwildsApp client:load {songList} />
 </Layout>
