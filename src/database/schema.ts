@@ -163,7 +163,6 @@ export const WordRelations = relations(Word, ({ one }) => ({
     }),
 }));
 
-
 export const Tunicwild = sqliteTable("Tunicwild", {
     id: integer().primaryKey({ autoIncrement: true }),
     composer: text().notNull(),
