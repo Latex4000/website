@@ -16,6 +16,7 @@
     let gameLost = $state(false);
     let isPlaying = $state(false);
     let showDropdown = $state(false);
+    // svelte-ignore non_reactive_update
     let audioElement: HTMLAudioElement;
 
     const maxGuesses = 6;
