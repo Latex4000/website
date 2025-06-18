@@ -64,7 +64,6 @@ export const MemberRelations = relations(Member, ({ many }) => ({
     sounds: many(Sound),
     tickets: many(Ticket),
     words: many(Word),
-    tunicwilds: many(Tunicwild),
 }));
 
 export const Motion = sqliteTable("Motion", {
@@ -167,18 +166,9 @@ export const WordRelations = relations(Word, ({ one }) => ({
 
 export const Tunicwild = sqliteTable("Tunicwild", {
     id: integer().primaryKey({ autoIncrement: true }),
-    memberDiscord: text().notNull().references(() => Member.discord),
     composer: text().notNull(),
     title: text().notNull(),
     game: text().notNull(),
     releaseDate: date().notNull(),
     extraHint: text().notNull(),
-    deleted: integer({ mode: "boolean" }).default(false).notNull(),
 });
-
-export const TunicwildRelations = relations(Tunicwild, ({ one }) => ({
-    member: one(Member, {
-        fields: [Tunicwild.memberDiscord],
-        references: [Member.discord],
-    }),
-}));

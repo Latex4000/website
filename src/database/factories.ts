@@ -91,7 +91,6 @@ export const WordFactory = defineFactory(Word, {
 });
 
 export const TunicwildFactory = defineFactory(Tunicwild, {
-    memberDiscord: () => { throw new Error("Not implemented"); },
     composer: () => faker.person.firstName(),
     title: () => faker.music.songName(),
     game: () => faker.commerce.productName(),

@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { ActionFactory, ActionItemFactory, MemberFactory, MotionFactory, SightFactory, SoundFactory, WordFactory } from "./factories";
+import { ActionFactory, ActionItemFactory, MemberFactory, MotionFactory, SightFactory, SoundFactory, TunicwildFactory, WordFactory } from "./factories";
 
 export default async function seed() {
     const members = await new MemberFactory().count(20).create();
@@ -43,4 +43,6 @@ export default async function seed() {
     await new WordFactory().count(10).create({
         memberDiscord: () => faker.helpers.arrayElement(members.map((member) => member.discord)),
     });
+
+    await new TunicwildFactory().count(10).create();
 }

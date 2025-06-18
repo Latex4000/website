@@ -3,13 +3,10 @@ import type { APIRoute } from "astro";
 import { and, eq, type InferSelectModel } from "drizzle-orm";
 import { jsonError, jsonResponse } from "../../../server/responses";
 import { createWriteStream, ReadStream } from "fs";
-import { thingDeletion, thingGet } from "../../../server/thingUtils";
 import db, { retryIfDbBusy } from "../../../database/db";
-import { Member, Tunicwild } from "../../../database/schema";
+import { Tunicwild } from "../../../database/schema";
 
 export const prerender = false;
-
-export const GET: APIRoute = async (context) => thingGet(context, "tunicwilds");
 
 export const POST: APIRoute = async (context) => {
     if (!process.env.TUNICWILDS_DIRECTORY) {
@@ -23,7 +20,6 @@ export const POST: APIRoute = async (context) => {
         return jsonError("Request body must be form data");
     }
 
-    const discord = formData.get("discord");
     const composer = formData.get("composer");
     const title = formData.get("title");
     const game = formData.get("game");
@@ -33,7 +29,6 @@ export const POST: APIRoute = async (context) => {
 
     // Form validation
     if (
-        typeof discord !== "string" ||
         typeof composer !== "string" ||
         typeof title !== "string" ||
         typeof game !== "string" ||
@@ -49,19 +44,6 @@ export const POST: APIRoute = async (context) => {
     }
     if (releaseDateParsed.getTime() > Date.now()) {
         return jsonError("Release date cannot be in the future");
-    }
-
-    const member = await db
-        .select()
-        .from(Member)
-        .where(eq(Member.discord, discord))
-        .get();
-    if (!member) {
-        return jsonError("Member does not exist");
-    }
-
-    if (member.deleted) {
-        return jsonError("Member has been deleted");
     }
 
     if (composer.length > 2 ** 10) {
@@ -104,7 +86,6 @@ export const POST: APIRoute = async (context) => {
             db
                 .insert(Tunicwild)
                 .values({
-                    memberDiscord: discord,
                     composer,
                     title,
                     game,
@@ -137,7 +118,3 @@ export const POST: APIRoute = async (context) => {
 
     return jsonResponse(tunicwild);
 };
-
-export const PUT: APIRoute = async (context) => thingDeletion(context, "tunicwilds", false);
-
-export const DELETE: APIRoute = async (context) => thingDeletion(context, "tunicwilds", true);
