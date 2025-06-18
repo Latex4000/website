@@ -1,22 +1,15 @@
 <script lang="ts">
-    const {
-        songData,
-        songList,
-    }: {
-        songData: {
-            audioUrl: string;
-            title: string;
-            game: string;
-            composer: string;
-        };
-        songList: {
-            audioUrl: string;
-            title: string;
-            game: string;
-            composer: string;
-        }[];
-    } = $props();
+    import type { InferSelectModel } from "drizzle-orm";
+    import type { Tunicwild } from "../../database/schema";
 
+    type SongData = Pick<
+        InferSelectModel<typeof Tunicwild>,
+        "composer" | "game" | "title"
+    >;
+
+    const { songList }: { songList: SongData[] } = $props();
+
+    let songData = $state() as SongData & { audioUrl: string };
     let guesses: string[] = $state([]);
     let currentGuess = $state("");
     let gameWon = $state(false);
@@ -47,6 +40,17 @@
         if (currentGuess.trim()) showDropdown = true;
         else showDropdown = false;
     });
+
+    getSongData().then((value) => (songData = value));
+
+    function getSongData(): Promise<SongData & { audioUrl: string }> {
+        const adjustedTimestamp =
+            Date.now() - new Date().getTimezoneOffset() * 60 * 1000;
+
+        return fetch(
+            `/api/tunicwilds/today?timestamp=${adjustedTimestamp}`,
+        ).then((response) => response.json());
+    }
 
     function playClip() {
         if (audioElement && !gameLost && !gameWon) {
@@ -147,154 +151,165 @@
         </p>
     </div>
 
-    <!-- Game Over - Answer Display (Top) -->
-    {#if gameWon || gameLost}
-        <div class="game-over">
-            <div class="answer-display">
-                <h3>"{songData.title}"</h3>
-                <p class="game-name">
-                    from <strong>{songData.game}</strong>
-                </p>
-                <p class="composer">
-                    Composed by {songData.composer}
-                </p>
-            </div>
-
-            {#if gameWon}
-                <div class="result">
-                    <h2 class="win">Nice</h2>
-                    <p>
-                        You guessed it in {guesses.length} attempt{guesses.length !==
-                        1
-                            ? "s"
-                            : ""}!
+    {#if songData == null}
+        <p>Loading today's song...</p>
+    {:else}
+        <!-- Game Over - Answer Display (Top) -->
+        {#if gameWon || gameLost}
+            <div class="game-over">
+                <div class="answer-display">
+                    <h3>"{songData.title}"</h3>
+                    <p class="game-name">
+                        from <strong>{songData.game}</strong>
+                    </p>
+                    <p class="composer">
+                        Composed by {songData.composer}
                     </p>
                 </div>
-            {:else}
-                <div class="result">
-                    <h2 class="lose">😔 Game Over</h2>
-                    <p>Better luck next time!</p>
+
+                {#if gameWon}
+                    <div class="result">
+                        <h2 class="win">Nice</h2>
+                        <p>
+                            You guessed it in {guesses.length} attempt{guesses.length !==
+                            1
+                                ? "s"
+                                : ""}!
+                        </p>
+                    </div>
+                {:else}
+                    <div class="result">
+                        <h2 class="lose">😔 Game Over</h2>
+                        <p>Better luck next time!</p>
+                    </div>
+                {/if}
+
+                <div class="game-over-buttons">
+                    <button onclick={shareResult} class="share-btn">
+                        Share
+                    </button>
                 </div>
-            {/if}
-
-            <div class="game-over-buttons">
-                <button onclick={shareResult} class="share-btn"> Share </button>
-            </div>
-        </div>
-    {/if}
-
-    <!-- Audio Player -->
-    <div class="audio-player">
-        <div class="audio-info">
-            <div class="clip-info">
-                Clip length: {getCurrentClipLength()}s
-            </div>
-            <div class="attempt-info">
-                Attempt {guesses.length + 1} of {maxGuesses}
-            </div>
-        </div>
-
-        <div class="audio-controls">
-            <button
-                onclick={isPlaying ? pauseClip : playClip}
-                disabled={gameWon || gameLost}
-                class="play-btn"
-            >
-                {isPlaying ? "⏸️ Pause" : "▶️ Play"}
-            </button>
-        </div>
-
-        <!-- Game Hint -->
-        {#if showGameHint && !gameWon && !gameLost}
-            <div class="hint">
-                💡 <strong>Hint:</strong> This song is from
-                <strong>{songData.game}</strong>
             </div>
         {/if}
 
-        <!-- Progress bar -->
-        <div class="progress-bar">
-            <div
-                class="progress-fill"
-                style="width: {(guesses.length / maxGuesses) * 100}%"
-            ></div>
-        </div>
-
-        <audio bind:this={audioElement} preload="auto">
-            <source src={songData.audioUrl} type="audio/mp3" />
-        </audio>
-    </div>
-
-    <!-- Guess Input with Autocomplete -->
-    {#if !gameWon && !gameLost}
-        <div class="guess-input dropdown-container">
-            <div class="input-wrapper">
-                <input
-                    type="text"
-                    bind:value={currentGuess}
-                    onfocus={() => currentGuess.trim() && (showDropdown = true)}
-                    placeholder="Start typing a song title..."
-                    disabled={gameWon || gameLost}
-                />
-                <span class="dropdown-arrow">⌄</span>
+        <!-- Audio Player -->
+        <div class="audio-player">
+            <div class="audio-info">
+                <div class="clip-info">
+                    Clip length: {getCurrentClipLength()}s
+                </div>
+                <div class="attempt-info">
+                    Attempt {guesses.length + 1} of {maxGuesses}
+                </div>
             </div>
 
-            <!-- Autocomplete Dropdown -->
-            {#if showDropdown && filteredSongs.length > 0}
-                <div class="dropdown">
-                    {#each filteredSongs as song}
-                        <button
-                            onclick={() => selectSong(song.title)}
-                            class="dropdown-item"
-                        >
-                            <div class="song-title">{song.title}</div>
-                            <div class="song-meta">
-                                {song.game} • {song.composer}
-                            </div>
-                        </button>
-                    {/each}
+            <div class="audio-controls">
+                <button
+                    onclick={isPlaying ? pauseClip : playClip}
+                    disabled={gameWon || gameLost}
+                    class="play-btn"
+                >
+                    {isPlaying ? "⏸️ Pause" : "▶️ Play"}
+                </button>
+            </div>
+
+            <!-- Game Hint -->
+            {#if showGameHint && !gameWon && !gameLost}
+                <div class="hint">
+                    💡 <strong>Hint:</strong> This song is from
+                    <strong>{songData.game}</strong>
                 </div>
             {/if}
 
-            <p class="input-hint">
-                You must select from the autocomplete suggestions
-            </p>
-        </div>
-    {/if}
-
-    <!-- Guesses List -->
-    {#if guesses.length > 0}
-        <div class="guesses-list">
-            <h3>Your Guesses:</h3>
-            <div class="guesses">
-                {#each guesses as guess, index}
-                    {@const isCorrect =
-                        guess.toLowerCase() === songData.title.toLowerCase()}
-                    {@const guessedSong = songList.find(
-                        (song) =>
-                            song.title.toLowerCase() === guess.toLowerCase(),
-                    )}
-
-                    <div
-                        class="guess-item {isCorrect ? 'correct' : 'incorrect'}"
-                    >
-                        <div class="guess-content">
-                            <div>
-                                <div class="guess-title">{guess}</div>
-                                {#if guessedSong}
-                                    <div class="guess-game">
-                                        {guessedSong.game}
-                                    </div>
-                                {/if}
-                            </div>
-                            <span class="clip-duration">
-                                {clipLengths[index]}s clip
-                            </span>
-                        </div>
-                    </div>
-                {/each}
+            <!-- Progress bar -->
+            <div class="progress-bar">
+                <div
+                    class="progress-fill"
+                    style="width: {(guesses.length / maxGuesses) * 100}%"
+                ></div>
             </div>
+
+            <audio bind:this={audioElement} preload="auto">
+                <source src={songData.audioUrl} type="audio/mp3" />
+            </audio>
         </div>
+
+        <!-- Guess Input with Autocomplete -->
+        {#if !gameWon && !gameLost}
+            <div class="guess-input dropdown-container">
+                <div class="input-wrapper">
+                    <input
+                        type="text"
+                        bind:value={currentGuess}
+                        onfocus={() =>
+                            currentGuess.trim() && (showDropdown = true)}
+                        placeholder="Start typing a song title..."
+                        disabled={gameWon || gameLost}
+                    />
+                    <span class="dropdown-arrow">⌄</span>
+                </div>
+
+                <!-- Autocomplete Dropdown -->
+                {#if showDropdown && filteredSongs.length > 0}
+                    <div class="dropdown">
+                        {#each filteredSongs as song}
+                            <button
+                                onclick={() => selectSong(song.title)}
+                                class="dropdown-item"
+                            >
+                                <div class="song-title">{song.title}</div>
+                                <div class="song-meta">
+                                    {song.game} • {song.composer}
+                                </div>
+                            </button>
+                        {/each}
+                    </div>
+                {/if}
+
+                <p class="input-hint">
+                    You must select from the autocomplete suggestions
+                </p>
+            </div>
+        {/if}
+
+        <!-- Guesses List -->
+        {#if guesses.length > 0}
+            <div class="guesses-list">
+                <h3>Your Guesses:</h3>
+                <div class="guesses">
+                    {#each guesses as guess, index}
+                        {@const isCorrect =
+                            guess.toLowerCase() ===
+                            songData.title.toLowerCase()}
+                        {@const guessedSong = songList.find(
+                            (song) =>
+                                song.title.toLowerCase() ===
+                                guess.toLowerCase(),
+                        )}
+
+                        <div
+                            class="guess-item {isCorrect
+                                ? 'correct'
+                                : 'incorrect'}"
+                        >
+                            <div class="guess-content">
+                                <div>
+                                    <div class="guess-title">{guess}</div>
+                                    {#if guessedSong}
+                                        <div class="guess-game">
+                                            {guessedSong.game}
+                                        </div>
+                                    {/if}
+                                </div>
+                                <span class="clip-duration">
+                                    {clipLengths[index]}s clip
+                                </span>
+                            </div>
+                        </div>
+                    {/each}
+                </div>
+            </div>
+        {/if}
     {/if}
 </div>
 
