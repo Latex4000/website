@@ -5,5 +5,5 @@ CREATE TABLE "Tunicwild" (
     "game" text NOT NULL,
     "releaseDate" text NOT NULL,
     "officialLink" text NOT NULL,
-    "extraHint" text NOT NULL,
+    "extraHint" text NOT NULL
 );
