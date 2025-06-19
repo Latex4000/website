@@ -4,7 +4,7 @@
 
     type SongData = Pick<
         InferSelectModel<typeof Tunicwild>,
-        "composer" | "game" | "title" | "officialLink"
+        "composer" | "game" | "id" | "officialLink" | "title"
     >;
 
     const { songList }: { songList: SongData[] } = $props();

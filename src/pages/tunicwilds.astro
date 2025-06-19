@@ -16,8 +16,10 @@ if (
 
 const songList = await db
     .select({
+        id: Tunicwild.id,
         composer: Tunicwild.composer,
         game: Tunicwild.game,
+        officialLink: Tunicwild.officialLink,
         title: Tunicwild.title,
     })
     .from(Tunicwild);
