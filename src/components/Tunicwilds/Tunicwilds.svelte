@@ -147,12 +147,16 @@
             .map((guess) =>
                 !guess
                     ? "🖤"
-                    : guess.title.toLowerCase() === songData.title.toLowerCase()
+                    : guess.title.toLowerCase() ===
+                            songData.title.toLowerCase() &&
+                        guess.game.toLowerCase() === songData.game.toLowerCase()
                       ? "💚"
-                      : guess.title.toLowerCase() ===
-                          songData.game.toLowerCase()
+                      : guess.game.toLowerCase() === songData.game.toLowerCase()
                         ? "💛"
-                        : "❤️",
+                        : guess.title.toLowerCase() ===
+                            songData.title.toLowerCase()
+                          ? "💙"
+                          : "💔",
             )
             .join("");
 
