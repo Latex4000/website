@@ -9,8 +9,8 @@ export const prerender = false;
 declare global {
     interface SessionData {
         tunicwilds?: Record<string, {
-            complete: boolean;
             guesses: (number | null)[];
+            result: boolean | null;
         }>;
     }
 }
@@ -49,8 +49,8 @@ export const GET: APIRoute = async (context) => {
     }
 
     const tunicwildsSession = context.locals.session.data.tunicwilds?.[tunicwildDateString] ?? {
-        complete: false,
         guesses: [],
+        result: null,
     };
     const responseBody: {
         session: Required<SessionData>["tunicwilds"][string];
@@ -62,7 +62,7 @@ export const GET: APIRoute = async (context) => {
         },
     };
 
-    if (tunicwildsSession.complete) {
+    if (tunicwildsSession.result != null) {
         Object.assign(responseBody.tunicwild, tunicwild);
     } else {
         const guessCount = tunicwildsSession.guesses.length;
@@ -122,19 +122,21 @@ export const POST: APIRoute = async (context) => {
     if (tunicwildsSession == null) {
         context.locals.session.data.tunicwilds ??= {};
         tunicwildsSession = context.locals.session.data.tunicwilds[tunicwildDateString] = {
-            complete: false,
             guesses: [],
+            result: null,
         };
     }
 
-    if (tunicwildsSession.complete || tunicwildsSession.guesses.length >= 6) {
+    if (tunicwildsSession.result != null || tunicwildsSession.guesses.length >= 6) {
         return jsonError("Tunicwild has already been completed");
     }
 
     tunicwildsSession.guesses.push(params.guess);
 
-    if (params.guess === tunicwildId || tunicwildsSession.guesses.length >= 6) {
-        tunicwildsSession.complete = true;
+    if (params.guess === tunicwildId) {
+        tunicwildsSession.result = true;
+    } else if (tunicwildsSession.guesses.length >= 6) {
+        tunicwildsSession.result = false;
     }
 
     const url = new URL(context.url);
