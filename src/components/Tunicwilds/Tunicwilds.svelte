@@ -4,10 +4,20 @@
 
     type SongData = Pick<
         InferSelectModel<typeof Tunicwild>,
-        "composer" | "game" | "title"
+        "composer" | "game" | "title" | "officialLink"
     >;
 
     const { songList }: { songList: SongData[] } = $props();
+    const gameGroupedSongList = $derived(
+        songList.reduce(
+            (acc, song) => {
+                if (!acc[song.game]) acc[song.game] = [];
+                acc[song.game]!.push(song);
+                return acc;
+            },
+            {} as Record<string, SongData[]>,
+        ),
+    );
 
     let songData = $state() as SongData & { audioUrl: string };
     let guesses: ({ title: string; game: string } | false)[] = $state([]); // False for skips
@@ -16,6 +26,7 @@
     let gameLost = $state(false);
     let isPlaying = $state(false);
     let showDropdown = $state(false);
+    let showSongList = $state(false);
     // svelte-ignore non_reactive_update
     let audioElement: HTMLAudioElement;
 
@@ -178,6 +189,9 @@
     function handleClickOutside(event: MouseEvent) {
         if (!(event.target as HTMLElement).closest(".dropdown-container"))
             showDropdown = false;
+
+        if (!(event.target as HTMLElement).closest(".song-list-overlay"))
+            showSongList = false;
     }
 </script>
 
@@ -192,6 +206,34 @@
             Song #{new Date().getDate()} • {guesses.length}/{maxGuesses} guesses
         </p>
     </div>
+
+    {#if showSongList}
+        <div class="song-list-overlay">
+            <div class="song-list">
+                <h2>Song List</h2>
+                <button
+                    class="close-btn"
+                    onclick={() => (showSongList = false)}
+                >
+                    Close
+                </button>
+                {#each Object.entries(gameGroupedSongList) as [game, songs]}
+                    <div class="game-section">
+                        <h3>{game}</h3>
+                        <ul>
+                            {#each songs as song}
+                                <li>
+                                    <a href={song.officialLink} target="_blank"
+                                        >{song.composer} - {song.title}</a
+                                    >
+                                </li>
+                            {/each}
+                        </ul>
+                    </div>
+                {/each}
+            </div>
+        </div>
+    {/if}
 
     {#if songData == null}
         <p>Loading today's song...</p>
@@ -381,6 +423,18 @@
 
     .header h1 {
         margin-bottom: 0.5rem;
+    }
+
+    .song-list-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 
     .game-over {
