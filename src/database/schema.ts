@@ -1,6 +1,5 @@
 import { relations, sql } from "drizzle-orm";
 import { sqliteTable, integer, text, customType, uniqueIndex } from "drizzle-orm/sqlite-core";
-import type { SessionData } from "../server/session";
 
 const date = customType<{ data: Date; driverData: string }>({
     dataType: () => "text",
