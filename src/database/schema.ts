@@ -169,5 +169,6 @@ export const Tunicwild = sqliteTable("Tunicwild", {
     title: text().notNull(),
     game: text().notNull(),
     releaseDate: date().notNull(),
+    officialLink: text().notNull(),
     extraHint: text().notNull(),
 });

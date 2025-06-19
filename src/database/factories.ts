@@ -95,5 +95,6 @@ export const TunicwildFactory = defineFactory(Tunicwild, {
     title: () => faker.music.songName(),
     game: () => faker.commerce.productName(),
     releaseDate: () => faker.date.past(),
+    officialLink: () => faker.internet.url(),
     extraHint: () => faker.lorem.sentence(),
 });
