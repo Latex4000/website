@@ -12,6 +12,12 @@ if (!process.env.WORDS_UPLOAD_DIRECTORY) {
     return new Response("WORDS_UPLOAD_DIRECTORY not set", { status: 500 });
 }
 
+const date = new Date(Number.parseInt(Astro.params.timestamp!, 10) * 1000);
+
+if (Number.isNaN(date.getTime())) {
+    return new Response(null, { status: 404 });
+}
+
 const wordResult = await db
     .select({
         word: Word,
@@ -19,15 +25,7 @@ const wordResult = await db
     })
     .from(Word)
     .innerJoin(Member, eq(Word.memberDiscord, Member.discord))
-    .where(
-        and(
-            eq(
-                Word.date,
-                new Date(Number.parseInt(Astro.params.timestamp!, 10) * 1000)
-            ),
-            eq(Word.deleted, false)
-        )
-    )
+    .where(and(eq(Word.date, date), eq(Word.deleted, false)))
     .get();
 
 if (wordResult == null) {
