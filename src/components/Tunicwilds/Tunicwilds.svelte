@@ -10,7 +10,7 @@
     const { songList }: { songList: SongData[] } = $props();
 
     let songData = $state() as SongData & { audioUrl: string };
-    let guesses: string[] = $state([]);
+    let guesses: ({ title: string; game: string } | false)[] = $state([]); // False for skips
     let currentGuess = $state("");
     let gameWon = $state(false);
     let gameLost = $state(false);
@@ -100,6 +100,19 @@
         handleGuess(songTitle);
     }
 
+    function skipGuess() {
+        if (gameWon || gameLost) return;
+
+        guesses = [...guesses, false]; // Add a skip
+        currentGuess = "";
+        showDropdown = false;
+
+        if (guesses.length >= maxGuesses) {
+            gameLost = true;
+            isPlaying = false;
+        }
+    }
+
     function handleGuess(guessedSong = currentGuess) {
         if (!guessedSong.trim() || gameWon || gameLost) return;
 
@@ -110,7 +123,10 @@
 
         if (!validSong) return;
 
-        guesses = [...guesses, validSong.title];
+        guesses = [
+            ...guesses,
+            { title: validSong.title, game: validSong.game },
+        ];
 
         if (validSong.title.toLowerCase() === songData.title.toLowerCase()) {
             gameWon = true;
@@ -129,9 +145,14 @@
         const attempts = gameWon ? guesses.length : "X";
         const squares = guesses
             .map((guess) =>
-                guess.toLowerCase() === songData.title.toLowerCase()
-                    ? "🟩"
-                    : "🟥",
+                !guess
+                    ? "🖤"
+                    : guess.title.toLowerCase() === songData.title.toLowerCase()
+                      ? "💚"
+                      : guess.title.toLowerCase() ===
+                          songData.game.toLowerCase()
+                        ? "💛"
+                        : "❤️",
             )
             .join("");
 
@@ -286,6 +307,15 @@
                 <p class="input-hint">
                     You must select from the autocomplete suggestions
                 </p>
+
+                <!-- Skip -->
+                <button
+                    onclick={skipGuess}
+                    class="skip-btn"
+                    disabled={gameWon || gameLost}
+                >
+                    Skip
+                </button>
             </div>
         {/if}
 
@@ -296,12 +326,14 @@
                 <div class="guesses">
                     {#each guesses as guess, index}
                         {@const isCorrect =
-                            guess.toLowerCase() ===
-                            songData.title.toLowerCase()}
+                            guess &&
+                            guess.title.toLowerCase() ===
+                                songData.title.toLowerCase()}
                         {@const guessedSong = songList.find(
                             (song) =>
-                                song.title.toLowerCase() ===
-                                guess.toLowerCase(),
+                                guess &&
+                                guess.title.toLowerCase() ===
+                                    song.title.toLowerCase(),
                         )}
 
                         <div
