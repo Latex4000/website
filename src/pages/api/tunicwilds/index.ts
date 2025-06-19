@@ -2,7 +2,7 @@ import { LibsqlError } from "@libsql/client";
 import type { APIRoute } from "astro";
 import { and, eq, type InferSelectModel, type SQLWrapper } from "drizzle-orm";
 import { jsonError, jsonResponse } from "../../../server/responses";
-import { createWriteStream, ReadStream } from "fs";
+import { createWriteStream } from "fs";
 import db, { retryIfDbBusy } from "../../../database/db";
 import { Tunicwild } from "../../../database/schema";
 import { paginationQuery, parseNumberCursor } from "../../../server/pagination";
@@ -62,6 +62,7 @@ export const POST: APIRoute = async (context) => {
     const title = formData.get("title");
     const game = formData.get("game");
     const releaseDate = formData.get("releaseDate");
+    const officialLink = formData.get("officialLink");
     const extraHint = formData.get("extraHint");
     const file = formData.get("file") as File;
 
@@ -76,6 +77,9 @@ export const POST: APIRoute = async (context) => {
     }
     if (typeof releaseDate !== "string" || !releaseDate.trim()) {
         return jsonError("Release date is required");
+    }
+    if (typeof officialLink !== "string" || !officialLink.trim()) {
+        return jsonError("Official link is required");
     }
     if (typeof extraHint !== "string") {
         return jsonError("Extra hint is required");
@@ -153,6 +157,7 @@ export const POST: APIRoute = async (context) => {
                     title: title.trim(),
                     game: game.trim(),
                     releaseDate: releaseDateParsed,
+                    officialLink: officialLink.trim(),
                     extraHint: extraHint.trim(),
                 })
                 .returning()
