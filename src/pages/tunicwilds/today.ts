@@ -48,28 +48,35 @@ export const GET: APIRoute = async (context) => {
         throw new Error("Missing daily tunicwild in database");
     }
 
-    const tunicwildsSession = context.locals.session.data.tunicwilds?.[tunicwildDateString];
-    const responseBody: Partial<InferSelectModel<typeof Tunicwild>> & { audioUrl: string } = {
-        audioUrl: getAudioUrl(tunicwild.id, audioLengths[tunicwildsSession?.guesses.length ?? 0] ?? audioLengths[0]),
+    const tunicwildsSession = context.locals.session.data.tunicwilds?.[tunicwildDateString] ?? {
+        complete: false,
+        guesses: [],
+    };
+    const responseBody: {
+        session: Required<SessionData>["tunicwilds"][string];
+        tunicwild: Partial<InferSelectModel<typeof Tunicwild>> & { audioUrl: string };
+    } = {
+        session: tunicwildsSession,
+        tunicwild: {
+            audioUrl: getAudioUrl(tunicwild.id, audioLengths[tunicwildsSession.guesses.length] ?? audioLengths[0]),
+        },
     };
 
-    if (tunicwildsSession != null) {
-        if (tunicwildsSession.complete) {
-            Object.assign(responseBody, tunicwild);
-        } else {
-            const guessCount = tunicwildsSession.guesses.length;
+    if (tunicwildsSession.complete) {
+        Object.assign(responseBody.tunicwild, tunicwild);
+    } else {
+        const guessCount = tunicwildsSession.guesses.length;
 
-            if (guessCount >= 3) {
-                responseBody.releaseDate = tunicwild.releaseDate;
-            }
+        if (guessCount >= 3) {
+            responseBody.tunicwild.releaseDate = tunicwild.releaseDate;
+        }
 
-            if (guessCount >= 4) {
-                responseBody.extraHint = tunicwild.extraHint;
-            }
+        if (guessCount >= 4) {
+            responseBody.tunicwild.extraHint = tunicwild.extraHint;
+        }
 
-            if (guessCount >= 5) {
-                responseBody.game = tunicwild.game;
-            }
+        if (guessCount >= 5) {
+            responseBody.tunicwild.game = tunicwild.game;
         }
     }
 
