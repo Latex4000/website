@@ -10,7 +10,7 @@ declare global {
     interface SessionData {
         tunicwilds?: Record<string, {
             complete: boolean;
-            guesses: number[];
+            guesses: (number | null)[];
         }>;
     }
 }
@@ -74,4 +74,55 @@ export const GET: APIRoute = async (context) => {
     }
 
     return jsonResponse(responseBody);
+};
+
+export const POST: APIRoute = async (context) => {
+    const params = await context.request.json();
+
+    if (
+        typeof params.timestamp !== "number" ||
+        (params.guess != null && typeof params.guess !== "number")
+    ) {
+        return jsonError("Invalid body");
+    }
+
+    const date = new Date(params.timestamp);
+
+    if (Number.isNaN(date.getTime())) {
+        return jsonError("Invalid timestamp");
+    }
+
+    // TODO map from date strings to song IDs
+    const dailyTunicwildIds: Record<string, number> = {};
+
+    const tunicwildDateString = date.toISOString().slice(0, 10);
+    const tunicwildId = dailyTunicwildIds[tunicwildDateString];
+
+    if (tunicwildId == null) {
+        return jsonError("Invalid date. Check if your system clock is set correctly");
+    }
+
+    let tunicwildsSession = context.locals.session.data.tunicwilds?.[tunicwildDateString];
+
+    if (tunicwildsSession == null) {
+        context.locals.session.data.tunicwilds ??= {};
+        tunicwildsSession = context.locals.session.data.tunicwilds[tunicwildDateString] = {
+            complete: false,
+            guesses: [],
+        };
+    }
+
+    if (params.guess === tunicwildId) {
+        tunicwildsSession.complete = true;
+    } else if (params.guess != null && !await db.$count(Tunicwild, eq(Tunicwild.id, params.guess))) {
+        return jsonError("Invalid guess");
+    }
+
+    tunicwildsSession.guesses.push(params.guess);
+
+    const url = new URL(context.url);
+    url.searchParams.set("timestamp", params.timestamp.toString());
+
+    // TODO maybe 302 instead
+    return context.rewrite(url);
 };
