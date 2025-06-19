@@ -109,6 +109,14 @@ export const POST: APIRoute = async (context) => {
         return jsonError("Invalid date. Check if your system clock is set correctly");
     }
 
+    if (
+        params.guess != null &&
+        params.guess !== tunicwildId &&
+        !await db.$count(Tunicwild, eq(Tunicwild.id, params.guess))
+    ) {
+        return jsonError("Invalid guess");
+    }
+
     let tunicwildsSession = context.locals.session.data.tunicwilds?.[tunicwildDateString];
 
     if (tunicwildsSession == null) {
@@ -119,13 +127,11 @@ export const POST: APIRoute = async (context) => {
         };
     }
 
-    if (params.guess === tunicwildId) {
-        tunicwildsSession.complete = true;
-    } else if (params.guess != null && !await db.$count(Tunicwild, eq(Tunicwild.id, params.guess))) {
-        return jsonError("Invalid guess");
-    }
-
     tunicwildsSession.guesses.push(params.guess);
+
+    if (params.guess === tunicwildId || tunicwildsSession.guesses.length >= 6) {
+        tunicwildsSession.complete = true;
+    }
 
     const url = new URL(context.url);
     url.searchParams.set("timestamp", params.timestamp.toString());
