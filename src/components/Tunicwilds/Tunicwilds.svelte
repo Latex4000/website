@@ -22,6 +22,7 @@
     let songData = $state() as SongData & { audioUrl: string };
     let guesses: ({ title: string; game: string } | false)[] = $state([]); // False for skips
     let currentGuess = $state("");
+    let error = $state("");
     let gameWon = $state(false);
     let gameLost = $state(false);
     let isPlaying = $state(false);
@@ -69,7 +70,12 @@
         else showDropdown = false;
     });
 
-    getSongData().then((value) => (songData = value));
+    getSongData()
+        .then((value) => (songData = value))
+        .catch((err) => {
+            console.error("Failed to fetch song data:", err);
+            error = `${err.message}`;
+        });
 
     function getSongData(): Promise<SongData & { audioUrl: string }> {
         const adjustedTimestamp =
@@ -235,7 +241,9 @@
         </div>
     {/if}
 
-    {#if songData == null}
+    {#if error}
+        <p>Error: {error}</p>
+    {:else if songData == null}
         <p>Loading today's song...</p>
     {:else}
         <!-- Game Over - Answer Display (Top) -->
