@@ -127,6 +127,10 @@ export const POST: APIRoute = async (context) => {
         };
     }
 
+    if (tunicwildsSession.complete || tunicwildsSession.guesses.length >= 6) {
+        return jsonError("Tunicwild has already been completed");
+    }
+
     tunicwildsSession.guesses.push(params.guess);
 
     if (params.guess === tunicwildId || tunicwildsSession.guesses.length >= 6) {
