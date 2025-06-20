@@ -77,6 +77,7 @@ async function renderAudio(id: number): Promise<string[]> {
             "-v", "quiet",
             "-t", audioLengths[i]!.toString(),
             "-i", join(process.env.TUNICWILDS_RENDERED_DIRECTORY!, maxAudioLengthFilename),
+            "-c", "copy",
             join(process.env.TUNICWILDS_RENDERED_DIRECTORY!, filenames[i]!),
         ], {
             stdio: "ignore",
