@@ -43,12 +43,8 @@ export const GET: APIRoute = async ({ url }) => {
 }
 
 export const POST: APIRoute = async (context) => {
-    if (
-        import.meta.env.DEV
-            ? !process.env.TUNICWILDS_UPLOAD_DIRECTORY
-            : !process.env.TUNICWILDS_UPLOAD_URL
-    ) {
-        return jsonError("TUNICWILDS env not set", 500);
+    if (!process.env.TUNICWILDS_UPLOAD_URL && !process.env.TUNICWILDS_UPLOAD_DIRECTORY) {
+        return jsonError("TUNICWILDS_UPLOAD_* not set", 500);
     }
 
     let formData: FormData;
@@ -178,7 +174,7 @@ export const POST: APIRoute = async (context) => {
 
     // Upload files with better error handling
     try {
-        if (process.env.NODE_ENV === "development") {
+        if (process.env.TUNICWILDS_UPLOAD_DIRECTORY) {
             const filePath = `${process.env.TUNICWILDS_UPLOAD_DIRECTORY}/${tunicwild.id}`;
 
             const fileStream = file.stream();
@@ -201,7 +197,7 @@ export const POST: APIRoute = async (context) => {
             };
 
             await pump();
-        } else {
+        } else if (process.env.TUNICWILDS_UPLOAD_URL) {
             const uploadResponse = await fetch(
                 `${process.env.TUNICWILDS_UPLOAD_URL}/upload/${tunicwild.id}`,
                 {
@@ -219,6 +215,8 @@ export const POST: APIRoute = async (context) => {
                 await db.delete(Tunicwild).where(eq(Tunicwild.id, tunicwild.id));
                 return jsonError(`Failed to upload file: ${uploadResponse.statusText}`, 500);
             }
+        } else {
+            return jsonError("", 500);
         }
     } catch (error) {
         console.error("File upload error:", error);
