@@ -7,6 +7,8 @@
         "composer" | "game" | "id" | "officialLink" | "title"
     >;
 
+    const date = new Date();
+
     const { songList }: { songList: SongData[] } = $props();
     const gameGroupedSongList = $derived(
         songList.reduce(
@@ -77,13 +79,16 @@
             error = `${err.message}`;
         });
 
-    function getSongData(): Promise<SongData & { audioUrl: string }> {
+    async function getSongData(): Promise<SongData & { audioUrl: string }> {
         const adjustedTimestamp =
-            Date.now() - new Date().getTimezoneOffset() * 60 * 1000;
+            date.getTime() - new Date().getTimezoneOffset() * 60 * 1000;
 
-        return fetch(
-            `/api/tunicwilds/today?timestamp=${adjustedTimestamp}`,
-        ).then((response) => response.json());
+        const res = await fetch(
+            `/tunicwilds/today?timestamp=${adjustedTimestamp}`,
+        ).then((res) => res.json());
+
+        if (res.error) throw new Error(res.error);
+        return res;
     }
 
     function playClip() {
@@ -158,7 +163,6 @@
     }
 
     function shareResult() {
-        const gameNumber = new Date().getDate();
         const attempts = gameWon ? guesses.length : "X";
         const squares = guesses
             .map((guess) =>
@@ -177,7 +181,7 @@
             )
             .join("");
 
-        const shareText = `Tunicwilds #${gameNumber} ${attempts}/${maxGuesses}\n\n${squares}`;
+        const shareText = `Tunicwilds ${date.toLocaleDateString()} ${attempts}/${maxGuesses}\n\n${squares}`;
 
         if (navigator.share) navigator.share({ text: shareText });
         else {
@@ -207,9 +211,9 @@
     <!-- Header -->
     <div class="header">
         <h1>TUNICWILDS</h1>
-        <p class="subtitle">Guess the indie game song</p>
+        <p class="subtitle">Guess the song from the game</p>
         <p class="game-info">
-            Song #{new Date().getDate()} • {guesses.length}/{maxGuesses} guesses
+            {date.toLocaleDateString()} • {guesses.length}/{maxGuesses} guesses
         </p>
     </div>
 
