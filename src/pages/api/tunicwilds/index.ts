@@ -179,9 +179,7 @@ export const POST: APIRoute = async (context) => {
     // Upload files with better error handling
     try {
         if (process.env.NODE_ENV === "development") {
-            // Get file extension properly
-            const extension = fileExtension.substring(1); // Remove the dot
-            const filePath = `${process.env.TUNICWILDS_UPLOAD_DIRECTORY}/${tunicwild.id}.${extension}`;
+            const filePath = `${process.env.TUNICWILDS_UPLOAD_DIRECTORY}/${tunicwild.id}`;
 
             const fileStream = file.stream();
             const writeStream = createWriteStream(filePath);
@@ -205,9 +203,9 @@ export const POST: APIRoute = async (context) => {
             await pump();
         } else {
             const uploadResponse = await fetch(
-                `${process.env.TUNICWILDS_UPLOAD_URL}/upload/${encodeURIComponent(game)}/${encodeURIComponent(title)}`,
+                `${process.env.TUNICWILDS_UPLOAD_URL}/upload/${tunicwild.id}`,
                 {
-                    method: "POST",
+                    method: "PUT",
                     body: file.stream(),
                     headers: {
                         "Content-Type": file.type || "audio/mpeg",
