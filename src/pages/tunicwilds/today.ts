@@ -3,8 +3,13 @@ import { jsonError, jsonResponse } from "../../server/responses";
 import db from "../../database/db";
 import { Tunicwild } from "../../database/schema";
 import { eq, type InferSelectModel } from "drizzle-orm";
+import { readFile } from "node:fs/promises";
 
 export const prerender = false;
+
+if (!process.env.TUNICWILDS_DAILY_FILE) {
+    throw new Error("TUNICWILDS_DAILY_FILE not set");
+}
 
 declare global {
     interface SessionData {
@@ -15,10 +20,14 @@ declare global {
     }
 }
 
-const audioLengths = [1, 2, 4, 8, 16, 32] as const;
-
-function getAudioUrl(id: number, length: (typeof audioLengths)[number]): string {
-    return ""; // TODO
+interface DailyInfo {
+    active: {
+        audioFilenames: string[];
+        date: string;
+        id: number;
+    }[];
+    recentIds: number[];
+    startDate: string;
 }
 
 export const GET: APIRoute = async (context) => {
@@ -28,20 +37,18 @@ export const GET: APIRoute = async (context) => {
         return jsonError("Invalid timestamp");
     }
 
-    // TODO map from date strings to song IDs
-    const dailyTunicwildIds: Record<string, number> = {};
-
+    const dailyInfo: DailyInfo = JSON.parse(await readFile(process.env.TUNICWILDS_DAILY_FILE!, "utf8"));
     const tunicwildDateString = date.toISOString().slice(0, 10);
-    const tunicwildId = dailyTunicwildIds[tunicwildDateString];
+    const tunicwildInfo = dailyInfo.active.find((info) => info.date === tunicwildDateString);
 
-    if (tunicwildId == null) {
+    if (tunicwildInfo == null) {
         return jsonError("Invalid date. Check if your system clock is set correctly");
     }
 
     const tunicwild = await db
         .select()
         .from(Tunicwild)
-        .where(eq(Tunicwild.id, tunicwildId))
+        .where(eq(Tunicwild.id, tunicwildInfo.id))
         .get();
 
     if (tunicwild == null) {
@@ -58,7 +65,7 @@ export const GET: APIRoute = async (context) => {
     } = {
         session: tunicwildsSession,
         tunicwild: {
-            audioUrl: getAudioUrl(tunicwild.id, audioLengths[tunicwildsSession.guesses.length] ?? audioLengths[0]),
+            audioUrl: `/tunicwilds-rendered/${tunicwildInfo.audioFilenames[tunicwildsSession.guesses.length]}`,
         },
     };
 
@@ -99,11 +106,9 @@ export const POST: APIRoute = async (context) => {
         return jsonError("Invalid timestamp");
     }
 
-    // TODO map from date strings to song IDs
-    const dailyTunicwildIds: Record<string, number> = {};
-
+    const dailyInfo: DailyInfo = JSON.parse(await readFile(process.env.TUNICWILDS_DAILY_FILE!, "utf8"));
     const tunicwildDateString = date.toISOString().slice(0, 10);
-    const tunicwildId = dailyTunicwildIds[tunicwildDateString];
+    const tunicwildId = dailyInfo.active.find((info) => info.date === tunicwildDateString)?.id;
 
     if (tunicwildId == null) {
         return jsonError("Invalid date. Check if your system clock is set correctly");
