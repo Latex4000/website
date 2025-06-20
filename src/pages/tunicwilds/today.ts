@@ -144,6 +144,8 @@ export const POST: APIRoute = async (context) => {
         tunicwildsSession.result = false;
     }
 
+    // TODO delete older games from session
+
     const url = new URL(context.url);
     url.searchParams.set("timestamp", params.timestamp.toString());
 
