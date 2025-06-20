@@ -26,6 +26,10 @@ export TUNICWILDS_UPLOAD_URL=
 export WORDS_RUN_AFTER_UPLOAD=
 export WORDS_UPLOAD_DIRECTORY='dev/words'
 
+if test $# -gt 0; then
+    exec "$@"
+fi
+
 # Clean up files from last run
 rm -rf \
     "$database" \
