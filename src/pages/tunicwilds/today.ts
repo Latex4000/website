@@ -149,6 +149,5 @@ export const POST: APIRoute = async (context) => {
     const url = new URL(context.url);
     url.searchParams.set("timestamp", params.timestamp.toString());
 
-    // TODO maybe 302 instead
-    return context.rewrite(url);
+    return context.redirect(url.toString(), 302);
 };
