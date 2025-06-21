@@ -21,9 +21,15 @@
         ),
     );
 
-    let songData = $state() as SongData & { audioUrl: string };
-    let guesses: ({ title: string; game: string } | false)[] = $state([]); // False for skips
-    let currentGuess = $state("");
+    let songData = $state() as {
+        session: Required<SessionData>["tunicwilds"][string];
+        tunicwild: Partial<InferSelectModel<typeof Tunicwild>> & {
+            audioUrl: string;
+        };
+    };
+    let guesses: ({ id: number; title: string; game: string } | false)[] =
+        $state([]); // False for skips
+    let currentGuess = $state({ id: -1, guess: "" });
     let error = $state("");
     let gameWon = $state(false);
     let gameLost = $state(false);
@@ -41,13 +47,15 @@
 
     const filterProperties = ["title", "game", "composer"] as const;
     const filteredSongs = $derived(
-        currentGuess.trim().length >= 2
+        currentGuess.guess.trim()
             ? songList
                   .filter((song) =>
                       filterProperties.some((property) =>
                           song[property]
                               .toLowerCase()
-                              .includes(currentGuess.trim().toLowerCase()),
+                              .includes(
+                                  currentGuess.guess.trim().toLowerCase(),
+                              ),
                       ),
                   )
                   .sort((a, b) => {
@@ -68,7 +76,7 @@
     );
 
     $effect(() => {
-        if (currentGuess.trim()) showDropdown = true;
+        if (currentGuess.guess.trim()) showDropdown = true;
         else showDropdown = false;
     });
 
@@ -79,7 +87,12 @@
             error = `${err.message}`;
         });
 
-    async function getSongData(): Promise<SongData & { audioUrl: string }> {
+    async function getSongData(): Promise<{
+        session: Required<SessionData>["tunicwilds"][string];
+        tunicwild: Partial<InferSelectModel<typeof Tunicwild>> & {
+            audioUrl: string;
+        };
+    }> {
         const adjustedTimestamp =
             date.getTime() - new Date().getTimezoneOffset() * 60 * 1000;
 
@@ -116,7 +129,7 @@
         }
     }
 
-    function selectSong(songTitle: string) {
+    function selectSong(songTitle: { id: number; guess: string }) {
         currentGuess = songTitle;
         showDropdown = false;
         handleGuess(songTitle);
@@ -126,7 +139,7 @@
         if (gameWon || gameLost) return;
 
         guesses = [...guesses, false]; // Add a skip
-        currentGuess = "";
+        currentGuess = { id: -1, guess: "" };
         showDropdown = false;
 
         if (guesses.length >= maxGuesses) {
@@ -136,21 +149,27 @@
     }
 
     function handleGuess(guessedSong = currentGuess) {
-        if (!guessedSong.trim() || gameWon || gameLost) return;
+        if (
+            !guessedSong.guess.trim() ||
+            gameWon ||
+            gameLost ||
+            !songData.tunicwild.title
+        )
+            return;
 
-        const validSong = songList.find(
-            (song) =>
-                song.title.toLowerCase() === guessedSong.toLowerCase().trim(),
-        );
+        const validSong = songList.find((song) => song.id === guessedSong.id);
 
         if (!validSong) return;
 
         guesses = [
             ...guesses,
-            { title: validSong.title, game: validSong.game },
+            { id: validSong.id, title: validSong.title, game: validSong.game },
         ];
 
-        if (validSong.title.toLowerCase() === songData.title.toLowerCase()) {
+        if (
+            validSong.title.toLowerCase() ===
+            songData.tunicwild.title.toLowerCase()
+        ) {
             gameWon = true;
             isPlaying = false;
         } else if (guesses.length >= maxGuesses) {
@@ -158,24 +177,28 @@
             isPlaying = false;
         }
 
-        currentGuess = "";
+        currentGuess = { id: -1, guess: "" };
         showDropdown = false;
     }
 
     function shareResult() {
+        if (!songData.tunicwild.title || !songData.tunicwild.game) return;
+
         const attempts = gameWon ? guesses.length : "X";
         const squares = guesses
             .map((guess) =>
                 !guess
                     ? "🖤"
                     : guess.title.toLowerCase() ===
-                            songData.title.toLowerCase() &&
-                        guess.game.toLowerCase() === songData.game.toLowerCase()
+                            songData.tunicwild.title!.toLowerCase() &&
+                        guess.game.toLowerCase() ===
+                            songData.tunicwild.game!.toLowerCase()
                       ? "💚"
-                      : guess.game.toLowerCase() === songData.game.toLowerCase()
+                      : guess.game.toLowerCase() ===
+                          songData.tunicwild.game!.toLowerCase()
                         ? "💛"
                         : guess.title.toLowerCase() ===
-                            songData.title.toLowerCase()
+                            songData.tunicwild.title!.toLowerCase()
                           ? "💙"
                           : "💔",
             )
@@ -254,12 +277,12 @@
         {#if gameWon || gameLost}
             <div class="game-over">
                 <div class="answer-display">
-                    <h3>"{songData.title}"</h3>
+                    <h3>"{songData.tunicwild.title}"</h3>
                     <p class="game-name">
-                        from <strong>{songData.game}</strong>
+                        from <strong>{songData.tunicwild.game}</strong>
                     </p>
                     <p class="composer">
-                        Composed by {songData.composer}
+                        Composed by {songData.tunicwild.composer}
                     </p>
                 </div>
 
@@ -313,7 +336,7 @@
             {#if showGameHint && !gameWon && !gameLost}
                 <div class="hint">
                     💡 <strong>Hint:</strong> This song is from
-                    <strong>{songData.game}</strong>
+                    <strong>{songData.tunicwild.game}</strong>
                 </div>
             {/if}
 
@@ -326,19 +349,22 @@
             </div>
 
             <audio bind:this={audioElement} preload="auto">
-                <source src={songData.audioUrl} type="audio/mp3" />
+                <source src={songData.tunicwild.audioUrl} type="audio/mp3" />
             </audio>
         </div>
 
         <!-- Guess Input with Autocomplete -->
         {#if !gameWon && !gameLost}
             <div class="guess-input dropdown-container">
+                <p class="input-hint">
+                    You must select from the autocomplete suggestions
+                </p>
                 <div class="input-wrapper">
                     <input
                         type="text"
-                        bind:value={currentGuess}
+                        bind:value={currentGuess.guess}
                         onfocus={() =>
-                            currentGuess.trim() && (showDropdown = true)}
+                            currentGuess.guess.trim() && (showDropdown = true)}
                         placeholder="Start typing a song title..."
                         disabled={gameWon || gameLost}
                     />
@@ -350,7 +376,11 @@
                     <div class="dropdown">
                         {#each filteredSongs as song}
                             <button
-                                onclick={() => selectSong(song.title)}
+                                onclick={() =>
+                                    selectSong({
+                                        id: song.id,
+                                        guess: song.title,
+                                    })}
                                 class="dropdown-item"
                             >
                                 <div class="song-title">{song.title}</div>
@@ -361,10 +391,6 @@
                         {/each}
                     </div>
                 {/if}
-
-                <p class="input-hint">
-                    You must select from the autocomplete suggestions
-                </p>
 
                 <!-- Skip -->
                 <button
@@ -386,7 +412,7 @@
                         {@const isCorrect =
                             guess &&
                             guess.title.toLowerCase() ===
-                                songData.title.toLowerCase()}
+                                songData.tunicwild.title?.toLowerCase()}
                         {@const guessedSong = songList.find(
                             (song) =>
                                 guess &&
