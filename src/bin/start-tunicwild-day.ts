@@ -84,6 +84,16 @@ async function renderAudio(id: number): Promise<string[]> {
         });
     }
 
+    if (process.env.TUNICWILDS_RUN_AFTER_RENDER) {
+        execFileSync(
+            process.env.TUNICWILDS_RUN_AFTER_RENDER,
+            filenames.map(
+                (filename) => join(process.env.TUNICWILDS_RENDERED_DIRECTORY!, filename),
+            ),
+            { stdio: "ignore" },
+        );
+    }
+
     return filenames;
 }
 

@@ -21,6 +21,7 @@ export SOUNDS_RUN_AFTER_UPLOAD=
 export SOUNDS_UPLOAD_DIRECTORY='dev/sounds'
 export TUNICWILDS_DAILY_FILE='dev/tunicwilds-daily.json'
 export TUNICWILDS_RENDERED_DIRECTORY='dev/tunicwilds-rendered'
+export TUNICWILDS_RUN_AFTER_RENDER=
 export TUNICWILDS_UPLOAD_DIRECTORY='dev/tunicwilds'
 export TUNICWILDS_UPLOAD_URL=
 export WORDS_RUN_AFTER_UPLOAD=
