@@ -37,6 +37,8 @@
     let showDropdown = $state(false);
     let showSongList = $state(false);
     let audioElement: HTMLAudioElement | null = $state(null);
+    let currentTime = $state(0);
+    let animationFrameId: number | null = null;
 
     const maxGuesses = 6;
     const clipLengths = [1, 2, 4, 8, 16, 32];
@@ -87,6 +89,52 @@
     $effect(() => {
         if (currentGuess.guess.trim()) showDropdown = true;
         else showDropdown = false;
+    });
+
+    // Unironically just for updating the current time of the audio for the progress bar
+    $effect(() => {
+        if (!audioElement) return;
+
+        const updateProgress = () => {
+            if (audioElement && !audioElement.paused) {
+                currentTime = audioElement.currentTime;
+                animationFrameId = requestAnimationFrame(updateProgress);
+            }
+        };
+
+        const handlePlay = () => {
+            updateProgress();
+        };
+
+        const handlePause = () => {
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+            currentTime = audioElement!.currentTime;
+        };
+
+        const handleLoadedMetadata = () => {
+            currentTime = audioElement!.currentTime;
+        };
+
+        audioElement.addEventListener("play", handlePlay);
+        audioElement.addEventListener("pause", handlePause);
+        audioElement.addEventListener("ended", handlePause);
+        audioElement.addEventListener("loadedmetadata", handleLoadedMetadata);
+
+        return () => {
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+            }
+            audioElement!.removeEventListener("play", handlePlay);
+            audioElement!.removeEventListener("pause", handlePause);
+            audioElement!.removeEventListener("ended", handlePause);
+            audioElement!.removeEventListener(
+                "loadedmetadata",
+                handleLoadedMetadata,
+            );
+        };
     });
 
     getSongData()
@@ -433,9 +481,15 @@
 
             <!-- Progress bar -->
             <div class="progress-bar">
+                {#each clipLengths as length}
+                    <div
+                        class="progress-marker"
+                        style="left: {(length / 32) * 100}%"
+                    ></div>
+                {/each}
                 <div
                     class="progress-fill"
-                    style="width: {(currentGuessCount / maxGuesses) * 100}%"
+                    style="width: {(currentTime / 32) * 100}%"
                 ></div>
             </div>
 
@@ -591,12 +645,21 @@
     }
 
     .progress-bar {
+        position: relative;
         width: 100%;
         height: 0.5rem;
     }
 
+    .progress-marker {
+        position: absolute;
+        width: 0.125rem;
+        height: 0.5rem;
+        background: var(--text-color);
+    }
+
     .progress-fill {
         height: 0.5rem;
+        background: var(--text-color);
     }
 
     .guess-input {
