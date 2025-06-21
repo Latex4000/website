@@ -507,10 +507,6 @@
         text-align: center;
     }
 
-    .header h1 {
-        margin-bottom: 0.5rem;
-    }
-
     .song-list-overlay {
         position: fixed;
         top: 0;
@@ -535,24 +531,17 @@
         margin-bottom: 1rem;
     }
 
-    .answer-display h3 {
-        font-weight: bold;
-        margin-bottom: 0.25rem;
-    }
-
     .game-name {
         margin-bottom: 0.25rem;
     }
 
     .win {
-        font-size: 1.5rem;
         font-weight: bold;
         color: #22c55e;
         margin-bottom: 0.5rem;
     }
 
     .lose {
-        font-size: 1.5rem;
         font-weight: bold;
         color: #ef4444;
         margin-bottom: 0.5rem;
@@ -569,13 +558,8 @@
     }
 
     .share-btn {
-        padding: 0.75rem 1.5rem;
         font-weight: 600;
         cursor: pointer;
-    }
-
-    .audio-player {
-        backdrop-filter: blur(10px);
     }
 
     .audio-info {
@@ -616,7 +600,6 @@
     }
 
     .guess-input {
-        backdrop-filter: blur(10px);
         padding: 1.5rem;
         margin-bottom: 1.5rem;
         position: relative;
@@ -626,12 +609,6 @@
         display: flex;
         align-items: center;
         position: relative;
-    }
-
-    .input-wrapper input {
-        flex: 1;
-        padding: 0.75rem 1rem;
-        outline: none;
     }
 
     .dropdown-arrow {
@@ -664,26 +641,13 @@
         border-bottom: none;
     }
 
-    .song-title {
-        font-weight: 500;
-    }
-
     .input-hint {
-        font-size: 0.75rem;
         margin-top: 0.5rem;
         margin-bottom: 0;
     }
 
     .guesses-list {
-        backdrop-filter: blur(10px);
-        padding: 1.5rem;
         margin-bottom: 1.5rem;
-    }
-
-    .guesses-list h3 {
-        font-size: 1.125rem;
-        font-weight: 600;
-        margin-bottom: 1rem;
     }
 
     .guesses {
@@ -693,7 +657,7 @@
     }
 
     .guess-item {
-        padding: 0.75rem;
+        padding: 0.5rem;
         border: 1px solid;
     }
 
@@ -719,7 +683,7 @@
         align-items: center;
     }
 
-    .guess-title {
-        font-weight: 500;
+    .skip-btn {
+        margin-top: 0.5rem;
     }
 </style>
