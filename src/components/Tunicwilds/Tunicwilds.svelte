@@ -137,6 +137,14 @@
         };
     });
 
+    // Force reload the audio when the URL changes
+    $effect(() => {
+        if (audioElement && songData?.tunicwild.audioUrl) {
+            audioElement.load();
+            currentTime = 0;
+        }
+    });
+
     getSongData()
         .then((value) => (songData = value))
         .catch((err) => {
