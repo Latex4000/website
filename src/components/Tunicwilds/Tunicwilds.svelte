@@ -228,7 +228,15 @@
     }
 
     function playClip() {
-        if (!audioElement || gameLost || gameWon) return;
+        if (!audioElement) return;
+
+        if (gameLost || gameWon) {
+            // no timeout for when the game is over
+            audioElement.currentTime = 0;
+            audioElement.play();
+            isPlaying = true;
+            return;
+        }
 
         const duration =
             clipLengths[currentGuessCount] ||
@@ -459,16 +467,16 @@
 
         <!-- Audio Player -->
         <div class="audio-player">
-            <div class="audio-info">
-                <div class="clip-info">
-                    Clip length: {getCurrentClipLength()}s
-                </div>
-                {#if !gameWon && !gameLost}
+            {#if !gameWon && !gameLost}
+                <div class="audio-info">
+                    <div class="clip-info">
+                        Clip length: {getCurrentClipLength()}s
+                    </div>
                     <div class="attempt-info">
                         Attempt {currentGuessCount + 1} of {maxGuesses}
                     </div>
-                {/if}
-            </div>
+                </div>
+            {/if}
 
             <div class="audio-controls">
                 <button
