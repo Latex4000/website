@@ -264,7 +264,7 @@
             showSongList = false;
     }
 
-    function songFromID(id: number | null): SongData | undefined {
+    function songFromID(id: number | null | undefined): SongData | undefined {
         if (!id) return undefined;
         return songList.find((song) => song.id === id);
     }
@@ -315,6 +315,54 @@
     {:else if songData == null}
         <p>Loading today's song...</p>
     {:else}
+        <!-- Guesses List -->
+        <div class="guesses-list">
+            <h3>Your Guesses:</h3>
+            <div class="guesses">
+                {#each Array(maxGuesses) as _, index}
+                    {@const guessId = guesses[index]}
+                    {@const guessedSong = songFromID(guessId)}
+                    {@const isSkip = guessId === null}
+                    {@const isEmpty = guessId === undefined}
+                    {@const isCorrect =
+                        guessedSong &&
+                        songData.tunicwild.title &&
+                        guessedSong.title.toLowerCase() ===
+                            songData.tunicwild.title.toLowerCase()}
+
+                    <div
+                        class="guess-item {isCorrect
+                            ? 'correct'
+                            : isSkip
+                              ? 'skipped'
+                              : isEmpty
+                                ? 'empty'
+                                : 'incorrect'}"
+                    >
+                        <div class="guess-content">
+                            <div>
+                                <div class="guess-title">
+                                    {isEmpty
+                                        ? "—"
+                                        : isSkip
+                                          ? "Skipped"
+                                          : guessedSong?.title || "Unknown"}
+                                </div>
+                                {#if guessedSong && !isSkip && !isEmpty}
+                                    <div class="guess-game">
+                                        {guessedSong.game}
+                                    </div>
+                                {/if}
+                            </div>
+                            <span class="clip-duration">
+                                {clipLengths[index]}s clip
+                            </span>
+                        </div>
+                    </div>
+                {/each}
+            </div>
+        </div>
+
         <!-- Game Over - Answer Display (Top) -->
         {#if gameWon || gameLost}
             <div class="game-over">
@@ -359,15 +407,16 @@
                 <div class="clip-info">
                     Clip length: {getCurrentClipLength()}s
                 </div>
-                <div class="attempt-info">
-                    Attempt {currentGuessCount + 1} of {maxGuesses}
-                </div>
+                {#if !gameWon && !gameLost}
+                    <div class="attempt-info">
+                        Attempt {currentGuessCount + 1} of {maxGuesses}
+                    </div>
+                {/if}
             </div>
 
             <div class="audio-controls">
                 <button
                     onclick={isPlaying ? pauseClip : playClip}
-                    disabled={gameWon || gameLost}
                     class="play-btn"
                 >
                     {isPlaying ? "⏸️ Pause" : "▶️ Play"}
@@ -375,7 +424,7 @@
             </div>
 
             <!-- Game Hint -->
-            {#if showGameHint}
+            {#if showGameHint && !gameWon && !gameLost}
                 <div class="hint">
                     💡 <strong>Hint:</strong> This song is from
                     <strong>{songData.tunicwild.game}</strong>
@@ -444,64 +493,18 @@
                 </button>
             </div>
         {/if}
-
-        <!-- Guesses List -->
-        {#if guesses.length > 0}
-            <div class="guesses-list">
-                <h3>Your Guesses:</h3>
-                <div class="guesses">
-                    {#each guesses as guessId, index}
-                        {@const guessedSong = songFromID(guessId)}
-                        {@const isSkip = guessId === null}
-                        {@const isCorrect =
-                            guessedSong &&
-                            songData.tunicwild.title &&
-                            guessedSong.title.toLowerCase() ===
-                                songData.tunicwild.title.toLowerCase()}
-
-                        <div
-                            class="guess-item {isCorrect
-                                ? 'correct'
-                                : isSkip
-                                  ? 'skipped'
-                                  : 'incorrect'}"
-                        >
-                            <div class="guess-content">
-                                <div>
-                                    <div class="guess-title">
-                                        {isSkip
-                                            ? "Skipped"
-                                            : guessedSong?.title || "Unknown"}
-                                    </div>
-                                    {#if guessedSong && !isSkip}
-                                        <div class="guess-game">
-                                            {guessedSong.game}
-                                        </div>
-                                    {/if}
-                                </div>
-                                <span class="clip-duration">
-                                    {clipLengths[index]}s clip
-                                </span>
-                            </div>
-                        </div>
-                    {/each}
-                </div>
-            </div>
-        {/if}
     {/if}
 </div>
 
 <style>
     .container {
         min-height: 100vh;
-        padding: 2rem 1rem;
         max-width: 42rem;
         margin: 0 auto;
     }
 
     .header {
         text-align: center;
-        margin-bottom: 2rem;
     }
 
     .header h1 {
@@ -704,9 +707,10 @@
         border-color: #ef4444;
     }
 
-    .guess-item.skipped {
-        background: rgba(107, 114, 128, 0.3);
-        border-color: #6b7280;
+    .guess-item.empty {
+        background: rgba(107, 114, 128, 0.1);
+        border-color: #d1d5db;
+        opacity: 0.5;
     }
 
     .guess-content {
