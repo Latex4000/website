@@ -1,5 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { ActionFactory, ActionItemFactory, MemberFactory, MotionFactory, SightFactory, SoundFactory, TunicwildFactory, WordFactory } from "./factories";
+import { writeFile } from "fs/promises";
 
 export default async function seed() {
     const members = await new MemberFactory().count(20).create();
@@ -45,4 +46,10 @@ export default async function seed() {
     });
 
     await new TunicwildFactory().count(10).create();
+
+    // Create 10 audio files in dev/tunicwilds with placeholder audio
+    const res = await fetch("https://interactive-examples.mdn.mozilla.net/media/cc0-audio/t-rex-roar.mp3")
+        .then((response) => response.bytes());
+    for (let i = 0; i < 10; i++)
+        await writeFile(`dev/tunicwilds/${i + 1}`, res);
 }
