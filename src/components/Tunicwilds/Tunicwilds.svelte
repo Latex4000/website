@@ -21,29 +21,38 @@
         ),
     );
 
+    // server data
     let songData = $state() as {
-        session: Required<SessionData>["tunicwilds"][string];
+        session: {
+            guesses: (number | null)[];
+            result: boolean | null;
+        };
         tunicwild: Partial<InferSelectModel<typeof Tunicwild>> & {
             audioUrl: string;
         };
     };
-    let guesses: ({ id: number; title: string; game: string } | false)[] =
-        $state([]); // False for skips
     let currentGuess = $state({ id: -1, guess: "" });
     let error = $state("");
-    let gameWon = $state(false);
-    let gameLost = $state(false);
     let isPlaying = $state(false);
     let showDropdown = $state(false);
     let showSongList = $state(false);
-    // svelte-ignore non_reactive_update
-    let audioElement: HTMLAudioElement;
+    let audioElement: HTMLAudioElement | null = $state(null);
 
     const maxGuesses = 6;
     const clipLengths = [1, 2, 4, 8, 16, 32];
     const gameHintAfter = 3;
 
-    const showGameHint = $derived(guesses.length >= gameHintAfter && !gameWon);
+    // Stuff derived from server data (songData)
+    const guesses = $derived(songData?.session.guesses || []);
+    const gameWon = $derived(songData?.session.result === true);
+    const gameLost = $derived(songData?.session.result === false);
+    const currentGuessCount = $derived(guesses.length);
+    const showGameHint = $derived(
+        currentGuessCount >= gameHintAfter &&
+            !gameWon &&
+            !gameLost &&
+            songData?.tunicwild.game,
+    );
 
     const filterProperties = ["title", "game", "composer"] as const;
     const filteredSongs = $derived(
@@ -88,7 +97,10 @@
         });
 
     async function getSongData(): Promise<{
-        session: Required<SessionData>["tunicwilds"][string];
+        session: {
+            guesses: (number | null)[];
+            result: boolean | null;
+        };
         tunicwild: Partial<InferSelectModel<typeof Tunicwild>> & {
             audioUrl: string;
         };
@@ -104,104 +116,128 @@
         return res;
     }
 
-    function playClip() {
-        if (audioElement && !gameLost && !gameWon) {
-            const duration =
-                clipLengths[guesses.length] ||
-                clipLengths[clipLengths.length - 1]!;
-            audioElement.currentTime = 0;
-            audioElement.play();
-            isPlaying = true;
+    async function submitGuess(guessId: number | null = null) {
+        if (!songData) return;
 
-            setTimeout(() => {
-                if (audioElement) {
-                    audioElement.pause();
-                    isPlaying = false;
-                }
-            }, duration * 1000);
+        try {
+            const adjustedTimestamp =
+                date.getTime() - new Date().getTimezoneOffset() * 60 * 1000;
+
+            const response = await fetch("/tunicwilds/today", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    timestamp: adjustedTimestamp,
+                    guess: guessId,
+                }),
+            });
+
+            // The response contains the updated data regardless of redirect
+            const updatedData = await response.json();
+            if (updatedData.error) {
+                throw new Error(updatedData.error);
+            }
+            songData = updatedData;
+        } catch (err) {
+            console.error("Failed to submit guess:", err);
+            error = `Failed to submit guess: ${err}`;
         }
     }
 
-    function pauseClip() {
-        if (audioElement) {
-            audioElement.pause();
-            isPlaying = false;
-        }
-    }
-
-    function selectSong(songTitle: { id: number; guess: string }) {
+    async function selectSong(songTitle: { id: number; guess: string }) {
         currentGuess = songTitle;
         showDropdown = false;
-        handleGuess(songTitle);
+        await handleGuess(songTitle);
     }
 
-    function skipGuess() {
+    async function skipGuess() {
         if (gameWon || gameLost) return;
-
-        guesses = [...guesses, false]; // Add a skip
+        await submitGuess(null); // Submit null for skip
         currentGuess = { id: -1, guess: "" };
         showDropdown = false;
-
-        if (guesses.length >= maxGuesses) {
-            gameLost = true;
-            isPlaying = false;
-        }
     }
 
-    function handleGuess(guessedSong = currentGuess) {
-        if (
-            !guessedSong.guess.trim() ||
-            gameWon ||
-            gameLost ||
-            !songData.tunicwild.title
-        )
-            return;
+    async function handleGuess(guessedSong = currentGuess) {
+        if (!guessedSong.guess.trim() || gameWon || gameLost) return;
 
         const validSong = songList.find((song) => song.id === guessedSong.id);
 
         if (!validSong) return;
 
-        guesses = [
-            ...guesses,
-            { id: validSong.id, title: validSong.title, game: validSong.game },
-        ];
-
-        if (
-            validSong.title.toLowerCase() ===
-            songData.tunicwild.title.toLowerCase()
-        ) {
-            gameWon = true;
-            isPlaying = false;
-        } else if (guesses.length >= maxGuesses) {
-            gameLost = true;
-            isPlaying = false;
-        }
-
+        await submitGuess(validSong.id);
         currentGuess = { id: -1, guess: "" };
         showDropdown = false;
     }
 
-    function shareResult() {
-        if (!songData.tunicwild.title || !songData.tunicwild.game) return;
+    function playClip() {
+        if (!audioElement || gameLost || gameWon) return;
 
-        const attempts = gameWon ? guesses.length : "X";
+        const duration =
+            clipLengths[currentGuessCount] ||
+            clipLengths[clipLengths.length - 1]!;
+        audioElement.currentTime = 0;
+        audioElement.play();
+        isPlaying = true;
+
+        setTimeout(() => {
+            if (audioElement) {
+                audioElement.pause();
+                isPlaying = false;
+            }
+        }, duration * 1000);
+    }
+
+    function pauseClip() {
+        if (!audioElement) return;
+        audioElement.pause();
+        isPlaying = false;
+    }
+
+    function shareResult() {
+        if (!songData?.tunicwild.title || !songData?.tunicwild.game) return;
+
+        const attempts = gameWon ? currentGuessCount : "X";
         const squares = guesses
-            .map((guess) =>
-                !guess
-                    ? "🖤"
-                    : guess.title.toLowerCase() ===
-                            songData.tunicwild.title!.toLowerCase() &&
-                        guess.game.toLowerCase() ===
-                            songData.tunicwild.game!.toLowerCase()
-                      ? "💚"
-                      : guess.game.toLowerCase() ===
-                          songData.tunicwild.game!.toLowerCase()
-                        ? "💛"
-                        : guess.title.toLowerCase() ===
-                            songData.tunicwild.title!.toLowerCase()
-                          ? "💙"
-                          : "💔",
-            )
+            .map((guessId) => {
+                if (guessId === null) return "🖤"; // Skip
+
+                const guessedSong = songList.find(
+                    (song) => song.id === guessId,
+                );
+                if (!guessedSong) return "💔";
+
+                const correctSong = songData.tunicwild;
+
+                // Perfect match
+                if (
+                    guessedSong.title.toLowerCase() ===
+                        correctSong.title?.toLowerCase() &&
+                    guessedSong.game.toLowerCase() ===
+                        correctSong.game?.toLowerCase()
+                ) {
+                    return "💚";
+                }
+
+                // Same game
+                if (
+                    guessedSong.game.toLowerCase() ===
+                    correctSong.game?.toLowerCase()
+                ) {
+                    return "💛";
+                }
+
+                // Same title (different game)
+                if (
+                    guessedSong.title.toLowerCase() ===
+                    correctSong.title?.toLowerCase()
+                ) {
+                    return "💙";
+                }
+
+                return "💔"; // Wrong
+            })
             .join("");
 
         const shareText = `Tunicwilds ${date.toLocaleDateString()} ${attempts}/${maxGuesses}\n\n${squares}`;
@@ -213,9 +249,10 @@
         }
     }
 
-    function getCurrentClipLength() {
+    function getCurrentClipLength(): number | undefined {
         return (
-            clipLengths[guesses.length] || clipLengths[clipLengths.length - 1]
+            clipLengths[currentGuessCount] ||
+            clipLengths[clipLengths.length - 1]
         );
     }
 
@@ -225,6 +262,11 @@
 
         if (!(event.target as HTMLElement).closest(".song-list-overlay"))
             showSongList = false;
+    }
+
+    function songFromID(id: number | null): SongData | undefined {
+        if (!id) return undefined;
+        return songList.find((song) => song.id === id);
     }
 </script>
 
@@ -236,7 +278,7 @@
         <h1>TUNICWILDS</h1>
         <p class="subtitle">Guess the song from the game</p>
         <p class="game-info">
-            {date.toLocaleDateString()} • {guesses.length}/{maxGuesses} guesses
+            {date.toLocaleDateString()} • {currentGuessCount}/{maxGuesses} guesses
         </p>
     </div>
 
@@ -290,7 +332,7 @@
                     <div class="result">
                         <h2 class="win">Nice</h2>
                         <p>
-                            You guessed it in {guesses.length} attempt{guesses.length !==
+                            You guessed it in {currentGuessCount} attempt{currentGuessCount !==
                             1
                                 ? "s"
                                 : ""}!
@@ -318,7 +360,7 @@
                     Clip length: {getCurrentClipLength()}s
                 </div>
                 <div class="attempt-info">
-                    Attempt {guesses.length + 1} of {maxGuesses}
+                    Attempt {currentGuessCount + 1} of {maxGuesses}
                 </div>
             </div>
 
@@ -333,7 +375,7 @@
             </div>
 
             <!-- Game Hint -->
-            {#if showGameHint && !gameWon && !gameLost}
+            {#if showGameHint}
                 <div class="hint">
                     💡 <strong>Hint:</strong> This song is from
                     <strong>{songData.tunicwild.game}</strong>
@@ -344,7 +386,7 @@
             <div class="progress-bar">
                 <div
                     class="progress-fill"
-                    style="width: {(guesses.length / maxGuesses) * 100}%"
+                    style="width: {(currentGuessCount / maxGuesses) * 100}%"
                 ></div>
             </div>
 
@@ -408,27 +450,30 @@
             <div class="guesses-list">
                 <h3>Your Guesses:</h3>
                 <div class="guesses">
-                    {#each guesses as guess, index}
+                    {#each guesses as guessId, index}
+                        {@const guessedSong = songFromID(guessId)}
+                        {@const isSkip = guessId === null}
                         {@const isCorrect =
-                            guess &&
-                            guess.title.toLowerCase() ===
-                                songData.tunicwild.title?.toLowerCase()}
-                        {@const guessedSong = songList.find(
-                            (song) =>
-                                guess &&
-                                guess.title.toLowerCase() ===
-                                    song.title.toLowerCase(),
-                        )}
+                            guessedSong &&
+                            songData.tunicwild.title &&
+                            guessedSong.title.toLowerCase() ===
+                                songData.tunicwild.title.toLowerCase()}
 
                         <div
                             class="guess-item {isCorrect
                                 ? 'correct'
-                                : 'incorrect'}"
+                                : isSkip
+                                  ? 'skipped'
+                                  : 'incorrect'}"
                         >
                             <div class="guess-content">
                                 <div>
-                                    <div class="guess-title">{guess}</div>
-                                    {#if guessedSong}
+                                    <div class="guess-title">
+                                        {isSkip
+                                            ? "Skipped"
+                                            : guessedSong?.title || "Unknown"}
+                                    </div>
+                                    {#if guessedSong && !isSkip}
                                         <div class="guess-game">
                                             {guessedSong.game}
                                         </div>
@@ -657,6 +702,11 @@
     .guess-item.incorrect {
         background: rgba(239, 68, 68, 0.3);
         border-color: #ef4444;
+    }
+
+    .guess-item.skipped {
+        background: rgba(107, 114, 128, 0.3);
+        border-color: #6b7280;
     }
 
     .guess-content {
