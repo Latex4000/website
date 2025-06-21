@@ -363,6 +363,44 @@
     {:else if songData == null}
         <p>Loading today's song...</p>
     {:else}
+        <!-- Game Over - Answer Display (Top) -->
+        {#if gameWon || gameLost}
+            <div class="game-over">
+                <div class="answer-display">
+                    <h3>"{songData.tunicwild.title}"</h3>
+                    <p class="game-name">
+                        from <strong>{songData.tunicwild.game}</strong>
+                    </p>
+                    <p class="composer">
+                        Composed by {songData.tunicwild.composer}
+                    </p>
+                </div>
+
+                {#if gameWon}
+                    <div class="result">
+                        <h2 class="win">Nice</h2>
+                        <p>
+                            You guessed it in {currentGuessCount} attempt{currentGuessCount !==
+                            1
+                                ? "s"
+                                : ""}!
+                        </p>
+                    </div>
+                {:else}
+                    <div class="result">
+                        <h2 class="lose">😔 Game Over</h2>
+                        <p>Better luck next time!</p>
+                    </div>
+                {/if}
+
+                <div class="game-over-buttons">
+                    <button onclick={shareResult} class="share-btn">
+                        Share
+                    </button>
+                </div>
+            </div>
+        {/if}
+
         <!-- Guesses List -->
         <div class="guesses-list">
             <h3>Your Guesses:</h3>
@@ -410,44 +448,6 @@
                 {/each}
             </div>
         </div>
-
-        <!-- Game Over - Answer Display (Top) -->
-        {#if gameWon || gameLost}
-            <div class="game-over">
-                <div class="answer-display">
-                    <h3>"{songData.tunicwild.title}"</h3>
-                    <p class="game-name">
-                        from <strong>{songData.tunicwild.game}</strong>
-                    </p>
-                    <p class="composer">
-                        Composed by {songData.tunicwild.composer}
-                    </p>
-                </div>
-
-                {#if gameWon}
-                    <div class="result">
-                        <h2 class="win">Nice</h2>
-                        <p>
-                            You guessed it in {currentGuessCount} attempt{currentGuessCount !==
-                            1
-                                ? "s"
-                                : ""}!
-                        </p>
-                    </div>
-                {:else}
-                    <div class="result">
-                        <h2 class="lose">😔 Game Over</h2>
-                        <p>Better luck next time!</p>
-                    </div>
-                {/if}
-
-                <div class="game-over-buttons">
-                    <button onclick={shareResult} class="share-btn">
-                        Share
-                    </button>
-                </div>
-            </div>
-        {/if}
 
         <!-- Audio Player -->
         <div class="audio-player">
@@ -574,14 +574,11 @@
     }
 
     .game-over {
-        backdrop-filter: blur(10px);
-        padding: 1.5rem;
         text-align: center;
         margin-bottom: 1.5rem;
     }
 
     .answer-display {
-        padding: 1rem;
         margin-bottom: 1rem;
     }
 
@@ -640,7 +637,6 @@
     }
 
     .hint {
-        padding: 0.75rem;
         margin-bottom: 1rem;
     }
 
@@ -694,7 +690,7 @@
     .dropdown-item {
         width: 100%;
         text-align: left;
-        padding: 0.75rem 1rem;
+        padding: 0.5rem 1rem;
         background: none;
         border: none;
         cursor: pointer;
