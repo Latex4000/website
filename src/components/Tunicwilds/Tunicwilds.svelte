@@ -433,13 +433,11 @@
                             songData.tunicwild.title.toLowerCase()}
 
                     <div
-                        class="guess-item {isCorrect
-                            ? 'correct'
-                            : isSkip
-                              ? 'skipped'
-                              : isEmpty
-                                ? 'empty'
-                                : 'incorrect'}"
+                        class="guess-item {{
+                            correct: isCorrect,
+                            incorrect: !isCorrect && !isSkip && !isEmpty,
+                            empty: isEmpty,
+                        }}"
                     >
                         <div class="guess-content">
                             <div>
