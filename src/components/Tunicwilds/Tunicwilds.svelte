@@ -103,10 +103,12 @@
         };
 
         const handlePlay = () => {
+            isPlaying = true;
             updateProgress();
         };
 
         const handlePause = () => {
+            isPlaying = false;
             if (animationFrameId) {
                 cancelAnimationFrame(animationFrameId);
                 animationFrameId = null;
