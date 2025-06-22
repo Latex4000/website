@@ -345,10 +345,8 @@
                     <div class="result">
                         <p class="win">😃 Nice</p>
                         <p>
-                            You guessed it in {currentGuessCount} attempt{currentGuessCount !==
-                            1
-                                ? "s"
-                                : ""}!
+                            You guessed it in {guesses.length}
+                            {guesses.length === 1 ? "try" : "tries"}!
                         </p>
                     </div>
                 {:else}
