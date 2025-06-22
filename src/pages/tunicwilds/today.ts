@@ -65,7 +65,11 @@ export const GET: APIRoute = async (context) => {
     } = {
         session: tunicwildsSession,
         tunicwild: {
-            audioUrl: `/tunicwilds-rendered/${tunicwildInfo.audioFilenames[tunicwildsSession.result != null ? 5 : tunicwildsSession.guesses.length]}`,
+            audioUrl: `/tunicwilds-rendered/${tunicwildInfo.audioFilenames[
+                tunicwildsSession.result != null
+                    ? tunicwildInfo.audioFilenames.length - 1
+                    : tunicwildsSession.guesses.length
+            ]}`,
         },
     };
 
