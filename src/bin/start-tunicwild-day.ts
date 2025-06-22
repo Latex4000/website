@@ -83,6 +83,8 @@ async function renderAudio(id: number): Promise<string[]> {
         "-i", "pipe:",
         "-map", "0:a:0",
         "-map_metadata", "-1",
+        "-c:a", "libmp3lame",
+        "-q:a", "0",
         join(process.env.TUNICWILDS_RENDERED_DIRECTORY!, maxAudioLengthFilename),
     ], {
         input: audioBuffer,
