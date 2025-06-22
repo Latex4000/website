@@ -230,27 +230,9 @@
     function playClip() {
         if (!audioElement) return;
 
-        if (gameLost || gameWon) {
-            // no timeout for when the game is over
-            audioElement.currentTime = 0;
-            audioElement.play();
-            isPlaying = true;
-            return;
-        }
-
-        const duration =
-            clipLengths[currentGuessCount] ||
-            clipLengths[clipLengths.length - 1]!;
         audioElement.currentTime = 0;
         audioElement.play();
         isPlaying = true;
-
-        setTimeout(() => {
-            if (audioElement) {
-                audioElement.pause();
-                isPlaying = false;
-            }
-        }, duration * 1000);
     }
 
     function pauseClip() {
