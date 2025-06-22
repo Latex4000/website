@@ -579,7 +579,11 @@
         top: 50%;
         transform: translate(-50%, -50%);
         padding: 2rem;
-        background: rgba(0, 0, 0, 0.9);
+        background: color-mix(
+            in srgb,
+            var(--background-color) 90%,
+            transparent
+        );
         display: flex;
         justify-content: center;
         align-items: center;
