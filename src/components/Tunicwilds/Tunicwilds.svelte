@@ -388,19 +388,9 @@
         <!-- Game Over - Answer Display (Top) -->
         {#if gameWon || gameLost}
             <div class="game-over">
-                <div class="answer-display">
-                    <h3>"{songData.tunicwild.title}"</h3>
-                    <p class="game-name">
-                        from <strong>{songData.tunicwild.game}</strong>
-                    </p>
-                    <p class="composer">
-                        Composed by {songData.tunicwild.composer}
-                    </p>
-                </div>
-
                 {#if gameWon}
                     <div class="result">
-                        <h2 class="win">Nice</h2>
+                        <p class="win">Nice</p>
                         <p>
                             You guessed it in {currentGuessCount} attempt{currentGuessCount !==
                             1
@@ -410,10 +400,24 @@
                     </div>
                 {:else}
                     <div class="result">
-                        <h2 class="lose">😔 Game Over</h2>
+                        <p class="lose">😔 Game Over</p>
                         <p>Better luck next time!</p>
                     </div>
                 {/if}
+
+                <a
+                    class="answer-display {gameWon ? 'win' : 'lose'}"
+                    href={songData.tunicwild.officialLink}
+                    target="_blank"
+                >
+                    <p>
+                        {songData.tunicwild.composer} - "{songData.tunicwild
+                            .title}"
+                    </p>
+                    <p class="game-name">
+                        Game: <strong>{songData.tunicwild.game}</strong>
+                    </p>
+                </a>
 
                 <div class="game-over-buttons">
                     <button onclick={shareResult} class="share-btn">
@@ -439,27 +443,29 @@
                             songData.tunicwild.title.toLowerCase()}
 
                     <div
-                        class="guess-item {{
-                            correct: isCorrect,
-                            incorrect: !isCorrect && !isSkip && !isEmpty,
-                            empty: isEmpty,
-                        }}"
+                        class="guess-item"
+                        class:correct={isCorrect}
+                        class:incorrect={!isCorrect && !isSkip && !isEmpty}
+                        class:empty={isEmpty}
                     >
                         <div class="guess-content">
-                            <div>
+                            {#if guessedSong}
+                                <a
+                                    class="guess-title"
+                                    href={guessedSong.officialLink}
+                                    target="_blank"
+                                    >{guessedSong.composer} - "{guessedSong.title}"
+                                    ({guessedSong.game})</a
+                                >
+                            {:else}
                                 <div class="guess-title">
                                     {isEmpty
                                         ? "—"
                                         : isSkip
                                           ? "Skipped"
-                                          : guessedSong?.title || "Unknown"}
+                                          : "Unknown"}
                                 </div>
-                                {#if guessedSong && !isSkip && !isEmpty}
-                                    <div class="guess-game">
-                                        {guessedSong.game}
-                                    </div>
-                                {/if}
-                            </div>
+                            {/if}
                             <span class="clip-duration">
                                 {clipLengths[index]}s
                             </span>
@@ -548,9 +554,8 @@
                                     })}
                                 class="dropdown-item"
                             >
-                                <div class="song-title">{song.title}</div>
-                                <div class="song-meta">
-                                    {song.game} • {song.composer}
+                                <div class="song-title">
+                                    {song.composer} - "{song.title}" ({song.game})
                                 </div>
                             </button>
                         {/each}
@@ -596,14 +601,29 @@
     .game-over {
         text-align: center;
         margin-bottom: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
 
     .answer-display {
+        padding: 0.5rem;
         margin-bottom: 1rem;
+        width: max-content;
+        text-decoration: none;
+    }
+
+    .answer-display:hover {
+        text-decoration: underline;
     }
 
     .game-name {
         margin-bottom: 0.25rem;
+    }
+
+    .win,
+    .lose {
+        font-size: 1.25rem;
     }
 
     .win {
@@ -740,12 +760,14 @@
         border: 1px solid;
     }
 
-    .guess-item.correct {
+    .guess-item.correct,
+    .answer-display.win {
         background: rgba(34, 197, 94, 0.3);
         border-color: #22c55e;
     }
 
-    .guess-item.incorrect {
+    .guess-item.incorrect,
+    .answer-display.lose {
         background: rgba(239, 68, 68, 0.3);
         border-color: #ef4444;
     }
