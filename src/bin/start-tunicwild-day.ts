@@ -48,6 +48,7 @@ async function renderAudio(id: number): Promise<string[]> {
         "-v", "quiet",
         "-stats",
         "-i", "pipe:",
+        "-map", "0:a:0",
         "-f", "null",
         "-",
     ], {
