@@ -22,15 +22,7 @@
     );
 
     // server data
-    let songData = $state() as {
-        session: {
-            guesses: (number | null)[];
-            result: boolean | null;
-        };
-        tunicwild: Partial<InferSelectModel<typeof Tunicwild>> & {
-            audioUrl: string;
-        };
-    };
+    let songData = $state() as Awaited<ReturnType<typeof getSongData>>;
     let currentGuess = $state({ id: -1, guess: "" });
     let error = $state("");
     let isPlaying = $state(false);
@@ -155,6 +147,7 @@
         });
 
     async function getSongData(): Promise<{
+        fourFourFiveEnabled: boolean;
         session: {
             guesses: (number | null)[];
             result: boolean | null;
@@ -246,15 +239,37 @@
     function shareResult() {
         if (!songData?.tunicwild.title || !songData?.tunicwild.game) return;
 
+        const emojiSet = songData.fourFourFiveEnabled
+            ? {
+                  skip: ":charles:",
+                  correct: ":onlinecharles:",
+                  correctGame: ":neoyellowcharles:",
+                  correctTitle: ":jamescharles:",
+                  incorrect: ":redcharles:",
+              }
+            : {
+                  skip: "🖤",
+                  correct: "💚",
+                  correctGame: "💛",
+                  correctTitle: "💙",
+                  incorrect: "💔",
+              };
+
         const attempts = gameWon ? currentGuessCount : "X";
         const squares = guesses
             .map((guessId) => {
-                if (guessId === null) return "🖤"; // Skip
+                if (guessId == null) {
+                    return emojiSet.skip;
+                }
 
                 const guessedSong = songList.find(
                     (song) => song.id === guessId,
                 );
-                if (!guessedSong) return "💔";
+
+                // Only possible if the song was deleted and the page was reloaded
+                if (guessedSong == null) {
+                    return emojiSet.incorrect;
+                }
 
                 const correctSong = songData.tunicwild;
 
@@ -265,7 +280,7 @@
                     guessedSong.game.toLowerCase() ===
                         correctSong.game?.toLowerCase()
                 ) {
-                    return "💚";
+                    return emojiSet.correct;
                 }
 
                 // Same game
@@ -273,7 +288,7 @@
                     guessedSong.game.toLowerCase() ===
                     correctSong.game?.toLowerCase()
                 ) {
-                    return "💛";
+                    return emojiSet.correctGame;
                 }
 
                 // Same title (different game)
@@ -281,10 +296,10 @@
                     guessedSong.title.toLowerCase() ===
                     correctSong.title?.toLowerCase()
                 ) {
-                    return "💙";
+                    return emojiSet.correctTitle;
                 }
 
-                return "💔"; // Wrong
+                return emojiSet.incorrect;
             })
             .join("");
 

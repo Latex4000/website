@@ -60,9 +60,11 @@ export const GET: APIRoute = async (context) => {
         result: null,
     };
     const responseBody: {
+        fourFourFiveEnabled: boolean;
         session: Required<SessionData>["tunicwilds"][string];
         tunicwild: Partial<InferSelectModel<typeof Tunicwild>> & { audioUrl: string };
     } = {
+        fourFourFiveEnabled: context.locals.session.data.memberDiscord != null,
         session: tunicwildsSession,
         tunicwild: {
             audioUrl: `/tunicwilds-rendered/${tunicwildInfo.audioFilenames[
