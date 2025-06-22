@@ -61,7 +61,7 @@ async function renderAudio(id: number): Promise<string[]> {
         throw ffmpegStatsResult.error;
     }
 
-    const timeMatch = ffmpegStatsResult.stderr.match(/time=(\d{2,}):(\d{2}):(\d{2}\.\d{2})/);
+    const timeMatch = ffmpegStatsResult.stderr.match(/time=(\d{2,}):(\d{2}):(\d{2}\.\d{2})[^\r]*$/);
 
     if (timeMatch == null) {
         throw new Error(`Unexpected ffmpeg output:\n${ffmpegStatsResult}`);
