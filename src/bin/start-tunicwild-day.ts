@@ -31,7 +31,7 @@ interface DailyInfo {
     startDate: string;
 }
 
-const audioLengths = [1, 2, 4, 8, 16, 32] as const;
+const audioLengths = [0.5, 1, 2, 4, 8, 16] as const;
 
 async function renderAudio(id: number): Promise<string[]> {
     let audioBuffer: NodeJS.ArrayBufferView;

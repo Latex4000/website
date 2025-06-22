@@ -41,7 +41,7 @@
     let animationFrameId: number | null = null;
 
     const maxGuesses = 6;
-    const clipLengths = [1, 2, 4, 8, 16, 32];
+    const clipLengths = [0.5, 1, 2, 4, 8, 16];
     const gameHintAfter = 3;
 
     // Stuff derived from server data (songData)
@@ -455,7 +455,7 @@
                                 {/if}
                             </div>
                             <span class="clip-duration">
-                                {clipLengths[index]}s clip
+                                {clipLengths[index]}s
                             </span>
                         </div>
                     </div>
