@@ -306,7 +306,10 @@
         if (!(event.target as HTMLElement).closest(".dropdown-container"))
             showDropdown = false;
 
-        if (!(event.target as HTMLElement).closest(".song-list-overlay"))
+        if (
+            !(event.target as HTMLElement).closest(".song-list-overlay") &&
+            !(event.target as HTMLElement).closest(".song-list-btn")
+        )
             showSongList = false;
     }
 
@@ -346,13 +349,15 @@
                 </button>
                 {#each Object.entries(gameGroupedSongList) as [game, songs]}
                     <div class="game-section">
-                        <h3>{game}</h3>
+                        <h3>
+                            <a href={songs[0]?.officialLink} target="_blank"
+                                >{game}</a
+                            >
+                        </h3>
                         <ul>
                             {#each songs as song}
                                 <li>
-                                    <a href={song.officialLink} target="_blank"
-                                        >{song.composer} - {song.title}</a
-                                    >
+                                    {song.composer} - {song.title}
                                 </li>
                             {/each}
                         </ul>
@@ -570,11 +575,11 @@
 
     .song-list-overlay {
         position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        padding: 2rem;
+        background: rgba(0, 0, 0, 0.9);
         display: flex;
         justify-content: center;
         align-items: center;
