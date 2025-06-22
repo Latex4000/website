@@ -343,7 +343,7 @@
             <div class="game-over">
                 {#if gameWon}
                     <div class="result">
-                        <p class="win">Nice</p>
+                        <p class="win">😃 Nice</p>
                         <p>
                             You guessed it in {currentGuessCount} attempt{currentGuessCount !==
                             1
