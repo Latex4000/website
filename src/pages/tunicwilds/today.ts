@@ -14,7 +14,10 @@ if (!process.env.TUNICWILDS_DAILY_FILE) {
 declare global {
     interface SessionData {
         tunicwilds?: Record<string, {
-            guesses: (number | null)[];
+            guesses: ({
+                id: number;
+                result: "correct" | "correctGame" | "correctTitle" | "incorrect";
+            } | null)[];
             result: boolean | null;
         }>;
     }
@@ -88,8 +91,15 @@ export const GET: APIRoute = async (context) => {
             responseBody.tunicwild.extraHint = tunicwild.extraHint;
         }
 
-        if (guessCount >= 5) {
+        if (
+            guessCount >= 5 ||
+            tunicwildsSession.guesses.some((guess) => guess?.result === "correctGame")
+        ) {
             responseBody.tunicwild.game = tunicwild.game;
+        }
+
+        if (tunicwildsSession.guesses.some((guess) => guess?.result === "correctTitle")) {
+            responseBody.tunicwild.title = tunicwild.title;
         }
     }
 
@@ -97,7 +107,7 @@ export const GET: APIRoute = async (context) => {
 };
 
 export const POST: APIRoute = async (context) => {
-    const params = await context.request.json();
+    const params: Partial<Record<keyof any, unknown>> = await context.request.json();
 
     if (
         typeof params.timestamp !== "number" ||
@@ -120,14 +130,6 @@ export const POST: APIRoute = async (context) => {
         return jsonError("Invalid date. Check if your system clock is set correctly");
     }
 
-    if (
-        params.guess != null &&
-        params.guess !== tunicwildId &&
-        !await db.$count(Tunicwild, eq(Tunicwild.id, params.guess))
-    ) {
-        return jsonError("Invalid guess");
-    }
-
     let tunicwildsSession = context.locals.session.data.tunicwilds?.[tunicwildDateString];
 
     if (tunicwildsSession == null) {
@@ -142,7 +144,36 @@ export const POST: APIRoute = async (context) => {
         return jsonError("Tunicwild has already been completed");
     }
 
-    tunicwildsSession.guesses.push(params.guess);
+    const tunicwild = await db
+        .select()
+        .from(Tunicwild)
+        .where(eq(Tunicwild.id, tunicwildId))
+        .get();
+
+    if (tunicwild == null) {
+        throw new Error("Missing daily tunicwild in database");
+    }
+
+    const guessedTunicwild = params.guess == null ? null : await db
+        .select()
+        .from(Tunicwild)
+        .where(eq(Tunicwild.id, params.guess))
+        .get();
+
+    if (params.guess != null && guessedTunicwild == null) {
+        return jsonError("Invalid guess");
+    }
+
+    tunicwildsSession.guesses.push(params.guess == null ? null : {
+        id: params.guess,
+        result: params.guess === tunicwildId
+            ? "correct"
+            : guessedTunicwild?.game === tunicwild.game
+                ? "correctGame"
+                : guessedTunicwild?.title === tunicwild.title
+                    ? "correctTitle"
+                    : "incorrect",
+    });
 
     if (params.guess === tunicwildId) {
         tunicwildsSession.result = true;
