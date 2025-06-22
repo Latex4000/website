@@ -148,10 +148,7 @@
 
     async function getSongData(): Promise<{
         fourFourFiveEnabled: boolean;
-        session: {
-            guesses: (number | null)[];
-            result: boolean | null;
-        };
+        session: Required<SessionData>["tunicwilds"][string];
         tunicwild: Partial<InferSelectModel<typeof Tunicwild>> & {
             audioUrl: string;
         };
@@ -257,50 +254,7 @@
 
         const attempts = gameWon ? currentGuessCount : "X";
         const squares = guesses
-            .map((guessId) => {
-                if (guessId == null) {
-                    return emojiSet.skip;
-                }
-
-                const guessedSong = songList.find(
-                    (song) => song.id === guessId,
-                );
-
-                // Only possible if the song was deleted and the page was reloaded
-                if (guessedSong == null) {
-                    return emojiSet.incorrect;
-                }
-
-                const correctSong = songData.tunicwild;
-
-                // Perfect match
-                if (
-                    guessedSong.title.toLowerCase() ===
-                        correctSong.title?.toLowerCase() &&
-                    guessedSong.game.toLowerCase() ===
-                        correctSong.game?.toLowerCase()
-                ) {
-                    return emojiSet.correct;
-                }
-
-                // Same game
-                if (
-                    guessedSong.game.toLowerCase() ===
-                    correctSong.game?.toLowerCase()
-                ) {
-                    return emojiSet.correctGame;
-                }
-
-                // Same title (different game)
-                if (
-                    guessedSong.title.toLowerCase() ===
-                    correctSong.title?.toLowerCase()
-                ) {
-                    return emojiSet.correctTitle;
-                }
-
-                return emojiSet.incorrect;
-            })
+            .map((guess) => emojiSet[guess?.result ?? "skip"])
             .join("");
 
         const shareText = `Tunicwilds ${date.toLocaleDateString()} ${attempts}/${maxGuesses}\n\n${squares}`;
@@ -328,11 +282,6 @@
             !(event.target as HTMLElement).closest(".song-list-btn")
         )
             showSongList = false;
-    }
-
-    function songFromID(id: number | null | undefined): SongData | undefined {
-        if (!id) return undefined;
-        return songList.find((song) => song.id === id);
     }
 </script>
 
@@ -436,45 +385,49 @@
             <h3>Your Guesses:</h3>
             <div class="guesses">
                 {#each Array(maxGuesses) as _, index}
-                    {@const guessId = guesses[index]}
-                    {@const guessedSong = songFromID(guessId)}
-                    {@const isSkip = guessId === null}
-                    {@const isEmpty = guessId === undefined}
-                    {@const isCorrect =
-                        guessedSong &&
-                        songData.tunicwild.title &&
-                        guessedSong.title.toLowerCase() ===
-                            songData.tunicwild.title.toLowerCase()}
+                    {@const guess = guesses[index]}
 
-                    <div
-                        class="guess-item"
-                        class:correct={isCorrect}
-                        class:incorrect={!isCorrect && !isSkip && !isEmpty}
-                        class:empty={isEmpty}
-                    >
-                        <div class="guess-content">
-                            {#if guessedSong}
-                                <a
-                                    class="guess-title"
-                                    href={guessedSong.officialLink}
-                                    target="_blank"
-                                    >{guessedSong.composer} - "{guessedSong.title}"
-                                    ({guessedSong.game})</a
-                                >
-                            {:else}
-                                <div class="guess-title">
-                                    {isEmpty
-                                        ? "—"
-                                        : isSkip
-                                          ? "Skipped"
-                                          : "Unknown"}
-                                </div>
-                            {/if}
-                            <span class="clip-duration">
-                                {clipLengths[index]}s
-                            </span>
+                    {#if guess === undefined}
+                        <div class="guess-item guess-item--empty">
+                            <div class="guess-content">
+                                <div class="guess-title">—</div>
+                                <span class="clip-duration">
+                                    {clipLengths[index]}s
+                                </span>
+                            </div>
                         </div>
-                    </div>
+                    {:else}
+                        {@const guessedSong = songList.find(
+                            (song) => song.id === guess?.id,
+                        )}
+
+                        <div
+                            class={[
+                                "guess-item",
+                                `guess-item--${guess?.result ?? "skip"}`,
+                            ]}
+                        >
+                            <div class="guess-content">
+                                {#if guessedSong != null}
+                                    <a
+                                        class="guess-title"
+                                        href={guessedSong.officialLink}
+                                        >{guessedSong.composer} - "{guessedSong.title}"
+                                        ({guessedSong.game})</a
+                                    >
+                                {:else}
+                                    <div class="guess-title">
+                                        {guess == null
+                                            ? "Skipped"
+                                            : "Song unavailable"}
+                                    </div>
+                                {/if}
+                                <span class="clip-duration">
+                                    {clipLengths[index]}s
+                                </span>
+                            </div>
+                        </div>
+                    {/if}
                 {/each}
             </div>
         </div>
@@ -768,21 +721,36 @@
         border: 1px solid;
     }
 
-    .guess-item.correct,
+    .guess-item--correct,
     .answer-display.win {
         background: rgba(34, 197, 94, 0.3);
-        border-color: #22c55e;
+        border-color: rgb(34, 197, 94);
     }
 
-    .guess-item.incorrect,
+    .guess-item--correctGame {
+        background: rgba(231, 220, 65, 0.3);
+        border-color: rgb(231, 220, 65);
+    }
+
+    .guess-item--correctTitle {
+        background: rgba(65, 131, 231, 0.3);
+        border-color: rgb(65, 131, 231);
+    }
+
+    .guess-item--incorrect,
     .answer-display.lose {
         background: rgba(239, 68, 68, 0.3);
-        border-color: #ef4444;
+        border-color: rgb(239, 68, 68);
     }
 
-    .guess-item.empty {
+    .guess-item--skip {
         background: rgba(107, 114, 128, 0.1);
-        border-color: #d1d5db;
+        border-color: rgb(209, 213, 219);
+    }
+
+    .guess-item--empty {
+        background: rgba(107, 114, 128, 0.1);
+        border-color: rgb(209, 213, 219);
         opacity: 0.5;
     }
 
