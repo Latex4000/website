@@ -144,36 +144,40 @@ export const POST: APIRoute = async (context) => {
         return jsonError("Tunicwild has already been completed");
     }
 
-    const tunicwild = await db
-        .select()
-        .from(Tunicwild)
-        .where(eq(Tunicwild.id, tunicwildId))
-        .get();
+    if (params.guess == null) {
+        tunicwildsSession.guesses.push(null);
+    } else {
+        const tunicwild = await db
+            .select()
+            .from(Tunicwild)
+            .where(eq(Tunicwild.id, tunicwildId))
+            .get();
 
-    if (tunicwild == null) {
-        throw new Error("Missing daily tunicwild in database");
+        if (tunicwild == null) {
+            throw new Error("Missing daily tunicwild in database");
+        }
+
+        const guessedTunicwild = await db
+            .select()
+            .from(Tunicwild)
+            .where(eq(Tunicwild.id, params.guess))
+            .get();
+
+        if (guessedTunicwild == null) {
+            return jsonError("Invalid guess");
+        }
+
+        tunicwildsSession.guesses.push({
+            id: params.guess,
+            result: guessedTunicwild.id === tunicwild.id
+                ? "correct"
+                : guessedTunicwild.game === tunicwild.game
+                    ? "correctGame"
+                    : guessedTunicwild.title === tunicwild.title
+                        ? "correctTitle"
+                        : "incorrect",
+        });
     }
-
-    const guessedTunicwild = params.guess == null ? null : await db
-        .select()
-        .from(Tunicwild)
-        .where(eq(Tunicwild.id, params.guess))
-        .get();
-
-    if (params.guess != null && guessedTunicwild == null) {
-        return jsonError("Invalid guess");
-    }
-
-    tunicwildsSession.guesses.push(params.guess == null ? null : {
-        id: params.guess,
-        result: params.guess === tunicwildId
-            ? "correct"
-            : guessedTunicwild?.game === tunicwild.game
-                ? "correctGame"
-                : guessedTunicwild?.title === tunicwild.title
-                    ? "correctTitle"
-                    : "incorrect",
-    });
 
     if (params.guess === tunicwildId) {
         tunicwildsSession.result = true;
