@@ -22,6 +22,14 @@ export default defineConfig({
         react(),
         vue(),
         mdx(),
+        {
+            name: "latex4000:delete-session-config",
+            hooks: {
+                "astro:config:setup": ({ config }) => {
+                    delete config.session;
+                },
+            },
+        },
     ],
 
     build: {
@@ -34,5 +42,10 @@ export default defineConfig({
 
     security: {
         checkOrigin: false,
+    },
+
+    // This is a dummy session config to make the Node integration skip its own logic related to providing a default session config. It is later deleted from config in the integration above
+    session: {
+        driver: "fs-lite",
     },
 });
