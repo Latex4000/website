@@ -344,6 +344,12 @@
         <p class="game-info">
             {date.toLocaleDateString()} • {currentGuessCount}/{maxGuesses} guesses
         </p>
+        <button
+            class="song-list-btn"
+            onclick={() => (showSongList = !showSongList)}
+        >
+            {showSongList ? "Hide Song List" : "Show Song List"}
+        </button>
     </div>
 
     {#if showSongList}
@@ -498,12 +504,12 @@
                 {#each clipLengths as length}
                     <div
                         class="progress-marker"
-                        style="left: {(length / 32) * 100}%"
+                        style="left: {(length / 16) * 100}%"
                     ></div>
                 {/each}
                 <div
                     class="progress-fill"
-                    style="width: {(currentTime / 32) * 100}%"
+                    style="width: {(currentTime / 16) * 100}%"
                 ></div>
             </div>
 
