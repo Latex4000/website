@@ -386,48 +386,38 @@
             <div class="guesses">
                 {#each Array(maxGuesses) as _, index}
                     {@const guess = guesses[index]}
+                    {@const guessedSong = songList.find(
+                        (song) => song.id === guess?.id,
+                    )}
 
-                    {#if guess === undefined}
-                        <div class="guess-item guess-item--empty">
-                            <div class="guess-content">
-                                <div class="guess-title">—</div>
-                                <span class="clip-duration">
-                                    {clipLengths[index]}s
-                                </span>
-                            </div>
+                    <div
+                        class={[
+                            "guess-item",
+                            `guess-item--${guess === undefined ? "empty" : (guess?.result ?? "skip")}`,
+                        ]}
+                    >
+                        <div class="guess-content">
+                            {#if guessedSong != null}
+                                <a
+                                    class="guess-title"
+                                    href={guessedSong.officialLink}
+                                    >{guessedSong.composer} - "{guessedSong.title}"
+                                    ({guessedSong.game})</a
+                                >
+                            {:else}
+                                <div class="guess-title">
+                                    {guess === undefined
+                                        ? "—"
+                                        : guess == null
+                                          ? "Skipped"
+                                          : "Song unavailable"}
+                                </div>
+                            {/if}
+                            <span class="clip-duration">
+                                {clipLengths[index]}s
+                            </span>
                         </div>
-                    {:else}
-                        {@const guessedSong = songList.find(
-                            (song) => song.id === guess?.id,
-                        )}
-
-                        <div
-                            class={[
-                                "guess-item",
-                                `guess-item--${guess?.result ?? "skip"}`,
-                            ]}
-                        >
-                            <div class="guess-content">
-                                {#if guessedSong != null}
-                                    <a
-                                        class="guess-title"
-                                        href={guessedSong.officialLink}
-                                        >{guessedSong.composer} - "{guessedSong.title}"
-                                        ({guessedSong.game})</a
-                                    >
-                                {:else}
-                                    <div class="guess-title">
-                                        {guess == null
-                                            ? "Skipped"
-                                            : "Song unavailable"}
-                                    </div>
-                                {/if}
-                                <span class="clip-duration">
-                                    {clipLengths[index]}s
-                                </span>
-                            </div>
-                        </div>
-                    {/if}
+                    </div>
                 {/each}
             </div>
         </div>
