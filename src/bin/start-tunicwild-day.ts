@@ -1,4 +1,4 @@
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { readFile, unlink, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
@@ -44,16 +44,32 @@ async function renderAudio(id: number): Promise<string[]> {
         throw new Error();
     }
 
-    const durationSeconds = Number.parseFloat(execFileSync("ffprobe", [
+    const ffmpegStatsResult = spawnSync("ffmpeg", [
         "-v", "quiet",
-        "-show_entries", "format=duration",
-        "-output_format", "csv=p=0",
-        "pipe:",
+        "-stats",
+        "-i", "pipe:",
+        "-f", "null",
+        "-",
     ], {
         encoding: "utf8",
         input: audioBuffer,
-        stdio: ["pipe", "pipe", "ignore"],
-    }));
+        stdio: ["pipe", "ignore", "pipe"],
+    });
+
+    if (ffmpegStatsResult.error != null) {
+        throw ffmpegStatsResult.error;
+    }
+
+    const timeMatch = ffmpegStatsResult.stderr.match(/time=(\d{2,}):(\d{2}):(\d{2}\.\d{2})/);
+
+    if (timeMatch == null) {
+        throw new Error(`Unexpected ffmpeg output:\n${ffmpegStatsResult}`);
+    }
+
+    const durationSeconds =
+        Number.parseInt(timeMatch[1]!, 10) * 60 * 60 +
+        Number.parseInt(timeMatch[2]!, 10) * 60 +
+        Number.parseFloat(timeMatch[3]!);
 
     const filenames = audioLengths.map(() => `${randomBytes(16).toString("hex")}.mp3`);
     const maxAudioLength = audioLengths[audioLengths.length - 1]!;
