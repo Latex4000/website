@@ -201,14 +201,13 @@
     }
 
     async function skipGuess() {
-        if (gameWon || gameLost) return;
         await submitGuess(null); // Submit null for skip
         currentGuess = { id: -1, guess: "" };
         showDropdown = false;
     }
 
     async function handleGuess(guessedSong = currentGuess) {
-        if (!guessedSong.guess.trim() || gameWon || gameLost) return;
+        if (!guessedSong.guess.trim()) return;
 
         const validSong = songList.find((song) => song.id === guessedSong.id);
 
@@ -234,8 +233,6 @@
     }
 
     function shareResult() {
-        if (!songData?.tunicwild.title || !songData?.tunicwild.game) return;
-
         const emojiSet = songData.fourFourFiveEnabled
             ? {
                   skip: ":charles:",
@@ -482,7 +479,6 @@
                         onfocus={() =>
                             currentGuess.guess.trim() && (showDropdown = true)}
                         placeholder="Start typing a song title..."
-                        disabled={gameWon || gameLost}
                     />
                     <span class="dropdown-arrow">⌄</span>
                 </div>
@@ -508,13 +504,7 @@
                 {/if}
 
                 <!-- Skip -->
-                <button
-                    onclick={skipGuess}
-                    class="skip-btn"
-                    disabled={gameWon || gameLost}
-                >
-                    Skip
-                </button>
+                <button onclick={skipGuess} class="skip-btn">Skip</button>
             </div>
         {/if}
     {/if}
