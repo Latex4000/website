@@ -36,17 +36,8 @@
     const clipLengths = [0.5, 1, 2, 4, 8, 16];
     const gameHintAfter = 3;
 
-    // Stuff derived from server data (songData)
-    const guesses = $derived(songData?.session.guesses || []);
-    const gameWon = $derived(songData?.session.result === true);
-    const gameLost = $derived(songData?.session.result === false);
-    const currentGuessCount = $derived(guesses.length);
-    const showGameHint = $derived(
-        currentGuessCount >= gameHintAfter &&
-            !gameWon &&
-            !gameLost &&
-            songData?.tunicwild.game,
-    );
+    const guesses = $derived(songData?.session.guesses ?? []);
+    const result = $derived(songData?.session.result ?? null);
 
     const filterProperties = ["title", "game", "composer"] as const;
     const filteredSongs = $derived(
@@ -249,7 +240,7 @@
                   incorrect: "💔",
               };
 
-        const attempts = gameWon ? currentGuessCount : "X";
+        const attempts = result ? guesses.length : "X";
         const squares = guesses
             .map((guess) => emojiSet[guess?.result ?? "skip"])
             .join("");
@@ -261,13 +252,6 @@
             navigator.clipboard.writeText(shareText);
             alert("Results copied to clipboard!");
         }
-    }
-
-    function getCurrentClipLength(): number | undefined {
-        return (
-            clipLengths[currentGuessCount] ||
-            clipLengths[clipLengths.length - 1]
-        );
     }
 
     function handleClickOutside(event: MouseEvent) {
@@ -290,7 +274,7 @@
         <h1>TUNICWILDS</h1>
         <p class="subtitle">Guess the song from the game</p>
         <p class="game-info">
-            {date.toLocaleDateString()} • {currentGuessCount}/{maxGuesses} guesses
+            {date.toLocaleDateString()} • {guesses.length}/{maxGuesses} guesses
         </p>
         <button
             class="song-list-btn"
@@ -336,9 +320,9 @@
         <p>Loading today's song...</p>
     {:else}
         <!-- Game Over - Answer Display (Top) -->
-        {#if gameWon || gameLost}
+        {#if result != null}
             <div class="game-over">
-                {#if gameWon}
+                {#if result}
                     <div class="result">
                         <p class="win">😃 Nice</p>
                         <p>
@@ -354,7 +338,7 @@
                 {/if}
 
                 <a
-                    class="answer-display {gameWon ? 'win' : 'lose'}"
+                    class="answer-display {result ? 'win' : 'lose'}"
                     href={songData.tunicwild.officialLink}
                     target="_blank"
                 >
@@ -419,13 +403,13 @@
 
         <!-- Audio Player -->
         <div class="audio-player">
-            {#if !gameWon && !gameLost}
+            {#if result == null}
                 <div class="audio-info">
                     <div class="clip-info">
-                        Clip length: {getCurrentClipLength()}s
+                        Clip length: {clipLengths[guesses.length]}s
                     </div>
                     <div class="attempt-info">
-                        Attempt {currentGuessCount + 1} of {maxGuesses}
+                        Attempt {guesses.length + 1} of {maxGuesses}
                     </div>
                 </div>
             {/if}
@@ -440,7 +424,7 @@
             </div>
 
             <!-- Game Hint -->
-            {#if showGameHint && !gameWon && !gameLost}
+            {#if guesses.length >= gameHintAfter && songData.tunicwild.game && result == null}
                 <div class="hint">
                     💡 <strong>Hint:</strong> This song is from
                     <strong>{songData.tunicwild.game}</strong>
@@ -467,7 +451,7 @@
         </div>
 
         <!-- Guess Input with Autocomplete -->
-        {#if !gameWon && !gameLost}
+        {#if result == null}
             <div class="guess-input dropdown-container">
                 <p class="input-hint">
                     You must select from the autocomplete suggestions
