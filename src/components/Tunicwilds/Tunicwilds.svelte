@@ -626,7 +626,7 @@
     }
 
     .hint {
-        margin-bottom: 1rem;
+        margin-block: 0.5em;
     }
 
     .progress-bar {
