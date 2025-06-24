@@ -124,12 +124,14 @@
         }
     });
 
-    getSongData()
-        .then((value) => (songData = value))
-        .catch((err) => {
-            console.error("Failed to fetch song data:", err);
-            error = `${err.message}`;
-        });
+    if (!import.meta.env.SSR) {
+        getSongData()
+            .then((value) => (songData = value))
+            .catch((err) => {
+                console.error("Failed to fetch song data:", err);
+                error = `${err.message}`;
+            });
+    }
 
     async function getSongData(): Promise<{
         fourFourFiveEnabled: boolean;
