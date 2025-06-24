@@ -50,7 +50,9 @@ export default async function seed() {
         memberDiscord: () => faker.helpers.arrayElement(members.map((member) => member.discord)),
     });
 
-    const tunicwilds = await new TunicwildFactory().count(10).create();
+    const tunicwilds = await new TunicwildFactory().count(10).create({
+        memberDiscord: () => faker.helpers.arrayElement(members.map((member) => member.discord)),
+    });
 
     const placeholderAudioResponse = await fetch("https://interactive-examples.mdn.mozilla.net/media/cc0-audio/t-rex-roar.mp3");
     const placeholderAudio = await placeholderAudioResponse.bytes();

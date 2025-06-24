@@ -4,7 +4,7 @@ import { and, eq, type InferSelectModel, type SQLWrapper } from "drizzle-orm";
 import { jsonError, jsonResponse } from "../../../server/responses";
 import { createWriteStream } from "fs";
 import db, { retryIfDbBusy } from "../../../database/db";
-import { Tunicwild } from "../../../database/schema";
+import { Member, Tunicwild } from "../../../database/schema";
 import { paginationQuery, parseNumberCursor } from "../../../server/pagination";
 
 export const prerender = false;
@@ -54,6 +54,7 @@ export const POST: APIRoute = async (context) => {
         return jsonError("Request body must be form data");
     }
 
+    const discord = formData.get("discord");
     const composer = formData.get("composer");
     const title = formData.get("title");
     const game = formData.get("game");
@@ -62,6 +63,9 @@ export const POST: APIRoute = async (context) => {
     const extraHint = formData.get("extraHint");
     const file = formData.get("file") as File;
 
+    if (typeof discord !== "string" || !discord) {
+        return jsonError("Member discord is required");
+    }
     if (typeof composer !== "string" || !composer.trim()) {
         return jsonError("Composer is required");
     }
@@ -114,6 +118,20 @@ export const POST: APIRoute = async (context) => {
         return jsonError("File too large (max 50MB)");
     }
 
+    const member = await db
+        .select()
+        .from(Member)
+        .where(eq(Member.discord, discord))
+        .get();
+
+    if (member == null) {
+        return jsonError("Member does not exist");
+    }
+
+    if (member.deleted) {
+        return jsonError("Member has been deleted");
+    }
+
     // More robust file type checking
     const allowedExtensions = [".ogg", ".opus", ".wav", ".mp3"];
     const allowedMimeTypes = ["audio/ogg", "audio/opus", "audio/wav", "audio/mpeg", "audio/mp3"];
@@ -149,6 +167,7 @@ export const POST: APIRoute = async (context) => {
             db
                 .insert(Tunicwild)
                 .values({
+                    memberDiscord: discord,
                     composer: composer.trim(),
                     title: title.trim(),
                     game: game.trim(),

@@ -83,18 +83,19 @@ export const TicketFactory = defineFactory(Ticket, {
     hash: () => faker.string.alphanumeric(32),
 });
 
-export const WordFactory = defineFactory(Word, {
-    title: () => faker.book.title(),
-    memberDiscord: () => { throw new Error("Not implemented"); },
-    date: unique(() => faker.date.recent()),
-    tags,
-});
-
 export const TunicwildFactory = defineFactory(Tunicwild, {
+    memberDiscord: () => { throw new Error("Not implemented"); },
     composer: () => faker.person.firstName(),
     title: () => faker.music.songName(),
     game: () => faker.commerce.productName(),
     releaseDate: () => faker.date.past(),
     officialLink: () => faker.internet.url(),
     extraHint: () => faker.lorem.sentence(),
+});
+
+export const WordFactory = defineFactory(Word, {
+    title: () => faker.book.title(),
+    memberDiscord: () => { throw new Error("Not implemented"); },
+    date: unique(() => faker.date.recent()),
+    tags,
 });
