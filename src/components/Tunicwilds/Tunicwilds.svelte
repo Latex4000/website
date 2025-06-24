@@ -693,14 +693,37 @@
         border-color: rgb(34, 197, 94);
     }
 
+    .guess-item--correctGame,
+    .guess-item--correctTitle {
+        position: relative;
+    }
+
+    .guess-item--correctGame::after,
+    .guess-item--correctTitle::after {
+        position: absolute;
+        left: -45px;
+        top: -9px;
+        transform: rotate(-10deg);
+    }
+
     .guess-item--correctGame {
         background: rgba(231, 220, 65, 0.3);
         border-color: rgb(231, 220, 65);
     }
 
+    .guess-item--correctGame::after {
+        content: "Game correct!";
+        background-color: rgb(231, 220, 65);
+    }
+
     .guess-item--correctTitle {
         background: rgba(65, 131, 231, 0.3);
         border-color: rgb(65, 131, 231);
+    }
+
+    .guess-item--correctTitle::after {
+        content: "Title correct!";
+        background-color: rgb(65, 131, 231);
     }
 
     .guess-item--incorrect,
