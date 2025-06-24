@@ -549,7 +549,7 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        border: 1px dashed white;
+        border: 1px dashed var(--text-color);
         width: max-content;
         padding: 1rem;
     }
