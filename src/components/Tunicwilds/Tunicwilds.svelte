@@ -323,34 +323,38 @@
             <div class="game-over">
                 <div class="result">
                     {#if result}
-                        <p class="win">😃 Nice</p>
+                        <p class="result-message result-message--win">
+                            😃 Nice
+                        </p>
                         <p>
                             You guessed it in {guesses.length}
                             {guesses.length === 1 ? "try" : "tries"}!
                         </p>
                     {:else}
-                        <p class="lose">😔 Game Over</p>
+                        <p class="result-message result-message--lose">
+                            😔 Game Over
+                        </p>
                         <p>Better luck next time!</p>
                     {/if}
                 </div>
 
                 <a
-                    class="answer-display {result ? 'win' : 'lose'}"
+                    class="answer-display answer-display--{result
+                        ? 'win'
+                        : 'lose'}"
                     href={songData.tunicwild.officialLink}
                     target="_blank"
                 >
-                    <p>
+                    <span>
                         {songData.tunicwild.composer} - "{songData.tunicwild
                             .title}"
-                    </p>
-                    <p class="game-name">
-                        Game: <strong>{songData.tunicwild.game}</strong>
-                    </p>
+                    </span>
+                    <strong>{songData.tunicwild.game}</strong>
                 </a>
 
                 <div class="game-over-buttons">
                     <button onclick={shareResult} class="share-btn">
-                        Share
+                        Share Result
                     </button>
                 </div>
             </div>
@@ -520,45 +524,48 @@
 
     .game-over {
         text-align: center;
-        margin-bottom: 1.5rem;
+        margin: 1.5rem auto;
         display: flex;
         flex-direction: column;
         align-items: center;
+        border: 1px dashed white;
+        width: max-content;
+        padding: 1rem;
     }
 
     .answer-display {
-        padding: 0.5rem;
+        padding: 1rem;
         margin-bottom: 1rem;
-        width: max-content;
         text-decoration: none;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        border: 1px solid;
+        font-size: 1.25rem;
     }
 
     .answer-display:hover {
         text-decoration: underline;
     }
 
-    .game-name {
-        margin-bottom: 0.25rem;
+    .answer-display > strong {
+        font-size: 0.8em;
     }
 
-    .win,
-    .lose {
+    .result-message {
         font-size: 1.25rem;
     }
 
-    .win {
-        font-weight: bold;
+    .result-message--win {
         color: #22c55e;
-        margin-bottom: 0.5rem;
     }
 
-    .lose {
-        font-weight: bold;
+    .result-message--lose {
         color: #ef4444;
-        margin-bottom: 0.5rem;
     }
 
     .result p {
+        margin-top: 0;
         margin-bottom: 1rem;
     }
 
@@ -681,7 +688,7 @@
     }
 
     .guess-item--correct,
-    .answer-display.win {
+    .answer-display--win {
         background: rgba(34, 197, 94, 0.3);
         border-color: rgb(34, 197, 94);
     }
@@ -697,7 +704,7 @@
     }
 
     .guess-item--incorrect,
-    .answer-display.lose {
+    .answer-display--lose {
         background: rgba(239, 68, 68, 0.3);
         border-color: rgb(239, 68, 68);
     }
