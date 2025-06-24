@@ -80,6 +80,7 @@ export const GET: APIRoute = async (context) => {
 
     if (tunicwildsSession.result != null) {
         Object.assign(responseBody.tunicwild, tunicwild);
+        delete responseBody.tunicwild.memberDiscord;
     } else {
         const guessCount = tunicwildsSession.guesses.length;
 
