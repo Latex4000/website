@@ -6,14 +6,6 @@ import { Tunicwild } from "../database/schema";
 
 export const prerender = false;
 
-if (
-    import.meta.env.DEV
-        ? !process.env.TUNICWILDS_UPLOAD_DIRECTORY
-        : !process.env.TUNICWILDS_UPLOAD_URL
-) {
-    return new Response("TUNICWILDS env not set", { status: 500 });
-}
-
 const songList = await db
     .select({
         id: Tunicwild.id,
