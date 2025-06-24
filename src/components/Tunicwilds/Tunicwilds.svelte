@@ -26,9 +26,8 @@
     let currentTime = $state(0);
     let animationFrameId: number | null = null;
 
-    const maxGuesses = 6;
     const clipLengths = [0.5, 1, 2, 4, 8, 16];
-    const gameHintAfter = 3;
+    const maxGuesses = clipLengths.length;
 
     const guesses = $derived(songData?.session.guesses ?? []);
     const result = $derived(songData?.session.result ?? null);
@@ -424,12 +423,34 @@
                 </button>
             </div>
 
-            <!-- Game Hint -->
-            {#if guesses.length >= gameHintAfter && songData.tunicwild.game && result == null}
-                <div class="hint">
-                    💡 <strong>Hint:</strong> This song is from
-                    <strong>{songData.tunicwild.game}</strong>
-                </div>
+            <!-- Hints -->
+            {#if result == null}
+                {#if songData.tunicwild.releaseDate != null}
+                    <div class="hint">
+                        💡 <strong>Hint:</strong> This song was released on
+                        <strong
+                            >{new Date(
+                                songData.tunicwild.releaseDate,
+                            ).toLocaleDateString(undefined, {
+                                timeZone: "UTC",
+                            })}</strong
+                        >
+                    </div>
+                {/if}
+
+                {#if songData.tunicwild.extraHint}
+                    <div class="hint">
+                        💡 <strong>Hint:</strong>
+                        {songData.tunicwild.extraHint}
+                    </div>
+                {/if}
+
+                {#if songData.tunicwild.game != null && !guesses.some((guess) => guess?.result === "correctGame")}
+                    <div class="hint">
+                        💡 <strong>Hint:</strong> This song is from
+                        <strong>{songData.tunicwild.game}</strong>
+                    </div>
+                {/if}
             {/if}
 
             <!-- Progress bar -->
