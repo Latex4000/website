@@ -92,15 +92,8 @@ export const GET: APIRoute = async (context) => {
             responseBody.tunicwild.extraHint = tunicwild.extraHint;
         }
 
-        if (
-            guessCount >= 5 ||
-            tunicwildsSession.guesses.some((guess) => guess?.result === "correctGame")
-        ) {
+        if (guessCount >= 5) {
             responseBody.tunicwild.game = tunicwild.game;
-        }
-
-        if (tunicwildsSession.guesses.some((guess) => guess?.result === "correctTitle")) {
-            responseBody.tunicwild.title = tunicwild.title;
         }
     }
 
