@@ -257,14 +257,24 @@
             showDropdown = false;
 
         if (
-            !(event.target as HTMLElement).closest(".song-list-overlay") &&
-            !(event.target as HTMLElement).closest(".song-list-btn")
-        )
+            showSongList &&
+            event.target instanceof HTMLDivElement &&
+            event.target.classList.contains("song-list-overlay")
+        ) {
+            event.preventDefault();
             showSongList = false;
+        }
+    }
+
+    function handleKeydown(event: KeyboardEvent): void {
+        if (showSongList && event.key === "Escape") {
+            event.preventDefault();
+            showSongList = false;
+        }
     }
 </script>
 
-<svelte:window on:click={handleClickOutside} />
+<svelte:window on:click={handleClickOutside} onkeydown={handleKeydown} />
 
 <div class="container">
     <!-- Header -->
@@ -530,18 +540,21 @@
 
     .song-list-overlay {
         position: fixed;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-        padding: 2rem;
+        inset: 0;
         background: color-mix(
             in srgb,
-            var(--background-color) 90%,
+            var(--background-color) 95%,
             transparent
         );
         display: flex;
         justify-content: center;
         align-items: center;
+        z-index: 1;
+    }
+
+    .song-list {
+        overflow-y: auto;
+        max-height: 100%;
     }
 
     .game-over {
