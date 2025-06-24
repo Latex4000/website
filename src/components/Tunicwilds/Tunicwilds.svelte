@@ -136,8 +136,11 @@
     async function getSongData(): Promise<{
         fourFourFiveEnabled: boolean;
         session: Required<SessionData>["tunicwilds"][string];
-        tunicwild: Partial<InferSelectModel<typeof Tunicwild>> & {
+        tunicwild: Partial<
+            Omit<InferSelectModel<typeof Tunicwild>, "releaseDate">
+        > & {
             audioUrl: string;
+            releaseDate?: string;
         };
     }> {
         const adjustedTimestamp =
