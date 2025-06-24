@@ -1,11 +1,12 @@
+import { join } from "node:path";
 import { LibsqlError } from "@libsql/client";
 import type { APIRoute } from "astro";
 import { and, eq, type InferSelectModel, type SQLWrapper } from "drizzle-orm";
 import { jsonError, jsonResponse } from "../../../server/responses";
-import { createWriteStream } from "fs";
 import db, { retryIfDbBusy } from "../../../database/db";
 import { Member, Tunicwild } from "../../../database/schema";
 import { paginationQuery, parseNumberCursor } from "../../../server/pagination";
+import { writeBlobToFile } from "../../../server/webApi";
 
 export const prerender = false;
 
@@ -194,36 +195,17 @@ export const POST: APIRoute = async (context) => {
     // Upload files with better error handling
     try {
         if (process.env.TUNICWILDS_UPLOAD_DIRECTORY) {
-            const filePath = `${process.env.TUNICWILDS_UPLOAD_DIRECTORY}/${tunicwild.id}`;
-
-            const fileStream = file.stream();
-            const writeStream = createWriteStream(filePath);
-
-            // Convert web stream to node stream properly
-            const reader = fileStream.getReader();
-            const pump = async () => {
-                try {
-                    while (true) {
-                        const { done, value } = await reader.read();
-                        if (done) break;
-                        writeStream.write(Buffer.from(value));
-                    }
-                    writeStream.end();
-                } catch (error) {
-                    writeStream.destroy();
-                    throw error;
-                }
-            };
-
-            await pump();
+            await writeBlobToFile(
+                join(process.env.TUNICWILDS_UPLOAD_DIRECTORY, tunicwild.id.toString()),
+                file,
+            );
         } else if (process.env.TUNICWILDS_UPLOAD_URL) {
             const uploadResponse = await fetch(
                 `${process.env.TUNICWILDS_UPLOAD_URL}/upload/${tunicwild.id}`,
                 {
                     method: "PUT",
-                    body: file.stream(),
+                    body: file,
                     headers: {
-                        "Content-Type": file.type || "audio/mpeg",
                         "Content-Length": file.size.toString(),
                     },
                 }
