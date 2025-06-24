@@ -316,20 +316,18 @@
         <!-- Game Over - Answer Display (Top) -->
         {#if result != null}
             <div class="game-over">
-                {#if result}
-                    <div class="result">
+                <div class="result">
+                    {#if result}
                         <p class="win">😃 Nice</p>
                         <p>
                             You guessed it in {guesses.length}
                             {guesses.length === 1 ? "try" : "tries"}!
                         </p>
-                    </div>
-                {:else}
-                    <div class="result">
+                    {:else}
                         <p class="lose">😔 Game Over</p>
                         <p>Better luck next time!</p>
-                    </div>
-                {/if}
+                    {/if}
+                </div>
 
                 <a
                     class="answer-display {result ? 'win' : 'lose'}"
