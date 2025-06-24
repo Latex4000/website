@@ -432,6 +432,7 @@
                             >{new Date(
                                 songData.tunicwild.releaseDate,
                             ).toLocaleDateString(undefined, {
+                                dateStyle: "long",
                                 timeZone: "UTC",
                             })}</strong
                         >
