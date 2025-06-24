@@ -10,16 +10,10 @@
     const date = new Date();
 
     const { songList }: { songList: SongData[] } = $props();
-    const gameGroupedSongList = $derived(
-        songList.reduce(
-            (acc, song) => {
-                if (!acc[song.game]) acc[song.game] = [];
-                acc[song.game]!.push(song);
-                return acc;
-            },
-            {} as Record<string, SongData[]>,
-        ),
-    );
+    const gameGroupedSongList = Object.groupBy(
+        songList,
+        (song) => song.game,
+    ) as Record<string, SongData[]>;
 
     // server data
     let songData = $state() as Awaited<ReturnType<typeof getSongData>>;
