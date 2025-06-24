@@ -298,7 +298,7 @@
                         <ul>
                             {#each songs as song}
                                 <li>
-                                    {song.composer} - {song.title}
+                                    {song.composer} - "{song.title}"
                                 </li>
                             {/each}
                         </ul>
