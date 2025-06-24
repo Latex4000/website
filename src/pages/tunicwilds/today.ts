@@ -174,7 +174,7 @@ export const POST: APIRoute = async (context) => {
                 ? "correct"
                 : guessedTunicwild.game === tunicwild.game
                     ? "correctGame"
-                    : guessedTunicwild.title === tunicwild.title
+                    : guessedTunicwild.title.toLowerCase() === tunicwild.title.toLowerCase()
                         ? "correctTitle"
                         : "incorrect",
         });
