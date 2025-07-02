@@ -213,9 +213,33 @@ export const POST: APIRoute = async (context) => {
             );
 
             if (!uploadResponse.ok) {
-                // Rollback database entry if file upload fails
-                await db.delete(Tunicwild).where(eq(Tunicwild.id, tunicwild.id));
-                return jsonError(`Failed to upload file: ${uploadResponse.statusText}`, 500);
+                // If timed out, retry a few times
+                if (uploadResponse.status === 408 || uploadResponse.status === 504) {
+                    for (let i = 0; i < 3; i++) {
+                        const retryResponse = await fetch(
+                            `${process.env.TUNICWILDS_UPLOAD_URL}/upload/${tunicwild.id}`,
+                            {
+                                method: "PUT",
+                                body: file,
+                                headers: {
+                                    "Content-Length": file.size.toString(),
+                                },
+                            }
+                        );
+                        if (retryResponse.ok)
+                            break;
+
+                        if (i === 2) {
+                            // Rollback database entry if all retries fail
+                            await db.delete(Tunicwild).where(eq(Tunicwild.id, tunicwild.id));
+                            return jsonError(`Failed to upload file after retries: ${retryResponse.statusText}`, 500);
+                        }
+                    }
+                } else {
+                    // Rollback database entry if file upload fails
+                    await db.delete(Tunicwild).where(eq(Tunicwild.id, tunicwild.id));
+                    return jsonError(`Failed to upload file: ${uploadResponse.statusText}`, 500);
+                }
             }
         } else {
             return jsonError("", 500);
