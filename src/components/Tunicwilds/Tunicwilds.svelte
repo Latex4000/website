@@ -217,6 +217,8 @@
 
     function pauseClip() {
         if (!audioElement) return;
+
+        audioElement.currentTime = 0;
         audioElement.pause();
         isPlaying = false;
     }
@@ -429,7 +431,7 @@
                     onclick={isPlaying ? pauseClip : playClip}
                     class="play-btn"
                 >
-                    {isPlaying ? "⏸️ Pause" : "▶️ Play"}
+                    {isPlaying ? "⏹️ Stop" : "▶️ Play"}
                 </button>
             </div>
 
