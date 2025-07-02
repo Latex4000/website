@@ -17,15 +17,15 @@ export const GET: APIRoute = async ({ url }) => {
 
     const game = params.get("game");
     if (game)
-        conditions.push(eq(Tunicwild.game, game));
+        conditions.push(eq(lower(Tunicwild.game), lower(game)));
 
     const composer = params.get("composer");
     if (composer)
-        conditions.push(eq(Tunicwild.composer, composer));
+        conditions.push(eq(lower(Tunicwild.composer), lower(composer)));
 
     const title = params.get("title");
     if (title)
-        conditions.push(eq(Tunicwild.title, title));
+        conditions.push(eq(lower(Tunicwild.title), lower(title)));
 
     const releaseDate = params.get("releaseDate");
     if (releaseDate) {
