@@ -7,6 +7,7 @@ import db, { retryIfDbBusy } from "../../../database/db";
 import { Member, Tunicwild } from "../../../database/schema";
 import { paginationQuery, parseNumberCursor } from "../../../server/pagination";
 import { writeBlobToFile } from "../../../server/webApi";
+import { lower } from "../../../database/utils";
 
 export const prerender = false;
 
@@ -151,8 +152,8 @@ export const POST: APIRoute = async (context) => {
         .from(Tunicwild)
         .where(
             and(
-                eq(Tunicwild.title, title.trim()),
-                eq(Tunicwild.game, game.trim())
+                eq(lower(Tunicwild.title), lower(title.trim())),
+                eq(lower(Tunicwild.game), lower(game.trim()))
             )
         )
         .get();
