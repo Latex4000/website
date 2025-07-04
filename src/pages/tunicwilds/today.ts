@@ -40,7 +40,13 @@ export const GET: APIRoute = async (context) => {
         return jsonError("Invalid timestamp");
     }
 
-    const dailyInfo: DailyInfo = JSON.parse(await readFile(process.env.TUNICWILDS_DAILY_FILE!, "utf8"));
+    let dailyInfo: DailyInfo;
+    try {
+        dailyInfo = JSON.parse(await readFile(process.env.TUNICWILDS_DAILY_FILE!, "utf8"));
+    } catch (error) {
+        console.error("Failed to read or parse daily tunicwilds file:", error);
+        return jsonError("Failed to read daily tunicwilds file");
+    }
     const tunicwildDateString = date.toISOString().slice(0, 10);
     const tunicwildInfo = dailyInfo.active.find((info) => info.date === tunicwildDateString);
 
