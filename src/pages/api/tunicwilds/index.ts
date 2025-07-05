@@ -62,7 +62,6 @@ export const POST: APIRoute = async (context) => {
     const game = formData.get("game");
     const releaseDate = formData.get("releaseDate");
     const officialLink = formData.get("officialLink");
-    const extraHint = formData.get("extraHint");
     const file = formData.get("file") as File;
 
     if (typeof discord !== "string" || !discord) {
@@ -82,9 +81,6 @@ export const POST: APIRoute = async (context) => {
     }
     if (typeof officialLink !== "string" || !officialLink.trim()) {
         return jsonError("Official link is required");
-    }
-    if (typeof extraHint !== "string") {
-        return jsonError("Extra hint is required");
     }
     if (!(file instanceof File) || file.size === 0) {
         return jsonError("Valid audio file is required");
@@ -109,9 +105,6 @@ export const POST: APIRoute = async (context) => {
     }
     if (game.length > MAX_LENGTH) {
         return jsonError(`Game name too long (max ${MAX_LENGTH} characters)`);
-    }
-    if (extraHint.length > MAX_LENGTH) {
-        return jsonError(`Extra hint too long (max ${MAX_LENGTH} characters)`);
     }
 
     // File validation with size limits
@@ -175,7 +168,6 @@ export const POST: APIRoute = async (context) => {
                     game: game.trim(),
                     releaseDate: releaseDateParsed,
                     officialLink: officialLink.trim(),
-                    extraHint: extraHint.trim(),
                 })
                 .returning()
                 .get()
