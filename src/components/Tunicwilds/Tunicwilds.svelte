@@ -306,15 +306,13 @@
                 </button>
                 {#each Object.entries(gameGroupedSongList) as [game, songs]}
                     <div class="game-section">
-                        <h3>
-                            <a href={songs[0]?.officialLink} target="_blank"
-                                >{game}</a
-                            >
-                        </h3>
+                        <h3>{game}</h3>
                         <ul>
                             {#each songs as song}
                                 <li>
-                                    {song.composer} - "{song.title}"
+                                    <a href={song.officialLink} target="_blank">
+                                        {song.composer} - "{song.title}"
+                                    </a>
                                 </li>
                             {/each}
                         </ul>
