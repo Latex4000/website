@@ -154,7 +154,6 @@ export const Tunicwild = sqliteTable("Tunicwild", {
     game: text().notNull(),
     releaseDate: date().notNull(),
     officialLink: text().notNull(),
-    extraHint: text().notNull(),
 });
 
 export const TunicwildRelations = relations(Tunicwild, ({ one }) => ({

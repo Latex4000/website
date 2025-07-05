@@ -90,7 +90,6 @@ export const TunicwildFactory = defineFactory(Tunicwild, {
     game: () => faker.commerce.productName(),
     releaseDate: () => faker.date.past(),
     officialLink: () => faker.internet.url(),
-    extraHint: () => faker.lorem.sentence(),
 });
 
 export const WordFactory = defineFactory(Word, {

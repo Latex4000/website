@@ -451,13 +451,6 @@
                     </div>
                 {/if}
 
-                {#if songData.tunicwild.extraHint}
-                    <div class="hint">
-                        💡 <strong>Hint:</strong>
-                        {songData.tunicwild.extraHint}
-                    </div>
-                {/if}
-
                 {#if songData.tunicwild.game != null && !guesses.some((guess) => guess?.result === "correctGame")}
                     <div class="hint">
                         💡 <strong>Hint:</strong> This song is from
