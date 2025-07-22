@@ -67,12 +67,19 @@ const sounds = await db
                             )}
                             <span>{sound.date.toLocaleString()}</span>
                         </div>
-                        <AudioPlayer
-                            client:only="react"
-                            src={`/sounds-uploads/${sound.id}/track.${sound.trackType}`}
-                            title={sound.title}
-                            trackType={sound.trackType}
-                        />
+                        <div
+                            class="audio-player-container"
+                            data-title={sound.title}
+                            data-artist="𝙻ΛƬΣX 4000"
+                            data-album=""
+                        >
+                            <AudioPlayer
+                                client:only="react"
+                                src={`/sounds-uploads/${sound.id}/track.${sound.trackType}`}
+                                title={sound.title}
+                                trackType={sound.trackType}
+                            />
+                        </div>
                         <div class="tags">
                             {sound.tags.map((tag) => (
                                 <span>{tag}</span>
