@@ -30,13 +30,14 @@ function timestampHtml(currentTime: number, duration: number | undefined): strin
 }
 
 interface AudioPlayerProps {
+	coverUrl?: string;
 	durationGuess?: number;
 	src: string;
 	title: string;
 	trackType: string;
 }
 
-export function AudioPlayer({ durationGuess, src, title, trackType }: AudioPlayerProps) {
+export function AudioPlayer({ coverUrl, durationGuess, src, title, trackType }: AudioPlayerProps) {
 	// const onBookmarkClick: MouseEventHandler<HTMLButtonElement> = (event) => {
 	// 	event.preventDefault();
 
@@ -59,6 +60,7 @@ export function AudioPlayer({ durationGuess, src, title, trackType }: AudioPlaye
 			className="audio-player js-audio-player"
 			data-audio-src={src}
 			data-audio-title={title}
+			data-audio-cover={coverUrl}
 			style={{ "--duration": durationGuess }}
 		>
 			<button className="audio-player-play js-audio-player-play">{"|>"}</button>
@@ -115,6 +117,8 @@ export function MasterAudioPlayer() {
 		}
 
 		currentPlayer.current.dataset.audioCurrentTime = currentTime.toString();
+		currentPlayer.current.dataset.audioDuration = duration?.toString() ?? "0";
+		currentPlayer.current.dataset.audioActive = "true";
 
 		// currentPlayer.current.style.setProperty("--buffered", buffered.toString());
 		currentPlayer.current.style.setProperty("--current-time", currentTime.toString());
@@ -154,6 +158,11 @@ export function MasterAudioPlayer() {
 		// Stop current audio and sync state of player
 		audio.current.pause();
 		syncCurrentTime();
+
+		// Clear active marker from previous player
+		if (currentPlayer.current != null) {
+			delete currentPlayer.current.dataset.audioActive;
+		}
 
 		// Load new player
 		currentPlayer.current = player;
