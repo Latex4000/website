@@ -197,9 +197,27 @@ export function MasterAudioPlayer() {
 			setShuffle(savedShuffle === 'true');
 		}
 		
-		// TODO from localstorage
-		audio.current.muted = muted;
-		audio.current.volume = volume;
+		const savedMuted = localStorage.getItem('audioPlayerMuted');
+		if (savedMuted !== null) {
+			const mutedValue = savedMuted === 'true';
+			setMuted(mutedValue);
+			audio.current.muted = mutedValue;
+		} else {
+			audio.current.muted = muted;
+		}
+		
+		const savedVolume = localStorage.getItem('audioPlayerVolume');
+		if (savedVolume !== null) {
+			const volumeValue = parseFloat(savedVolume);
+			if (!isNaN(volumeValue) && volumeValue >= 0 && volumeValue <= 1) {
+				setVolume(volumeValue);
+				audio.current.volume = volumeValue;
+			} else {
+				audio.current.volume = volume;
+			}
+		} else {
+			audio.current.volume = volume;
+		}
 	}, []);
 
 	useEffect(() => {
@@ -411,7 +429,9 @@ export function MasterAudioPlayer() {
 	const onMuteClick: MouseEventHandler<HTMLButtonElement> = (event) => {
 		event.preventDefault();
 
-		audio.current.muted = !audio.current.muted;
+		const newMuted = !audio.current.muted;
+		audio.current.muted = newMuted;
+		localStorage.setItem('audioPlayerMuted', newMuted.toString());
 	};
 
 	const onPlayPauseClick: MouseEventHandler<HTMLButtonElement> = (event) => {
@@ -436,7 +456,9 @@ export function MasterAudioPlayer() {
 
 		const step = event.ctrlKey || event.shiftKey ? 0.01 : 0.05;
 
-		audio.current.volume = Math.min(Math.max((event.deltaY < 0 ? 1 : -1) * step + audio.current.volume, 0), 1);
+		const newVolume = Math.min(Math.max((event.deltaY < 0 ? 1 : -1) * step + audio.current.volume, 0), 1);
+		audio.current.volume = newVolume;
+		localStorage.setItem('audioPlayerVolume', newVolume.toString());
 	};
 
 	useEffect(() => {
