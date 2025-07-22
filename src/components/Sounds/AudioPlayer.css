@@ -63,7 +63,9 @@
 .audio-player-download,
 .audio-player-bookmark,
 .audio-player-shuffle,
-.audio-player-play {
+.audio-player-play,
+.audio-player-prev,
+.audio-player-next {
     width: 4ch;
 }
 
@@ -87,4 +89,10 @@
 .audio-player-volume-control-muted {
     color: var(--text-color-alt);
     text-decoration: line-through 2px var(--text-color-alt);
+}
+
+.audio-player-prev:disabled,
+.audio-player-next:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }

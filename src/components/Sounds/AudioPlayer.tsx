@@ -97,6 +97,8 @@ export function MasterAudioPlayer() {
 	const [shuffle, setShuffle] = useState(false);
 	const [title, setTitle] = useState("<no sound playing>");
 	const [volume, setVolume] = useState(0.35);
+	const [playHistory, setPlayHistory] = useState<HTMLDivElement[]>([]);
+	const [historyIndex, setHistoryIndex] = useState(-1);
 
 	const allPlayers = useRef<HTMLDivElement[]>(null);
 	const currentPlayer = useRef<HTMLDivElement>(null);
@@ -187,6 +189,97 @@ export function MasterAudioPlayer() {
 		}, { once: true });
 	};
 
+	const addToHistory = (player: HTMLDivElement) => {
+		setPlayHistory(prev => {
+			const newHistory = [...prev];
+			
+			// If we're not at the end of history, truncate everything after current position
+			setHistoryIndex(currentIndex => {
+				if (currentIndex < newHistory.length - 1) {
+					newHistory.splice(currentIndex + 1);
+				}
+				
+				// Add the new player to history
+				newHistory.push(player);
+				
+				// Keep history trimmed
+				if (newHistory.length > 100) {
+					newHistory.shift();
+					return currentIndex;
+				}
+				
+				return newHistory.length - 1;
+			});
+			
+			return newHistory;
+		});
+	};
+
+	const navigateToTrack = (direction: 'next' | 'prev'): void => {
+		if (!allPlayers.current || !currentPlayer.current) {
+			return;
+		}
+
+		let targetTrack: HTMLDivElement | null = null;
+
+		if (direction === 'next') {
+			// If not at the end, return next from history
+			if (historyIndex >= 0 && historyIndex < playHistory.length - 1) {
+				targetTrack = playHistory[historyIndex + 1]!;
+				setHistoryIndex(prev => prev + 1);
+			} else {
+				const playerIndex = allPlayers.current.findIndex((player) => player === currentPlayer.current);
+				if (playerIndex >= 0) {
+					let nextPlayerIndex = (playerIndex + 1) % allPlayers.current.length;
+
+					if (shuffle) {
+						// Generate random index that's different from current index
+						const legalIndices = allPlayers.current
+							.map((_, index) => index)
+							.filter(index => index !== playerIndex);
+
+						if (legalIndices.length > 0) {
+							nextPlayerIndex = legalIndices[Math.floor(Math.random() * legalIndices.length)]!;
+						}
+					}
+
+					targetTrack = allPlayers.current[nextPlayerIndex]!;
+				} else {
+					// If current player is not found, just return the first player I guess
+					targetTrack = allPlayers.current[0]!;
+				}
+			}
+		} else { // direction === 'prev'
+			// If not at the beginning, go back in history
+			if (historyIndex > 0 && playHistory.length > 1) {
+				targetTrack = playHistory[historyIndex - 1]!;
+				setHistoryIndex(prev => Math.max(0, prev - 1));
+				// Don't add to history when going back
+				loadNewPlayer(targetTrack);
+				return;
+			} else {
+				// If no history or at beginning of history, go to previous track sequentially
+				const playerIndex = allPlayers.current.findIndex((player) => player === currentPlayer.current);
+				if (playerIndex >= 0) {
+					const prevPlayerIndex = playerIndex === 0 
+						? allPlayers.current.length - 1 
+						: playerIndex - 1;
+					targetTrack = allPlayers.current[prevPlayerIndex]!;
+				} else {
+					// If current player is not found, just return the last player I guess
+					targetTrack = allPlayers.current[allPlayers.current.length - 1]!;
+				}
+			}
+		}
+
+		loadPlayerWithHistory(targetTrack);
+	};
+
+	const loadPlayerWithHistory = (player: HTMLDivElement, startTime?: (duration: number) => number): void => {
+		addToHistory(player);
+		loadNewPlayer(player, startTime);
+	};
+
 	useRequestAnimationFrame(syncCurrentTime, playing);
 
 	// Set initial player preferences
@@ -265,7 +358,7 @@ export function MasterAudioPlayer() {
 			}
 
 			// Otherwise, load the new player
-			loadNewPlayer(player);
+			loadPlayerWithHistory(player);
 		};
 
 		const onMouseUp = (event: MouseEvent) => {
@@ -286,6 +379,11 @@ export function MasterAudioPlayer() {
 			const x = event.clientX - targetRect.x;
 			const xRelative = x / targetRect.width;
 
+			// Just fuckin do nothing if no player's found
+			if (!player) {
+				return;
+			}
+
 			// If the player is the current player, set and sync currentTime
 			if (player === currentPlayer.current) {
 				if (Number.isNaN(audio.current.duration) || !Number.isFinite(audio.current.duration)) {
@@ -298,8 +396,8 @@ export function MasterAudioPlayer() {
 			}
 
 			// Otherwise, load the new player starting at requested time
-			loadNewPlayer(
-				player,
+			loadPlayerWithHistory(
+				player as HTMLDivElement,
 				(duration) => Number.isNaN(duration) || !Number.isFinite(duration)
 					? 0
 					: xRelative * duration,
@@ -335,29 +433,7 @@ export function MasterAudioPlayer() {
 			audio.current.currentTime = 0;
 			syncCurrentTime();
 
-			if (allPlayers.current == null) {
-				throw new Error("Invalid players list");
-			}
-
-			const playerIndex = allPlayers.current.findIndex((player) => player === currentPlayer.current);
-
-			if (playerIndex < 0) {
-				throw new Error("Invalid players list");
-			}
-
-			let nextPlayerIndex = (playerIndex + 1) % allPlayers.current.length;
-			if (shuffle) {
-				// Generate random index that's different from current index
-				const legalIndices = allPlayers.current
-					.map((_, index) => index)
-					.filter(index => index !== playerIndex);
-
-				if (legalIndices.length > 0) {
-					nextPlayerIndex = legalIndices[Math.floor(Math.random() * legalIndices.length)]!;
-				}
-			}
-
-			loadNewPlayer(allPlayers.current[nextPlayerIndex]!);
+			navigateToTrack('next');
 		};
 
 		const onPlayAndPause = () => {
@@ -446,6 +522,16 @@ export function MasterAudioPlayer() {
 		localStorage.setItem('audioPlayerShuffle', newShuffle.toString());
 	};
 
+	const onNextTrackClick: MouseEventHandler<HTMLButtonElement> = (event) => {
+		event.preventDefault();
+		navigateToTrack('next');
+	};
+
+	const onPrevTrackClick: MouseEventHandler<HTMLButtonElement> = (event) => {
+		event.preventDefault();
+		navigateToTrack('prev');
+	};
+
 	const onVolumeWheel = (event: WheelEvent) => {
 		event.preventDefault();
 
@@ -478,7 +564,9 @@ export function MasterAudioPlayer() {
 					"--duration": duration,
 				}}
 			>
+				<button onClick={onPrevTrackClick} className="audio-player-prev">⏮</button>
 				<button onClick={onPlayPauseClick}>{playing ? "||" : "|>"}</button>
+				<button onClick={onNextTrackClick} className="audio-player-next">⏭</button>
 				<div className="audio-player-bar" onMouseUp={onBarMouseUp}>
 					{/* <div className="audio-player-bar-fill audio-player-bar-fill-buffered" /> */}
 					<div className="audio-player-bar-fill audio-player-bar-fill-current-time" />
