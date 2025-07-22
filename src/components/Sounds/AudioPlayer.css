@@ -62,8 +62,19 @@
 .audio-player-mute,
 .audio-player-download,
 .audio-player-bookmark,
+.audio-player-shuffle,
 .audio-player-play {
     width: 4ch;
+}
+
+.audio-player-shuffle-active {
+    color: var(--background-color);
+    background-color: var(--text-color);
+}
+
+.audio-player-shuffle-active:hover {
+    color: var(--background-color-alt);
+    background-color: var(--text-color-alt);
 }
 
 .audio-player-volume-control {

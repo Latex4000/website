@@ -94,6 +94,7 @@ export function MasterAudioPlayer() {
 	const [duration, setDuration] = useState<number | undefined>();
 	const [muted, setMuted] = useState(false);
 	const [playing, setPlaying] = useState(false);
+	const [shuffle, setShuffle] = useState(false);
 	const [title, setTitle] = useState("<no sound playing>");
 	const [volume, setVolume] = useState(0.35);
 
@@ -190,6 +191,12 @@ export function MasterAudioPlayer() {
 
 	// Set initial player preferences
 	useEffect(() => {
+		// Load preferences from localStorage
+		const savedShuffle = localStorage.getItem('audioPlayerShuffle');
+		if (savedShuffle !== null) {
+			setShuffle(savedShuffle === 'true');
+		}
+		
 		// TODO from localstorage
 		audio.current.muted = muted;
 		audio.current.volume = volume;
@@ -320,7 +327,24 @@ export function MasterAudioPlayer() {
 				throw new Error("Invalid players list");
 			}
 
-			loadNewPlayer(allPlayers.current[(playerIndex + 1) % allPlayers.current.length]!);
+			let nextPlayerIndex: number;
+			if (shuffle) {
+				// Generate random index that's different from current index
+				const legalIndices = allPlayers.current
+					.map((_, index) => index)
+					.filter(index => index !== playerIndex);
+
+				if (legalIndices.length > 0) {
+					nextPlayerIndex = legalIndices[Math.floor(Math.random() * legalIndices.length)]!;
+				} else {
+					// Fallback to next track if only one track exists
+					nextPlayerIndex = (playerIndex + 1) % allPlayers.current.length;
+				}
+			} else {
+				nextPlayerIndex = (playerIndex + 1) % allPlayers.current.length;
+			}
+
+			loadNewPlayer(allPlayers.current[nextPlayerIndex]!);
 		};
 
 		const onPlayAndPause = () => {
@@ -400,6 +424,13 @@ export function MasterAudioPlayer() {
 		}
 	};
 
+	const onShuffleClick: MouseEventHandler<HTMLButtonElement> = (event) => {
+		event.preventDefault();
+		const newShuffle = !shuffle;
+		setShuffle(newShuffle);
+		localStorage.setItem('audioPlayerShuffle', newShuffle.toString());
+	};
+
 	const onVolumeWheel = (event: WheelEvent) => {
 		event.preventDefault();
 
@@ -439,6 +470,12 @@ export function MasterAudioPlayer() {
 						dangerouslySetInnerHTML={{ __html: timestampHtml(currentTime, duration) }}
 					/>
 				</div>
+				<button 
+					onClick={onShuffleClick} 
+					className={`audio-player-shuffle ${shuffle ? "audio-player-shuffle-active" : ""}`}
+				>
+					⤭
+				</button>
 				<div
 					className={`audio-player-volume-control ${muted ? "audio-player-volume-control-muted" : ""}`}
 					ref={volumeRef}
