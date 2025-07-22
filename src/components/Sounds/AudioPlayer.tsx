@@ -345,7 +345,7 @@ export function MasterAudioPlayer() {
 				throw new Error("Invalid players list");
 			}
 
-			let nextPlayerIndex: number;
+			let nextPlayerIndex = (playerIndex + 1) % allPlayers.current.length;
 			if (shuffle) {
 				// Generate random index that's different from current index
 				const legalIndices = allPlayers.current
@@ -354,12 +354,7 @@ export function MasterAudioPlayer() {
 
 				if (legalIndices.length > 0) {
 					nextPlayerIndex = legalIndices[Math.floor(Math.random() * legalIndices.length)]!;
-				} else {
-					// Fallback to next track if only one track exists
-					nextPlayerIndex = (playerIndex + 1) % allPlayers.current.length;
 				}
-			} else {
-				nextPlayerIndex = (playerIndex + 1) % allPlayers.current.length;
 			}
 
 			loadNewPlayer(allPlayers.current[nextPlayerIndex]!);
@@ -408,7 +403,7 @@ export function MasterAudioPlayer() {
 			// audio.current.removeEventListener("progress", onProgress);
 			audio.current.removeEventListener("volumechange", onVolumeChange);
 		};
-	}, []);
+	}, [shuffle]);
 
 	// UI event handlers
 	const onBarMouseUp: MouseEventHandler<HTMLDivElement> = (event) => {
