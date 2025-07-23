@@ -7,6 +7,12 @@ import { jsonError } from "../../../server/responses";
 
 export const prerender = false;
 
+declare global {
+    interface SessionData {
+        memberDiscord?: string;
+    }
+}
+
 export const POST: APIRoute = async (context) => {
     let formData: FormData;
     try {
