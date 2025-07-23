@@ -73,7 +73,11 @@ const sounds = await db
                                 src={`/sounds-uploads/${sound.id}/track.${sound.trackType}`}
                                 title={sound.title}
                                 trackType={sound.trackType}
-                                coverUrl={`/sounds-uploads/${sound.id}/cover.${sound.coverType}`}
+                                coverUrl={new URL(
+                                    `/sounds-uploads/${sound.id}/cover.${sound.coverType}`,
+                                    Astro.url
+                                ).toString()}
+                                id={sound.id}
                             />
                         </div>
                         <div class="tags">

@@ -30,14 +30,15 @@ function timestampHtml(currentTime: number, duration: number | undefined): strin
 }
 
 interface AudioPlayerProps {
-	coverUrl?: string;
+	coverUrl: string;
 	durationGuess?: number;
+	id: number;
 	src: string;
 	title: string;
 	trackType: string;
 }
 
-export function AudioPlayer({ coverUrl, durationGuess, src, title, trackType }: AudioPlayerProps) {
+export function AudioPlayer({ coverUrl, durationGuess, id, src, title, trackType }: AudioPlayerProps) {
 	// const onBookmarkClick: MouseEventHandler<HTMLButtonElement> = (event) => {
 	// 	event.preventDefault();
 
@@ -58,9 +59,10 @@ export function AudioPlayer({ coverUrl, durationGuess, src, title, trackType }: 
 	return (
 		<div
 			className="audio-player js-audio-player"
+			data-audio-cover-url={coverUrl}
+			data-audio-id={id}
 			data-audio-src={src}
 			data-audio-title={title}
-			data-audio-cover={coverUrl}
 			style={{ "--duration": durationGuess }}
 		>
 			<button className="audio-player-play js-audio-player-play">{"|>"}</button>
@@ -90,8 +92,10 @@ export function MasterAudioPlayer() {
 	}, []);
 
 	// const [buffered, setBuffered] = useState(0);
+	const [coverUrl, setCoverUrl] = useState<string>();
 	const [currentTime, setCurrentTime] = useState(0);
 	const [duration, setDuration] = useState<number | undefined>();
+	const [id, setId] = useState<number>();
 	const [muted, setMuted] = useState(false);
 	const [playing, setPlaying] = useState(false);
 	const [shuffle, setShuffle] = useState(false);
@@ -148,6 +152,8 @@ export function MasterAudioPlayer() {
 	const loadNewPlayer = (player: Element | null, startTime?: (duration: number) => number): void => {
 		if (
 			!(player instanceof HTMLDivElement) ||
+			!player.dataset.audioCoverUrl ||
+			!player.dataset.audioId ||
 			!player.dataset.audioSrc ||
 			!player.dataset.audioTitle
 		) {
@@ -171,6 +177,8 @@ export function MasterAudioPlayer() {
 		currentPlayer.current = player;
 		audio.current.src = player.dataset.audioSrc;
 		audio.current.pause();
+		setCoverUrl(player.dataset.audioCoverUrl);
+		setId(Number.parseInt(player.dataset.audioId, 10));
 		setTitle(player.dataset.audioTitle);
 
 		// TODO this barely works and should probably just keep around old Audio to switch back to
@@ -589,6 +597,19 @@ export function MasterAudioPlayer() {
 				</div>
 				<button onClick={onMuteClick} className="audio-player-mute">{muted ? "U" : "M"}</button>
 			</div>
+			<div
+				className="web-scrobbler-extension"
+				style={{ display: "none" }}
+				data-artist="𝙻ΛƬΣX 4000"
+				data-track={title}
+				// data-album
+				// data-album-artist
+				data-duration={duration}
+				data-current-time={currentTime}
+				data-unique-id={id}
+				data-playing={playing ? "1" : ""}
+				data-track-art={coverUrl}
+			/>
 		</div>
 	);
 }
