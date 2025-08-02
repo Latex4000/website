@@ -1,6 +1,5 @@
 import { relations, sql } from "drizzle-orm";
 import { sqliteTable, integer, text, customType, uniqueIndex } from "drizzle-orm/sqlite-core";
-import type { SessionData } from "../server/session";
 
 const date = customType<{ data: Date; driverData: string }>({
     dataType: () => "text",
@@ -63,6 +62,7 @@ export const MemberRelations = relations(Member, ({ many }) => ({
     sights: many(Sight),
     sounds: many(Sound),
     tickets: many(Ticket),
+    tunicwilds: many(Tunicwild),
     words: many(Word),
 }));
 
@@ -142,6 +142,23 @@ export const Ticket = sqliteTable("Ticket", {
 export const TicketRelations = relations(Ticket, ({ one }) => ({
     member: one(Member, {
         fields: [Ticket.memberDiscord],
+        references: [Member.discord],
+    }),
+}));
+
+export const Tunicwild = sqliteTable("Tunicwild", {
+    id: integer().primaryKey({ autoIncrement: true }),
+    memberDiscord: text().notNull().references(() => Member.discord),
+    composer: text().notNull(),
+    title: text().notNull(),
+    game: text().notNull(),
+    releaseDate: date().notNull(),
+    officialLink: text().notNull(),
+});
+
+export const TunicwildRelations = relations(Tunicwild, ({ one }) => ({
+    member: one(Member, {
+        fields: [Tunicwild.memberDiscord],
         references: [Member.discord],
     }),
 }));
