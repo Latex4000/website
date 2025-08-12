@@ -3,5 +3,6 @@ export interface MessageData {
     channelID: string;
     date: Date;
     count: number;
+    countWithoutBot: number;
     order: number;
 }

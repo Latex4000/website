@@ -4,6 +4,8 @@
     import dataFile from "../../data/messageData.json";
     import { type MessageData } from "../../typing/messageData";
 
+    let includeBotMessages = $state(true);
+
     let rawData: MessageData[] = dataFile
         .filter((d: any) => d.channelName && d.channelName.trim() !== "")
         .map((d: any) => ({
@@ -11,6 +13,7 @@
             channelID: d.channelID,
             date: new Date(d.date),
             count: +d.count,
+            countWithoutBot: +d.countWithoutBot,
             order: +d.order,
         }));
 
@@ -77,7 +80,7 @@
             if (!groupedDataByYear[y]) groupedDataByYear[y] = {};
             if (!groupedDataByYear[y][day]) groupedDataByYear[y][day] = 0;
 
-            groupedDataByYear[y][day] += d.count;
+            groupedDataByYear[y][day] += includeBotMessages ? d.count : d.countWithoutBot;
         }
 
         allYears = Object.keys(groupedDataByYear)
@@ -249,6 +252,11 @@
 </script>
 
 <div class="chartOptions">
+    <label>
+        <input type="checkbox" bind:checked={includeBotMessages} />
+        Include bot/app messages
+    </label>
+
     <div class="dropdown">
         <button type="button" onclick={toggleChannelMenu}>Channels:</button>
         {#if channelMenuVisible}

@@ -6,6 +6,7 @@
 
     let interval = $state("week");
     let windowSize = $state(3);
+    let includeBotMessages = $state(true);
 
     let rawData: MessageData[] = dataFile
         .filter((d: any) => d.channelName && d.channelName.trim() !== "")
@@ -14,6 +15,7 @@
             channelID: d.channelID,
             date: new Date(d.date),
             count: +d.count,
+            countWithoutBot: +d.countWithoutBot,
             order: +d.order,
         }));
 
@@ -77,6 +79,7 @@
             return {
                 ...d,
                 date: newDt,
+                count: includeBotMessages ? d.count : d.countWithoutBot,
             };
         });
 
@@ -93,6 +96,7 @@
             const groupedArray = Array.from(dateMap, ([time, count]) => ({
                 date: new Date(time),
                 count,
+                countWithoutBot: count, // This will be the processed count
                 channelName: chName,
                 channelID: channelID,
                 order: chOrder,
@@ -130,6 +134,7 @@
             merged.push({
                 date: new Date(time),
                 count: sum,
+                countWithoutBot: sum,
                 channelName: "Total",
                 channelID: "aggregate-total",
                 order: 99999,
@@ -515,6 +520,11 @@
 
     <label for="windowSize">Window Size:</label>
     <input id="windowSize" type="number" min="1" bind:value={windowSize} />
+
+    <label>
+        <input type="checkbox" bind:checked={includeBotMessages} />
+        Include bot/app messages
+    </label>
 
     <div class="dropdown">
         <button type="button" onclick={toggleChannelMenu}> Channels: </button>
