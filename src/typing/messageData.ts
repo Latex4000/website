@@ -1,5 +1,6 @@
 export interface MessageData {
     channelName: string;
+    channelID: string;
     date: Date;
     count: number;
     order: number;

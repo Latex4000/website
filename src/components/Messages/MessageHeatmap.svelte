@@ -4,23 +4,26 @@
     import dataFile from "../../data/messageData.json";
     import { type MessageData } from "../../typing/messageData";
 
-    let rawData: MessageData[] = dataFile.map((d: any) => ({
-        channelName: d.channelName,
-        date: new Date(d.date),
-        count: +d.count,
-        order: +d.order,
-    }));
+    let rawData: MessageData[] = dataFile
+        .filter((d: any) => d.channelName && d.channelName.trim() !== "")
+        .map((d: any) => ({
+            channelName: d.channelName,
+            channelID: d.channelID,
+            date: new Date(d.date),
+            count: +d.count,
+            order: +d.order,
+        }));
 
     const channelRollup = d3
         .rollups(
             rawData,
             (v) => v[0],
-            (d) => d.channelName,
+            (d) => d.channelID,
         )
         .map(([_, val]) => val!)
         .sort((a, b) => d3.ascending(a.order, b.order));
 
-    let allChannelNames = channelRollup.map((d) => d.channelName);
+    let allChannelData = channelRollup;
     let selectedChannels: (string | "all")[] = $state(["all"]);
     let channelMenuVisible = $state(false);
 
@@ -59,7 +62,7 @@
         if (selectedChannels.includes("all")) return rawData;
 
         const chosen = selectedChannels.filter((ch) => ch !== "all");
-        return rawData.filter((d) => chosen.includes(d.channelName));
+        return rawData.filter((d) => chosen.includes(d.channelID));
     }
 
     function prepareData() {
@@ -269,12 +272,14 @@
                     />
                     All
                 </label>
-                {#each allChannelNames as ch}
+                {#each allChannelData as channelData}
                     <label>
                         <input
                             type="checkbox"
-                            value={ch}
-                            checked={selectedChannels.includes(ch)}
+                            value={channelData.channelID}
+                            checked={selectedChannels.includes(
+                                channelData.channelID,
+                            )}
                             onchange={(e) => {
                                 const checked = (e.target as HTMLInputElement)
                                     .checked;
@@ -283,15 +288,15 @@
                                         ...selectedChannels.filter(
                                             (ch) => ch !== "all",
                                         ),
-                                        ch,
+                                        channelData.channelID,
                                     ];
                                 else
                                     selectedChannels = selectedChannels.filter(
-                                        (c) => c !== ch,
+                                        (c) => c !== channelData.channelID,
                                     );
                             }}
                         />
-                        {ch}
+                        {channelData.channelName}
                     </label>
                 {/each}
             </div>

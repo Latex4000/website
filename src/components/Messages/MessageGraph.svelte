@@ -7,23 +7,26 @@
     let interval = $state("week");
     let windowSize = $state(3);
 
-    let rawData: MessageData[] = dataFile.map((d: any) => ({
-        channelName: d.channelName,
-        date: new Date(d.date),
-        count: +d.count,
-        order: +d.order,
-    }));
+    let rawData: MessageData[] = dataFile
+        .filter((d: any) => d.channelName && d.channelName.trim() !== "")
+        .map((d: any) => ({
+            channelName: d.channelName,
+            channelID: d.channelID,
+            date: new Date(d.date),
+            count: +d.count,
+            order: +d.order,
+        }));
 
     const channelRollup = d3
         .rollups(
             rawData,
             (v) => v[0],
-            (d) => d.channelName,
+            (d) => d.channelID,
         )
         .map(([_, val]) => val!)
         .sort((a, b) => d3.ascending(a.order, b.order));
 
-    let allChannelNames = channelRollup.map((d) => d.channelName);
+    let allChannelData = channelRollup;
     let selectedChannels: (string | "all")[] = $state(["all"]);
 
     let channelMenuVisible = $state(false);
@@ -77,19 +80,21 @@
             };
         });
 
-        const channelMap = d3.group(truncatedData, (d) => d.channelName);
+        const channelMap = d3.group(truncatedData, (d) => d.channelID);
         const result: MessageData[][] = [];
-        channelMap.forEach((arr, channelName) => {
+        channelMap.forEach((arr, channelID) => {
             const dateMap = d3.rollup(
                 arr,
                 (v) => d3.sum(v, (d) => d.count),
                 (d) => +d.date,
             );
             const chOrder = arr[0]?.order ?? 99999;
+            const chName = arr[0]?.channelName ?? channelID;
             const groupedArray = Array.from(dateMap, ([time, count]) => ({
                 date: new Date(time),
                 count,
-                channelName,
+                channelName: chName,
+                channelID: channelID,
                 order: chOrder,
             }));
             groupedArray.sort((a, b) => +a.date - +b.date);
@@ -126,6 +131,7 @@
                 date: new Date(time),
                 count: sum,
                 channelName: "Total",
+                channelID: "aggregate-total",
                 order: 99999,
             });
 
@@ -134,7 +140,12 @@
     }
 
     function labelSeries(series: MessageData[], label: string, order: number) {
-        return series.map((d) => ({ ...d, channelName: label, order }));
+        return series.map((d) => ({
+            ...d,
+            channelName: label,
+            channelID: "aggregate",
+            order,
+        }));
     }
 
     function setupScales(channelsArray: MessageData[][]) {
@@ -202,7 +213,7 @@
         });
 
         const channels = channelsArray
-            .map((arr) => arr[0]?.channelName)
+            .map((arr) => arr[0]?.channelID)
             .filter(Boolean) as string[];
         colorRange = channels.map((_, i) =>
             d3.interpolatePuBuGn(i / (channels.length - 1 || 1)),
@@ -211,12 +222,12 @@
 
         channelsArray.forEach((series) => {
             if (!series.length) return;
-            const channel = series[0]?.channelName;
+            const channelID = series[0]?.channelID;
             context!.beginPath();
-            context!.strokeStyle = color(channel!)!;
+            context!.strokeStyle = color(channelID!)!;
             context!.lineWidth = 2;
 
-            if (focusedChannel && channel !== focusedChannel)
+            if (focusedChannel && channelID !== focusedChannel)
                 context!.globalAlpha = 0.1;
 
             series.forEach((d, i) => {
@@ -235,26 +246,35 @@
         legendRef.innerHTML = "";
 
         const channelToOrder = new Map<string, number>();
+        const channelToName = new Map<string, string>();
         for (const series of currentChannels)
-            if (series.length)
-                channelToOrder.set(series[0]!.channelName, series[0]!.order);
+            if (series.length) {
+                channelToOrder.set(series[0]!.channelID, series[0]!.order);
+                channelToName.set(series[0]!.channelID, series[0]!.channelName);
+            }
 
-        // Sort channel names by their known order
+        // Sort channel IDs by their known order
         const sortedChannels = channels
-            .map((ch) => ({ name: ch, order: channelToOrder.get(ch) ?? 99999 }))
+            .map((chID) => ({
+                id: chID,
+                order: channelToOrder.get(chID) ?? 99999,
+                name: channelToName.get(chID) ?? chID,
+            }))
             .sort((a, b) => d3.ascending(a.order, b.order));
         const color = d3.scaleOrdinal(colorRange).domain(channels);
 
         sortedChannels.forEach((chObj) => {
-            const ch = chObj.name;
+            const chID = chObj.id;
+            const chName = chObj.name;
             const item = document.createElement("a");
             item.onclick = () => {
-                focusedChannel = focusedChannel === ch && focusLock ? null : ch;
+                focusedChannel =
+                    focusedChannel === chID && focusLock ? null : chID;
                 focusLock = !focusLock;
                 drawLines(currentChannels);
             };
-            item.textContent = ch;
-            item.style.color = color(ch)!;
+            item.textContent = chName;
+            item.style.color = color(chID)!;
             item.style.cursor = "pointer";
             item.style.userSelect = "none";
             item.style.marginRight = "1rem";
@@ -291,8 +311,8 @@
             chosen = allSmoothed;
         } else
             chosen = allSmoothed.filter((arr) => {
-                const ch = arr[0]?.channelName;
-                return ch && selected.includes(ch);
+                const chID = arr[0]?.channelID;
+                return chID && selected.includes(chID);
             });
 
         if (chosen.length > 1 && !allChecked) {
@@ -322,8 +342,8 @@
             .map((arr) => arr[0]!)
             .filter(Boolean)
             .sort((a, b) => d3.ascending(a.order, b.order));
-        const channelNames = channelObjects.map((d) => d.channelName);
-        drawLegend(channelNames);
+        const channelIDs = channelObjects.map((d) => d.channelID);
+        drawLegend(channelIDs);
 
         // Zoom
         zoomBehavior = d3
@@ -369,9 +389,9 @@
 
         if (closest) {
             focusedChannel =
-                focusedChannel === closest.channelName && focusLock
+                focusedChannel === closest.channelID && focusLock
                     ? null
-                    : closest.channelName;
+                    : closest.channelID;
             focusLock = !focusLock;
             drawLines(currentChannels);
         }
@@ -388,7 +408,7 @@
 
         if (focusedChannel && focusLock) {
             const focusSeries = currentChannels.find(
-                (arr) => arr[0]?.channelName === focusedChannel,
+                (arr) => arr[0]?.channelID === focusedChannel,
             );
             if (focusSeries)
                 for (const d of focusSeries) {
@@ -419,7 +439,7 @@
         }
 
         if (!focusLock) {
-            focusedChannel = closest.channelName;
+            focusedChannel = closest.channelID;
             drawLines(currentChannels);
         }
 
@@ -436,10 +456,10 @@
             drawLines(currentChannels);
 
             const channels = currentChannels
-                .map((arr) => arr[0]?.channelName)
+                .map((arr) => arr[0]?.channelID)
                 .filter(Boolean) as string[];
             const color = d3.scaleOrdinal(colorRange).domain(channels);
-            const circleColor = color(closest.channelName) || "#fff";
+            const circleColor = color(closest.channelID) || "#fff";
 
             context.beginPath();
             context.arc(
@@ -517,12 +537,14 @@
                     />
                     All
                 </label>
-                {#each allChannelNames as ch}
+                {#each allChannelData as channelData}
                     <label>
                         <input
                             type="checkbox"
-                            value={ch}
-                            checked={selectedChannels.includes(ch)}
+                            value={channelData.channelID}
+                            checked={selectedChannels.includes(
+                                channelData.channelID,
+                            )}
                             onchange={(e) => {
                                 const checked = (e.target as HTMLInputElement)
                                     .checked;
@@ -531,15 +553,16 @@
                                         ...selectedChannels.filter(
                                             (ch) => ch !== "all",
                                         ),
-                                        ch,
+                                        channelData.channelID,
                                     ];
                                 else
                                     selectedChannels = selectedChannels.filter(
-                                        (item) => item !== ch,
+                                        (item) =>
+                                            item !== channelData.channelID,
                                     );
                             }}
                         />
-                        {ch}
+                        {channelData.channelName}
                     </label>
                 {/each}
             </div>
