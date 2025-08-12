@@ -80,7 +80,9 @@
             if (!groupedDataByYear[y]) groupedDataByYear[y] = {};
             if (!groupedDataByYear[y][day]) groupedDataByYear[y][day] = 0;
 
-            groupedDataByYear[y][day] += includeBotMessages ? d.count : d.countWithoutBot;
+            groupedDataByYear[y][day] += includeBotMessages
+                ? d.count
+                : d.countWithoutBot;
         }
 
         allYears = Object.keys(groupedDataByYear)

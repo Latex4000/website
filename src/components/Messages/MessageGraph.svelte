@@ -154,11 +154,27 @@
     }
 
     function setupScales(channelsArray: MessageData[][]) {
-        const allPoints = channelsArray.flat();
-        const yMax = d3.max(allPoints, (d) => d.count) ?? 0;
+        let allPoints = channelsArray.flat();
+        let xDomain = [earliestDate, latestDate];
+        let yMax = d3.max(allPoints, (d) => d.count) ?? 0;
+
+        // If a channel is focus locked, scale to that channel's data range
+        if (focusedChannel && focusLock) {
+            const focusedSeries = channelsArray.find(
+                (arr) => arr[0]?.channelID === focusedChannel,
+            );
+            if (focusedSeries && focusedSeries.length > 0) {
+                const focusedPoints = focusedSeries;
+                const xMin = d3.min(focusedPoints, (d) => d.date) ?? earliestDate;
+                const xMax = d3.max(focusedPoints, (d) => d.date) ?? latestDate;
+                xDomain = [xMin, xMax];
+                yMax = d3.max(focusedPoints, (d) => d.count) ?? 0;
+            }
+        }
+
         xOrig = d3
             .scaleTime()
-            .domain([earliestDate, latestDate])
+            .domain(xDomain)
             .range([margin.left, width - margin.right]);
         yOrig = d3
             .scaleLinear()
@@ -273,10 +289,17 @@
             const chName = chObj.name;
             const item = document.createElement("a");
             item.onclick = () => {
+                const wasUnlocking = focusedChannel === chID && focusLock;
                 focusedChannel =
                     focusedChannel === chID && focusLock ? null : chID;
                 focusLock = !focusLock;
-                drawLines(currentChannels);
+                
+                // If we're changing focus state, update the chart to rescale
+                if (wasUnlocking || (!wasUnlocking && focusLock)) {
+                    updateChart();
+                } else {
+                    drawLines(currentChannels);
+                }
             };
             item.textContent = chName;
             item.style.color = color(chID)!;
@@ -393,12 +416,19 @@
             }
 
         if (closest) {
+            const wasUnlocking = focusedChannel === closest.channelID && focusLock;
             focusedChannel =
                 focusedChannel === closest.channelID && focusLock
                     ? null
                     : closest.channelID;
             focusLock = !focusLock;
-            drawLines(currentChannels);
+            
+            // If we're changing focus state, update the chart to rescale
+            if (wasUnlocking || (!wasUnlocking && focusLock)) {
+                updateChart();
+            } else {
+                drawLines(currentChannels);
+            }
         }
     }
 
