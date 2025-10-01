@@ -14,10 +14,6 @@ declare global {
     }
 }
 
-export interface SessionData {
-    memberDiscord?: string;
-}
-
 const cookieName = "latex_session";
 const maxAgeMs = 1000 * 60 * 60 * 24 * 30;
 
