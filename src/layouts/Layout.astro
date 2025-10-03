@@ -15,6 +15,8 @@ const schema = JSON.stringify({
     keywords,
     logo: new URL("/logo.png", Astro.url).toString(),
 });
+
+/* eslint-disable astro/jsx-a11y/anchor-is-valid */
 ---
 
 <!doctype html>
@@ -76,7 +78,20 @@ const schema = JSON.stringify({
                 <ThemeSelector client:load />
             </div>
             <nav>
-                <span class="ch"><a href="/random">!ch</a>&#32;</span>
+                <div class="ch">
+                    <span style="white-space: pre;"
+                        ><a href="/random">!ch</a>
+                    </span>
+                    <div class="ch__hover">
+                        <span style="white-space: pre;"
+                            ><a href="#" class="js-roll">!roll</a>
+                        </span><br />
+                        <span style="white-space: pre;"
+                            ><a href="#" class="js-shouldi">!shouldi</a>
+                        </span>
+                    </div>
+                </div>
+                <div class="command-results js-command-results"></div>
                 <a href="/">Home</a>
                 |
                 <a href="/sounds">Sounds</a>
@@ -163,7 +178,49 @@ const schema = JSON.stringify({
         position: absolute;
         right: 100%;
         text-transform: none;
-        white-space: pre;
+        text-align: right;
+    }
+
+    .ch__hover {
+        display: none;
+    }
+
+    .ch:hover > .ch__hover {
+        display: block;
+    }
+
+    .command-results {
+        position: absolute;
+        right: 100%;
+        text-transform: none;
+    }
+
+    /* Global scope here is necessary due to the elements being created in JS */
+    :global(.command-results > span) {
+        position: absolute;
+        color: var(--text-color-alt);
+        animation:
+            2s command-fade-out forwards ease-in,
+            1.5s command-fly-left forwards ease-out;
+        text-shadow: var(--background-color) 0 0 2px;
+    }
+
+    @keyframes command-fade-out {
+        from {
+            opacity: 1;
+        }
+        to {
+            opacity: 0;
+        }
+    }
+
+    @keyframes command-fly-left {
+        from {
+            transform: none;
+        }
+        to {
+            transform: translateY(-10px);
+        }
     }
 
     main {
@@ -232,3 +289,41 @@ const schema = JSON.stringify({
         }
     }
 </style>
+
+<script>
+    const commandResultsElement = document.querySelector<HTMLElement>(
+        ".js-command-results"
+    )!;
+
+    function showResult(positionElement: HTMLElement, result: string): void {
+        const element = document.createElement("span");
+        element.style.top = `${positionElement.offsetTop}px`;
+        element.style.right = `${positionElement.offsetWidth + 10}px`;
+        element.innerText = result;
+
+        commandResultsElement.appendChild(element);
+
+        // After the CSS animation is complete
+        setTimeout(() => element.remove(), 2000);
+    }
+
+    const rollElement = document.querySelector<HTMLElement>(".js-roll")!;
+    const shouldiElement = document.querySelector<HTMLElement>(".js-shouldi")!;
+
+    rollElement.addEventListener("click", (event) => {
+        event.preventDefault();
+
+        const result = Math.floor(Math.random() * 100) + 1;
+
+        showResult(rollElement.parentElement!, result.toString());
+    });
+
+    shouldiElement.addEventListener("click", (event) => {
+        event.preventDefault();
+
+        const results = ["yes", "no", "idk"];
+        const result = results[Math.floor(Math.random() * 3)]!;
+
+        showResult(shouldiElement.parentElement!, result);
+    });
+</script>
