@@ -1,5 +1,5 @@
 ---
-import { eq, getTableColumns } from "drizzle-orm";
+import { and, eq, getTableColumns } from "drizzle-orm";
 import Layout from "../layouts/Layout.astro";
 import ActionsList from "../components/Actions/ActionsList.svelte";
 import ActionItemsList from "../components/Actions/ActionItemsList.svelte";
@@ -16,8 +16,8 @@ const actions: ActionList[] = await db
         username: Member.alias,
     })
     .from(Action)
-    .where(eq(Action.deleted, false))
     .innerJoin(Member, eq(Action.memberDiscord, Member.discord))
+    .where(and(eq(Action.deleted, false), eq(Member.deleted, false)))
     .then((actions) =>
         actions.map((row) => ({
             ...row,

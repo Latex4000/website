@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import db from "../../database/db";
-import { eq, notInArray } from "drizzle-orm";
-import { Action, ActionItem } from "../../database/schema";
+import { eq, notInArray, or } from "drizzle-orm";
+import { Action, ActionItem, Member } from "../../database/schema";
 import { paginationQuery, parseDateCursor } from "../../server/pagination";
 
 export const prerender = false;
@@ -14,12 +14,14 @@ export const GET: APIRoute = async ({ url }) => {
         .filter(Number.isInteger) ?? [];
 
     // Add deleted actions to the ignore array
-    const actions = await db
+    const deletedActions = await db
         .select({ id: Action.id })
         .from(Action)
-        .where(eq(Action.deleted, true));
-    if (actions && actions.length > 0)
-        ignoreArray.push(...actions.map((action) => action.id));
+        .innerJoin(Member, eq(Action.memberDiscord, Member.discord))
+        .where(or(eq(Action.deleted, true), eq(Member.deleted, true)));
+    
+    if (deletedActions && deletedActions.length > 0)
+        ignoreArray.push(...deletedActions.map((action) => action.id));
 
     const condition = ignoreArray != null && ignoreArray.length > 0
         ? notInArray(ActionItem.actionID, ignoreArray)
