@@ -117,7 +117,7 @@
                             ? 'block'
                             : 'none'}"
                     >
-                        {#each thumbFilenamesById[sight.id]?.slice(0, 3) ?? [] as filename}
+                        {#each thumbFilenamesById[sight.id]?.slice(0, 3).reverse() ?? [] as filename}
                             {@const thumbsDir =
                                 quality === "high" ? "thumbs" : "thumbs-evil"}
                             <img
