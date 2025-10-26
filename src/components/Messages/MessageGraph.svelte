@@ -6,7 +6,7 @@
 
     let interval = $state("week");
     let windowSize = $state(3);
-    let includeBotMessages = $state(true);
+    let includeBotMessages = $state(false);
 
     let rawData: MessageData[] = dataFile
         .filter((d: any) => d.channelName && d.channelName.trim() !== "")
@@ -165,7 +165,8 @@
             );
             if (focusedSeries && focusedSeries.length > 0) {
                 const focusedPoints = focusedSeries;
-                const xMin = d3.min(focusedPoints, (d) => d.date) ?? earliestDate;
+                const xMin =
+                    d3.min(focusedPoints, (d) => d.date) ?? earliestDate;
                 const xMax = d3.max(focusedPoints, (d) => d.date) ?? latestDate;
                 xDomain = [xMin, xMax];
                 yMax = d3.max(focusedPoints, (d) => d.count) ?? 0;
@@ -293,7 +294,7 @@
                 focusedChannel =
                     focusedChannel === chID && focusLock ? null : chID;
                 focusLock = !focusLock;
-                
+
                 // If we're changing focus state, update the chart to rescale
                 if (wasUnlocking || (!wasUnlocking && focusLock)) {
                     updateChart();
@@ -416,13 +417,14 @@
             }
 
         if (closest) {
-            const wasUnlocking = focusedChannel === closest.channelID && focusLock;
+            const wasUnlocking =
+                focusedChannel === closest.channelID && focusLock;
             focusedChannel =
                 focusedChannel === closest.channelID && focusLock
                     ? null
                     : closest.channelID;
             focusLock = !focusLock;
-            
+
             // If we're changing focus state, update the chart to rescale
             if (wasUnlocking || (!wasUnlocking && focusLock)) {
                 updateChart();
