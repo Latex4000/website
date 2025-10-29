@@ -1,4 +1,4 @@
-import createThemes from "../createThemes";
+import createThemes, { defineThemeValues } from "../createThemes";
 import cssUrl from "./latex.css?url";
 import cssOverridesUrl from "./latex-overrides.css?url";
 
@@ -6,7 +6,7 @@ export default createThemes(
     ["latex", "latex-dark"],
     ["LaTeX", "LaTeX dark"],
     [cssUrl, cssOverridesUrl],
-    {
+    defineThemeValues({
         "--line-height": "1rem",
         "--border-thickness": "1.36px",
         "--background-color": ["hsl(210, 20%, 98%)", "hsl(0, 6.80%, 14.30%)"],
@@ -55,5 +55,5 @@ export default createThemes(
         "--media-video-height": "9lh",
         "--srclink": "https://latex.vercel.app/",
         "--srctext": "Design implemented from LaTeX.css",
-    },
+    }),
 );

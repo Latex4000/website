@@ -1,65 +1,28 @@
+import { requiredCssKeys, type RequiredCssKey } from "./themeContract";
+
 type CssValue = number | string | null;
 type CssValueOrArray = CssValue | CssValue[];
 
-type RequiredCssKeys =
-    | "--background-color"
-    | "--background-color-alt"
-    | "--border-color-muted"
-    | "--border-thickness"
-    | "--home-grid-margin-block-start"
-    | "--home-grid-row-gap"
-    | "--home-grid-width"
-    | "--layout-max-width"
-    | "--layout-padding-inline"
-    | "--space-2xs"
-    | "--space-xs"
-    | "--space-sm"
-    | "--space-md"
-    | "--space-lg"
-    | "--space-inline-sm"
-    | "--space-inline-md"
-    | "--space-static-xs"
-    | "--space-static-sm"
-    | "--space-static-md"
-    | "--font-size-sm"
-    | "--font-size-lg"
-    | "--border-radius-sm"
-    | "--border-radius-md"
-    | "--border-thickness-thin"
-    | "--border-thickness-thick"
-    | "--media-cover-size-lg"
-    | "--media-cover-size-md"
-    | "--media-cover-size-sm"
-    | "--media-cover-size-xs"
-    | "--media-video-height"
-    | "--media-video-width"
-    | "--sidebar-max-width"
-    | "--line-height"
-    | "--layout-footer-font-scale"
-    | "--layout-header-margin-block"
-    | "--sights-grid-margin-block-start"
-    | "--srclink"
-    | "--srctext"
-    | "--surface-overlay"
-    | "--surface-overlay-strong"
-    | "--text-color"
-    | "--text-color-alt"
-    | "--text-on-overlay"
-    | "--webring-next-icon"
-    | "--webring-prev-icon";
+export type ThemeValueDefinition = Record<RequiredCssKey, CssValueOrArray>;
+
+export function defineThemeValues<T extends ThemeValueDefinition>(
+    values: T,
+): T {
+    return values;
+}
 
 export interface Theme {
     cssUrls: string[];
     name: string;
     slug: string;
-    values: Record<RequiredCssKeys, string> & Record<`--${string}`, string>;
+    values: Record<RequiredCssKey, string> & Record<`--${string}`, string>;
 }
 
 export default function createThemes(
     slug: string[],
     name: string[],
     cssUrls: string[],
-    values: Record<RequiredCssKeys, CssValueOrArray>,
+    values: ThemeValueDefinition,
 ): Theme[] {
     if (name.length !== slug.length) {
         throw new Error("Invalid theme");
@@ -72,7 +35,7 @@ export default function createThemes(
             cssUrls,
             name: name[i]!,
             slug: slug[i]!,
-            values: {} as Record<RequiredCssKeys, string>,
+            values: {} as Record<RequiredCssKey, string>,
         });
     }
 
@@ -96,6 +59,16 @@ export default function createThemes(
         for (let i = 0; i < value.length; i++) {
             if (value[i] != null) {
                 themes[i]!.values[key as `--${string}`] = String(value[i]);
+            }
+        }
+    }
+
+    for (const theme of themes) {
+        for (const key of requiredCssKeys) {
+            if (!(key in theme.values)) {
+                throw new Error(
+                    `Theme "${theme.slug}" is missing required custom property "${key}".`,
+                );
             }
         }
     }
