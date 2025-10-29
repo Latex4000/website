@@ -3,6 +3,7 @@ import ThemeInit from "../styles/ThemeInit.astro";
 import { defaultTheme } from "../styles/themes";
 import ThemeSelector from "../styles/ThemeSelector.svelte";
 import baseStylesUrl from "../styles/base.css?url";
+import resetStylesUrl from "../styles/reset.css?url";
 
 const { header, title, description, colour } = Astro.props;
 const keywords =
@@ -67,6 +68,7 @@ const schema = JSON.stringify({
         <script is:inline type="application/ld+json" set:html={schema} />
 
         <ThemeInit />
+        <link data-reset-styles href={resetStylesUrl} rel="stylesheet" />
         <link data-base-styles href={baseStylesUrl} rel="stylesheet" />
     </head>
     <body data-theme={defaultTheme.slug}>
