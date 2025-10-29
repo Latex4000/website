@@ -195,8 +195,8 @@
         right: calc(var(--border-thickness) * 2);
         color: white;
         border-radius: 50%;
-    font-size: calc(var(--font-size-sm) * 2 / 3);
-    width: var(--space-static-md);
-    height: var(--space-static-md);
+        font-size: calc(var(--font-size-sm) * 2 / 3);
+        width: var(--space-static-md);
+        height: var(--space-static-md);
     }
 </style>

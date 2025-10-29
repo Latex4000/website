@@ -280,7 +280,8 @@
     .entry {
         cursor: pointer;
         padding: var(--space-static-xs);
-        border-bottom: var(--border-thickness-thin) solid var(--border-color-muted);
+        border-bottom: var(--border-thickness-thin) solid
+            var(--border-color-muted);
     }
     .entry:hover {
         background: var(--background-color-alt);
