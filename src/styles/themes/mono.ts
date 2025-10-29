@@ -1,12 +1,11 @@
 import createThemes from "../createThemes";
 import cssUrl from "./mono.css?url";
 import cssOverridesUrl from "./mono-overrides.css?url";
-import cssResetUrl from "./mono-reset.css?url";
 
 export default createThemes(
     ["mono", "mono-dark"],
     ["Mono", "Mono dark"],
-    [cssResetUrl, cssUrl, cssOverridesUrl],
+    [cssUrl, cssOverridesUrl],
     {
         "--line-height": "1.2rem",
         "--border-thickness": "2px",
@@ -14,6 +13,46 @@ export default createThemes(
         "--background-color-alt": ["#ddd", "#222"],
         "--text-color": ["#111", "#eee"],
         "--text-color-alt": ["#222", "#ddd"],
+        "--border-color-muted":
+            "color-mix(in srgb, var(--text-color) 15%, var(--background-color) 85%)",
+        "--surface-overlay":
+            "color-mix(in srgb, var(--text-color) 20%, transparent)",
+        "--surface-overlay-strong":
+            "color-mix(in srgb, var(--text-color) 35%, transparent)",
+        "--text-on-overlay": ["#ffffff", "#111111"],
+        "--layout-header-margin-block": "1lh",
+        "--layout-footer-font-scale": "1em",
+        "--layout-max-width": "calc(min(80ch, round(down, 100%, 1ch)))",
+        "--layout-padding-inline": "1.25rem",
+        "--sidebar-max-width": "calc(min(30ch, round(down, 100%, 1ch)))",
+        "--space-2xs": "calc(var(--line-height) / 4)",
+        "--space-xs": "calc(var(--line-height) / 2)",
+        "--space-sm": "var(--line-height)",
+        "--space-md": "calc(var(--line-height) * 1.5)",
+        "--space-lg": "calc(var(--line-height) * 2)",
+        "--space-inline-sm": "1ch",
+        "--space-inline-md": "2ch",
+        "--space-static-xs": "0.5rem",
+        "--space-static-sm": "0.75rem",
+        "--space-static-md": "1rem",
+        "--font-size-sm": "0.75rem",
+        "--font-size-lg": "1.4rem",
+        "--border-radius-sm": "2px",
+        "--border-radius-md": "4px",
+        "--border-thickness-thin": "calc(var(--border-thickness) / 2)",
+        "--border-thickness-thick": "calc(var(--border-thickness) * 1.5)",
+        "--webring-prev-icon": '"<--"',
+        "--webring-next-icon": '"-->"',
+        "--home-grid-margin-block-start": "0.5lh",
+        "--home-grid-row-gap": "0.5lh",
+        "--home-grid-width": "round(down, 100%, 5ch)",
+        "--sights-grid-margin-block-start": "0",
+        "--media-cover-size-lg": "11lh",
+        "--media-cover-size-md": "8lh",
+        "--media-cover-size-sm": "5lh",
+        "--media-cover-size-xs": "3lh",
+        "--media-video-width": "16lh",
+        "--media-video-height": "9lh",
         "--srclink": "https://owickstrom.github.io/the-monospace-web/",
         "--srctext": "Design implemented from The Monospace Web",
     },

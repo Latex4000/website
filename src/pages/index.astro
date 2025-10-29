@@ -73,12 +73,14 @@ const members = await db
 
 <style>
     ul {
-        margin-top: 0.5lh;
+        margin-top: var(--home-grid-margin-block-start, 0.5lh);
         padding: 0;
         display: grid;
         width: 100%;
         grid-template-columns: repeat(2, 1fr);
-        column-gap: 1ch;
+    column-gap: var(--space-inline-sm);
+        row-gap: var(--home-grid-row-gap, 0);
+        width: var(--home-grid-width, 100%);
     }
 
     @media (min-width: 500px) {
@@ -97,15 +99,6 @@ const members = await db
         ul {
             grid-template-columns: repeat(5, 1fr);
         }
-    }
-
-    :global(body[data-theme^="latex"]) ul {
-        margin-top: 0;
-    }
-
-    :global(body[data-theme^="mono"]) ul {
-        row-gap: 0.5lh;
-        width: round(down, 100%, 5ch);
     }
 
     li {

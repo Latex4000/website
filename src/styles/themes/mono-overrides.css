@@ -1,3 +1,9 @@
+body {
+    max-width: var(--layout-max-width);
+    margin-inline: auto;
+    padding-inline: var(--layout-padding-inline);
+}
+
 /* Style <select> the same way as <input> */
 select {
     border: var(--border-thickness) solid var(--text-color);

@@ -142,14 +142,14 @@
 <style>
     .pagination {
         display: flex;
-        gap: 1ch;
+        gap: var(--space-inline-sm);
         margin-bottom: var(--line-height);
     }
 
     .actionUserHeader {
         text-transform: none;
         display: flex;
-        gap: 1ch;
+        gap: var(--space-inline-sm);
         align-items: center;
         margin-bottom: var(--line-height);
     }
@@ -171,7 +171,7 @@
     .action {
         margin: var(--line-height) 0;
         display: flex;
-        gap: 2ch;
+        gap: var(--space-inline-md);
     }
 
     .action a {

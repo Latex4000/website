@@ -47,7 +47,9 @@ const actions: ActionList[] = await db
         position: absolute;
         right: 100%;
         width: 100%;
-        max-width: 30ch;
-        max-width: calc(min(30ch, round(down, 100%, 1ch)));
+        max-width: var(
+            --sidebar-max-width,
+            calc(min(30ch, round(down, 100%, 1ch)))
+        );
     }
 </style>

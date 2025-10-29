@@ -4,12 +4,49 @@ type CssValueOrArray = CssValue | CssValue[];
 type RequiredCssKeys =
     | "--background-color"
     | "--background-color-alt"
+    | "--border-color-muted"
     | "--border-thickness"
+    | "--home-grid-margin-block-start"
+    | "--home-grid-row-gap"
+    | "--home-grid-width"
+    | "--layout-max-width"
+    | "--layout-padding-inline"
+    | "--space-2xs"
+    | "--space-xs"
+    | "--space-sm"
+    | "--space-md"
+    | "--space-lg"
+    | "--space-inline-sm"
+    | "--space-inline-md"
+    | "--space-static-xs"
+    | "--space-static-sm"
+    | "--space-static-md"
+    | "--font-size-sm"
+    | "--font-size-lg"
+    | "--border-radius-sm"
+    | "--border-radius-md"
+    | "--border-thickness-thin"
+    | "--border-thickness-thick"
+    | "--media-cover-size-lg"
+    | "--media-cover-size-md"
+    | "--media-cover-size-sm"
+    | "--media-cover-size-xs"
+    | "--media-video-height"
+    | "--media-video-width"
+    | "--sidebar-max-width"
     | "--line-height"
+    | "--layout-footer-font-scale"
+    | "--layout-header-margin-block"
+    | "--sights-grid-margin-block-start"
     | "--srclink"
     | "--srctext"
+    | "--surface-overlay"
+    | "--surface-overlay-strong"
     | "--text-color"
-    | "--text-color-alt";
+    | "--text-color-alt"
+    | "--text-on-overlay"
+    | "--webring-next-icon"
+    | "--webring-prev-icon";
 
 export interface Theme {
     cssUrls: string[];
@@ -22,7 +59,7 @@ export default function createThemes(
     slug: string[],
     name: string[],
     cssUrls: string[],
-    values: Record<RequiredCssKeys, CssValueOrArray> & Record<`--${string}`, CssValueOrArray>,
+    values: Record<RequiredCssKeys, CssValueOrArray>,
 ): Theme[] {
     if (name.length !== slug.length) {
         throw new Error("Invalid theme");

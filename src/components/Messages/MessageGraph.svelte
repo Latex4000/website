@@ -306,7 +306,7 @@
             item.style.color = color(chID)!;
             item.style.cursor = "pointer";
             item.style.userSelect = "none";
-            item.style.marginRight = "1rem";
+            item.style.marginRight = "var(--space-static-md)";
             legendRef.appendChild(item);
         });
     }
@@ -634,9 +634,9 @@
 
     .dropdown-content {
         position: absolute;
-        background: rgba(0, 0, 0, 0.85);
-        color: #fff;
-        padding: 0.5rem;
+        background: var(--surface-overlay-strong, rgba(0, 0, 0, 0.35));
+        color: var(--text-on-overlay, #fff);
+        padding: var(--space-static-xs);
         display: flex;
         flex-direction: column;
         gap: var(--line-height);
@@ -653,9 +653,10 @@
     #tooltip {
         position: absolute;
         pointer-events: none;
-        background: rgba(0, 0, 0, 0.8);
-        padding: 0.5rem;
-        font-size: 0.75rem;
+        background: var(--surface-overlay, rgba(0, 0, 0, 0.2));
+        color: var(--text-on-overlay, #fff);
+        padding: var(--space-static-xs);
+        font-size: var(--font-size-sm);
         visibility: hidden;
         z-index: 999;
     }
@@ -664,6 +665,6 @@
         display: flex;
         gap: var(--line-height);
         flex-wrap: wrap;
-        margin-bottom: 1rem;
+        margin-bottom: var(--space-static-md);
     }
 </style>

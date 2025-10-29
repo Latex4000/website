@@ -2,6 +2,7 @@
 import ThemeInit from "../styles/ThemeInit.astro";
 import { defaultTheme } from "../styles/themes";
 import ThemeSelector from "../styles/ThemeSelector.svelte";
+import baseStylesUrl from "../styles/base.css?url";
 
 const { header, title, description, colour } = Astro.props;
 const keywords =
@@ -66,6 +67,7 @@ const schema = JSON.stringify({
         <script is:inline type="application/ld+json" set:html={schema} />
 
         <ThemeInit />
+        <link data-base-styles href={baseStylesUrl} rel="stylesheet" />
     </head>
     <body data-theme={defaultTheme.slug}>
         <header>
@@ -159,8 +161,9 @@ const schema = JSON.stringify({
         text-decoration: none;
     }
 
-    :global(body:not([data-theme^="latex"])) header {
-        margin: 1lh 0;
+
+    header {
+        margin: var(--layout-header-margin-block, 1lh) 0;
     }
 
     .title-bar {
@@ -170,7 +173,7 @@ const schema = JSON.stringify({
     }
 
     nav {
-        margin: 1lh 0;
+        margin: var(--space-sm) 0;
         position: relative;
     }
 
@@ -229,32 +232,21 @@ const schema = JSON.stringify({
     }
 
     footer {
-        margin-block: 2lh;
-    }
-
-    :global(body:not([data-theme^="mono"])) footer {
-        font-size: 0.8em;
+        margin-block: var(--space-lg);
+        font-size: var(--layout-footer-font-scale, 0.8em);
     }
 
     .webring {
-        margin-bottom: 1lh;
+        margin-bottom: var(--space-sm);
         text-align: center;
     }
 
     .webring__prev::after {
-        content: "<--";
-    }
-
-    :global(body[data-theme^="latex"]) .webring__prev::after {
-        content: "←";
+        content: var(--webring-prev-icon, "<--");
     }
 
     .webring__next::after {
-        content: "-->";
-    }
-
-    :global(body[data-theme^="latex"]) .webring__next::after {
-        content: "→";
+        content: var(--webring-next-icon, "-->");
     }
 
     .footer-row {
@@ -270,7 +262,7 @@ const schema = JSON.stringify({
     @media only screen and (max-width: 767px) {
         .footer-info {
             flex-direction: column;
-            gap: 1lh;
+            gap: var(--space-sm);
             text-align: center;
         }
     }

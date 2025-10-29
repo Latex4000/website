@@ -335,9 +335,9 @@
 
     .dropdown-content {
         position: absolute;
-        background: rgba(0, 0, 0, 0.85);
-        color: #fff;
-        padding: 0.5rem;
+        background: var(--surface-overlay-strong, rgba(0, 0, 0, 0.35));
+        color: var(--text-on-overlay, #fff);
+        padding: var(--space-static-xs);
         display: flex;
         flex-direction: column;
         gap: var(--line-height);
@@ -348,16 +348,16 @@
         position: relative;
         display: flex;
         flex-direction: column;
-        gap: 1rem;
+        gap: var(--space-static-md);
     }
 
     #tooltip {
         position: fixed;
         pointer-events: none;
-        background: rgba(0, 0, 0, 0.8);
-        color: #fff;
-        padding: 0.5rem;
-        font-size: 0.75rem;
+        background: var(--surface-overlay, rgba(0, 0, 0, 0.2));
+        color: var(--text-on-overlay, #fff);
+        padding: var(--space-static-xs);
+        font-size: var(--font-size-sm);
         visibility: hidden;
         z-index: 999;
     }

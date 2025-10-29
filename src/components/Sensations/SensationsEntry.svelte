@@ -326,9 +326,9 @@
 
 <style>
     .entry-editor {
-        border: var(--border-thickness) solid #ccc;
-        padding: 1rem;
-        margin-top: 1rem;
+        border: var(--border-thickness) solid var(--border-color-muted, #ccc);
+        padding: var(--space-static-md);
+        margin-top: var(--space-static-md);
         overflow-x: scroll;
         overflow-y: hidden;
     }
@@ -342,7 +342,7 @@
     form {
         display: flex;
         flex-direction: column;
-        gap: 1rem;
+        gap: var(--space-static-md);
         width: 300%;
         height: 100%;
     }
@@ -353,13 +353,13 @@
     .form-container {
         display: flex;
         align-items: flex-start;
-        gap: 1rem;
+        gap: var(--space-static-md);
     }
     .section {
         flex: 1;
         display: flex;
         flex-direction: column;
-        gap: 0.75rem;
+        gap: var(--space-static-sm);
         height: 100%;
         justify-content: center;
     }
@@ -368,30 +368,30 @@
         flex-direction: column;
     }
     .core-event {
-        padding: 0.5rem;
+        padding: var(--space-static-xs);
     }
     .section-reactions {
         display: flex;
-        gap: 0.75rem;
+        gap: var(--space-static-sm);
     }
     .section-reactions .reaction {
         flex: 1;
         display: flex;
         flex-direction: column;
-        gap: 0.5rem;
+        gap: var(--space-static-xs);
     }
     .section-reactions .major-emotion {
-        padding: 0.5rem;
+        padding: var(--space-static-xs);
     }
     .section-responses {
         display: flex;
         flex-direction: column;
-        gap: 0.75rem;
+        gap: var(--space-static-sm);
     }
     .harmful,
     .helpful,
     .neutral {
-        padding: 0.5rem;
+        padding: var(--space-static-xs);
     }
     .harmful {
         background-color: rgba(255, 100, 100, 0.2);
@@ -407,13 +407,13 @@
         flex-direction: column;
     }
     .arrow {
-        font-size: 2rem;
+        font-size: calc(var(--font-size-lg) * 20 / 14);
         align-self: center;
         color: #888;
     }
     .options {
         display: flex;
-        gap: 1rem;
+        gap: var(--space-static-md);
         justify-content: flex-end;
     }
 </style>
