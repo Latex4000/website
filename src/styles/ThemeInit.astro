@@ -1,5 +1,5 @@
 ---
-import { defaultDarkTheme, defaultTheme, ssrStyle, themes } from "./themes";
+import { defaultDarkTheme, defaultTheme, ssrStyle, themes } from "./themeData";
 
 const initJson = JSON.stringify({ defaultDarkTheme, defaultTheme, themes });
 ---
@@ -16,93 +16,116 @@ const initJson = JSON.stringify({ defaultDarkTheme, defaultTheme, themes });
 {/* Set up theme styles for normal client */}
 <script is:inline set:html={initJson} data-theme-init type="application/json" />
 <script>
-    // This script needs to run before initial render so that the default theme
-    // doesn't flash into view before switching to the user's preference from
-    // localStorage. The only not-super-hack way to do this is to inline the JS
-    // in the <head> of Layout, and Astro will let us do that only if the
-    // script is not a module. So no imports allowed, and data is passed in via
-    // the DOM
+    (function () {
+        const initElement = document.querySelector("script[data-theme-init]");
 
-    import type { Theme } from "./createThemes";
-
-    const { defaultDarkTheme, defaultTheme, themes } = JSON.parse(
-        document.querySelector("script[data-theme-init]")?.textContent!
-    ) as {
-        defaultDarkTheme: Theme;
-        defaultTheme: Theme;
-        themes: Theme[];
-    };
-
-    function valuesToString(values: Record<`--${string}`, string>): string {
-        return Object.entries(values)
-            .map(([key, value]) => `${key}: ${value};`)
-            .join("");
-    }
-
-    function getInitialTheme(): string {
-        const themeSlug = window.localStorage.getItem("theme-slug");
-
-        if (
-            themeSlug != null &&
-            themes.some(({ slug }) => slug === themeSlug)
-        ) {
-            return themeSlug;
-        }
-
-        return window.matchMedia("(prefers-color-scheme: dark)").matches
-            ? defaultDarkTheme.slug
-            : defaultTheme.slug;
-    }
-
-    function applyTheme(themeSlug: string): void {
-        const theme = themes.find(({ slug }) => slug === themeSlug);
-
-        if (theme == null) {
+        if (!initElement || !initElement.textContent) {
             return;
         }
 
-        // Query previous theme elements in <head>
-        const prevHeadChildren = document.head.querySelectorAll("[data-theme]");
+        let payload;
+        try {
+            payload = JSON.parse(initElement.textContent);
+        } catch (error) {
+            void error;
+            return;
+        }
 
-        // Create new theme elements
-        const newHeadChildren: HTMLElement[] = [];
+        const { defaultDarkTheme, defaultTheme, themes } = payload;
+
+        let storedSlug = null;
+        try {
+            storedSlug = window.localStorage.getItem("theme-slug");
+        } catch (error) {
+            void error;
+            storedSlug = null;
+        }
+
+        const themeExists = (slug: string) =>
+            themes.some(
+                (candidate: { slug: string }) =>
+                    candidate && candidate.slug === slug
+            );
+
+        const preferredSlug = (() => {
+            if (storedSlug != null && themeExists(storedSlug)) {
+                return storedSlug;
+            }
+
+            return window.matchMedia("(prefers-color-scheme: dark)").matches
+                ? defaultDarkTheme.slug
+                : defaultTheme.slug;
+        })();
+
+        const theme =
+            themes.find(
+                (candidate: { slug: string }) =>
+                    candidate && candidate.slug === preferredSlug
+            ) ?? defaultTheme;
+
+        const head = document.head;
+        if (!head) {
+            return;
+        }
+
+        head.querySelectorAll("[data-theme]").forEach((element) =>
+            element.remove()
+        );
+
+        const valuesToString = (values: Record<string, string>) =>
+            Object.entries(values)
+                .map(function ([key, value]) {
+                    return key + ": " + value + ";";
+                })
+                .join("");
 
         const styleElement = document.createElement("style");
         styleElement.dataset.theme = "";
-        styleElement.textContent = `:root { ${valuesToString(theme.values)} }`;
-        newHeadChildren.push(styleElement);
+        styleElement.textContent =
+            ":root { " + valuesToString(theme.values) + " }";
+        head.appendChild(styleElement);
 
         for (const cssUrl of theme.cssUrls) {
             const linkElement = document.createElement("link");
             linkElement.dataset.theme = "";
-            linkElement.href = cssUrl;
             linkElement.rel = "stylesheet";
-            newHeadChildren.push(linkElement);
+            linkElement.href = String(cssUrl);
+            head.appendChild(linkElement);
         }
 
-        // Remove previous theme elements
-        prevHeadChildren.forEach((element) => element.remove());
-
-        // Add new theme elements
-        newHeadChildren.forEach((element) =>
-            document.head.appendChild(element)
-        );
-
-        // Write theme slug to <body> dataset
-        document.body.dataset.theme = theme.slug;
-
-        // Set new style source link and text
         const styleSource = document.getElementById(
             "style-source"
-        ) as HTMLAnchorElement;
-        styleSource.href = theme.values["--srclink"];
-        styleSource.textContent = theme.values["--srctext"];
-    }
+        ) as HTMLAnchorElement | null;
+        if (styleSource) {
+            styleSource.href = theme.values["--srclink"];
+            styleSource.textContent = theme.values["--srctext"];
+        }
 
-    applyTheme(getInitialTheme());
+        const applyBodyDataset = function () {
+            if (document.body) {
+                document.body.dataset.theme = theme.slug;
+            }
+        };
 
-    // Remove old unused storage
-    window.localStorage.removeItem("nottheme-color-scheme");
-    window.localStorage.removeItem("nottheme-style");
-    window.localStorage.removeItem("nottheme-themes");
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", applyBodyDataset, {
+                once: true,
+            });
+        } else {
+            applyBodyDataset();
+        }
+
+        window.__initialThemeSlug = theme.slug;
+
+        try {
+            window.localStorage.setItem("theme-slug", theme.slug);
+        } catch (error) {
+            void error;
+            // Ignore storage errors
+        }
+
+        window.localStorage.removeItem("nottheme-color-scheme");
+        window.localStorage.removeItem("nottheme-style");
+        window.localStorage.removeItem("nottheme-themes");
+    })();
 </script>
