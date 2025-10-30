@@ -1,14 +1,35 @@
 import { requiredCssKeys, type RequiredCssKey } from "./themeContract";
 
-type CssValue = number | string | null;
-type CssValueOrArray = CssValue | CssValue[];
+type CssPrimitive = number | string;
 
-export type ThemeValueDefinition = Record<RequiredCssKey, CssValueOrArray>;
+export type ThemeValue =
+    | CssPrimitive
+    | null
+    | readonly (CssPrimitive | null)[];
 
-export function defineThemeValues<T extends ThemeValueDefinition>(
-    values: T,
-): T {
-    return values;
+export type ThemeValues = {
+    readonly [K in RequiredCssKey]: ThemeValue;
+};
+
+export interface ThemeGroupDefinition<
+    Slugs extends readonly [string, ...string[]],
+    Names extends readonly [string, ...string[]],
+> {
+    readonly slug: Slugs;
+    readonly name: Names;
+    readonly cssUrls: readonly string[];
+    readonly values: ThemeValues;
+}
+
+export function defineThemeGroup<
+    const Slugs extends readonly [string, ...string[]],
+    const Names extends readonly [string, ...string[]],
+>(
+    definition: Names["length"] extends Slugs["length"]
+        ? ThemeGroupDefinition<Slugs, Names>
+        : never,
+): ThemeGroupDefinition<Slugs, Names> {
+    return definition;
 }
 
 export interface Theme {
@@ -18,47 +39,53 @@ export interface Theme {
     values: Record<RequiredCssKey, string> & Record<`--${string}`, string>;
 }
 
-export default function createThemes(
-    slug: string[],
-    name: string[],
-    cssUrls: string[],
-    values: ThemeValueDefinition,
+export function createThemes(
+    definition: ThemeGroupDefinition<
+        readonly [string, ...string[]],
+        readonly [string, ...string[]]
+    >,
 ): Theme[] {
-    if (name.length !== slug.length) {
-        throw new Error("Invalid theme");
-    }
+    const { cssUrls, name, slug, values } = definition;
 
+    const themeCount = slug.length;
     const themes: Theme[] = [];
 
-    for (let i = 0; i < name.length; i++) {
+    for (let i = 0; i < themeCount; i++) {
         themes.push({
-            cssUrls,
+            cssUrls: Array.from(cssUrls, (url) => String(url)),
             name: name[i]!,
             slug: slug[i]!,
-            values: {} as Record<RequiredCssKey, string>,
+            values: {} as Theme["values"],
         });
     }
 
-    for (const [key, value] of Object.entries(values)) {
+    const entries = Object.entries(values) as [
+        RequiredCssKey,
+        ThemeValue,
+    ][];
+
+    for (const [key, value] of entries) {
         if (value == null) {
             continue;
         }
 
         if (!Array.isArray(value)) {
             for (const theme of themes) {
-                theme.values[key as `--${string}`] = String(value);
+                theme.values[key] = String(value);
             }
 
             continue;
         }
 
         if (value.length > themes.length) {
-            throw new Error("Invalid theme");
+            throw new Error("Invalid theme definition: too many value entries.");
         }
 
         for (let i = 0; i < value.length; i++) {
-            if (value[i] != null) {
-                themes[i]!.values[key as `--${string}`] = String(value[i]);
+            const entry = value[i];
+
+            if (entry != null) {
+                themes[i]!.values[key] = String(entry);
             }
         }
     }
@@ -75,3 +102,5 @@ export default function createThemes(
 
     return themes;
 }
+
+export default createThemes;

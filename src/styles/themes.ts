@@ -1,10 +1,13 @@
-import cs16 from "./themes/cs16";
-import latex from "./themes/latex";
-import mono from "./themes/mono";
+import { createThemes } from "./createThemes";
+import { themeGroups } from "./themes/config";
 
-export const themes = [...mono, ...latex, ...cs16];
-export const defaultTheme = mono[0]!;
-export const defaultDarkTheme = mono[1]!;
+const expandedThemes = themeGroups.flatMap((group) => createThemes(group));
+
+export const themes = expandedThemes;
+export const defaultTheme = expandedThemes.find(({ slug }) => slug === "mono")!;
+export const defaultDarkTheme = expandedThemes.find(
+    ({ slug }) => slug === "mono-dark",
+)!;
 
 function valuesToString(values: Record<`--${string}`, string>): string {
     return Object.entries(values)
