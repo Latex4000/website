@@ -67,8 +67,26 @@ body {
     padding-inline: var(--layout-padding-inline);
 }
 
+header {
+    margin-block: var(--layout-header-margin-block, 1lh);
+}
+
+header h1 {
+    margin: 0;
+}
+
+header h1 a {
+    text-decoration: none;
+}
+
 nav {
     margin-block: var(--space-sm);
+    position: relative;
+}
+
+main {
+    /* For slotted components that need to use absolute positioning */
+    position: relative;
 }
 
 footer {
@@ -158,4 +176,13 @@ input,
 button,
 select {
     border-color: var(--border-color-muted);
+}
+
+@media only screen and (max-width: 600px) {
+    header {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
 }
