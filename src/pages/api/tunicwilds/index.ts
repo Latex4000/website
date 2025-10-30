@@ -1,0 +1,251 @@
+import { join } from "node:path";
+import { LibsqlError } from "@libsql/client";
+import type { APIRoute } from "astro";
+import { and, eq, type InferSelectModel, type SQLWrapper } from "drizzle-orm";
+import { jsonError, jsonResponse } from "../../../server/responses";
+import db, { retryIfDbBusy } from "../../../database/db";
+import { Member, Tunicwild } from "../../../database/schema";
+import { paginationQuery, parseNumberCursor } from "../../../server/pagination";
+import { writeBlobToFile } from "../../../server/webApi";
+import { lower } from "../../../database/utils";
+
+export const prerender = false;
+
+export const GET: APIRoute = async ({ url }) => {
+    const conditions: SQLWrapper[] = [];
+    const params = url.searchParams;
+
+    const game = params.get("game");
+    if (game)
+        conditions.push(eq(lower(Tunicwild.game), lower(game)));
+
+    const composer = params.get("composer");
+    if (composer)
+        conditions.push(eq(lower(Tunicwild.composer), lower(composer)));
+
+    const title = params.get("title");
+    if (title)
+        conditions.push(eq(lower(Tunicwild.title), lower(title)));
+
+    const releaseDate = params.get("releaseDate");
+    if (releaseDate) {
+        const date = new Date(releaseDate);
+        if (isNaN(date.getTime()))
+            return jsonError("Invalid release date");
+        conditions.push(eq(Tunicwild.releaseDate, date));
+    }
+
+    return paginationQuery(
+        params,
+        Tunicwild,
+        "id",
+        parseNumberCursor,
+        ...conditions,
+    );
+}
+
+export const POST: APIRoute = async (context) => {
+    if (!process.env.TUNICWILDS_UPLOAD_URL && !process.env.TUNICWILDS_UPLOAD_DIRECTORY) {
+        return jsonError("TUNICWILDS_UPLOAD_* not set", 500);
+    }
+
+    let formData: FormData;
+    try {
+        formData = await context.request.formData();
+    } catch {
+        return jsonError("Request body must be form data");
+    }
+
+    const discord = formData.get("discord");
+    const composer = formData.get("composer");
+    const title = formData.get("title");
+    const game = formData.get("game");
+    const releaseDate = formData.get("releaseDate");
+    const officialLink = formData.get("officialLink");
+    const file = formData.get("file") as File;
+
+    if (typeof discord !== "string" || !discord) {
+        return jsonError("Member discord is required");
+    }
+    if (typeof composer !== "string" || !composer.trim()) {
+        return jsonError("Composer is required");
+    }
+    if (typeof title !== "string" || !title.trim()) {
+        return jsonError("Title is required");
+    }
+    if (typeof game !== "string" || !game.trim()) {
+        return jsonError("Game is required");
+    }
+    if (typeof releaseDate !== "string" || !releaseDate.trim()) {
+        return jsonError("Release date is required");
+    }
+    if (typeof officialLink !== "string" || !officialLink.trim()) {
+        return jsonError("Official link is required");
+    }
+    if (!(file instanceof File) || file.size === 0) {
+        return jsonError("Valid audio file is required");
+    }
+
+    // Parse and validate release date
+    const releaseDateParsed = new Date(releaseDate);
+    if (isNaN(releaseDateParsed.getTime())) {
+        return jsonError("Invalid release date format. Use YYYY-MM-DD or ISO format");
+    }
+    if (releaseDateParsed.getTime() > Date.now()) {
+        return jsonError("Release date cannot be in the future");
+    }
+
+    // Length validation with better limits
+    const MAX_LENGTH = 2 ** 10;
+    if (composer.length > MAX_LENGTH) {
+        return jsonError(`Composer name too long (max ${MAX_LENGTH} characters)`);
+    }
+    if (title.length > MAX_LENGTH) {
+        return jsonError(`Title too long (max ${MAX_LENGTH} characters)`);
+    }
+    if (game.length > MAX_LENGTH) {
+        return jsonError(`Game name too long (max ${MAX_LENGTH} characters)`);
+    }
+
+    // File validation with size limits
+    const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+    if (file.size > MAX_FILE_SIZE) {
+        return jsonError("File too large (max 50MB)");
+    }
+
+    const member = await db
+        .select()
+        .from(Member)
+        .where(eq(Member.discord, discord))
+        .get();
+
+    if (member == null) {
+        return jsonError("Member does not exist");
+    }
+
+    if (member.deleted) {
+        return jsonError("Member has been deleted");
+    }
+
+    // More robust file type checking
+    const allowedExtensions = [".ogg", ".opus", ".wav", ".mp3"];
+    const allowedMimeTypes = ["audio/ogg", "audio/opus", "audio/wav", "audio/mpeg", "audio/mp3"];
+
+    const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+    const isValidExtension = allowedExtensions.includes(fileExtension);
+    const isValidMimeType = allowedMimeTypes.includes(file.type.toLowerCase());
+
+    if (!isValidExtension && !isValidMimeType) {
+        return jsonError("File must be an OGG, Opus, WAV, or MP3 file");
+    }
+
+    // Check for duplicates with case-insensitive comparison
+    const existingTunicwild = await db
+        .select()
+        .from(Tunicwild)
+        .where(
+            and(
+                eq(lower(Tunicwild.title), lower(title.trim())),
+                eq(lower(Tunicwild.game), lower(game.trim()))
+            )
+        )
+        .get();
+
+    if (existingTunicwild) {
+        return jsonError(`A song with title "${title}" already exists in game "${game}"`);
+    }
+
+    // Store to DB
+    let tunicwild: InferSelectModel<typeof Tunicwild>;
+    try {
+        tunicwild = await retryIfDbBusy(() =>
+            db
+                .insert(Tunicwild)
+                .values({
+                    memberDiscord: discord,
+                    composer: composer.trim(),
+                    title: title.trim(),
+                    game: game.trim(),
+                    releaseDate: releaseDateParsed,
+                    officialLink: officialLink.trim(),
+                })
+                .returning()
+                .get()
+        );
+    } catch (error) {
+        if (error instanceof LibsqlError) {
+            if (error.code === "SQLITE_CONSTRAINT_UNIQUE") {
+                return jsonError("A song with this title and game already exists");
+            }
+            if (error.code === "SQLITE_CONSTRAINT_FOREIGNKEY") {
+                return jsonError("Invalid foreign key constraint");
+            }
+        }
+        console.error("Database error:", error);
+        return jsonError("Failed to save song to database", 500);
+    }
+
+    // Upload files with better error handling
+    try {
+        if (process.env.TUNICWILDS_UPLOAD_DIRECTORY) {
+            await writeBlobToFile(
+                join(process.env.TUNICWILDS_UPLOAD_DIRECTORY, tunicwild.id.toString()),
+                file,
+            );
+        } else if (process.env.TUNICWILDS_UPLOAD_URL) {
+            const uploadResponse = await fetch(
+                `${process.env.TUNICWILDS_UPLOAD_URL}/upload/${tunicwild.id}`,
+                {
+                    method: "PUT",
+                    body: file,
+                    headers: {
+                        "Content-Length": file.size.toString(),
+                    },
+                }
+            );
+
+            if (!uploadResponse.ok) {
+                // If timed out, retry a few times
+                if (uploadResponse.status === 408 || uploadResponse.status === 504) {
+                    for (let i = 0; i < 3; i++) {
+                        const retryResponse = await fetch(
+                            `${process.env.TUNICWILDS_UPLOAD_URL}/upload/${tunicwild.id}`,
+                            {
+                                method: "PUT",
+                                body: file,
+                                headers: {
+                                    "Content-Length": file.size.toString(),
+                                },
+                            }
+                        );
+                        if (retryResponse.ok)
+                            break;
+
+                        if (i === 2) {
+                            // Rollback database entry if all retries fail
+                            await db.delete(Tunicwild).where(eq(Tunicwild.id, tunicwild.id));
+                            return jsonError(`Failed to upload file after retries: ${retryResponse.statusText}`, 500);
+                        }
+                    }
+                } else {
+                    // Rollback database entry if file upload fails
+                    await db.delete(Tunicwild).where(eq(Tunicwild.id, tunicwild.id));
+                    return jsonError(`Failed to upload file: ${uploadResponse.statusText}`, 500);
+                }
+            }
+        } else {
+            return jsonError("", 500);
+        }
+    } catch (error) {
+        console.error("File upload error:", error);
+        // Rollback database entry if file upload fails
+        try {
+            await db.delete(Tunicwild).where(eq(Tunicwild.id, tunicwild.id));
+        } catch (rollbackError) {
+            console.error("Failed to rollback database entry:", rollbackError);
+        }
+        return jsonError("Failed to upload audio file", 500);
+    }
+
+    return jsonResponse(tunicwild);
+};

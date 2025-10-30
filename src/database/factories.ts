@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import defineFactory from "./defineFactory";
-import { Action, ActionItem, Member, Motion, Session, Sight, Sound, Ticket, Word } from "./schema";
+import { Action, ActionItem, Member, Motion, Session, Sight, Sound, Ticket, Tunicwild, Word } from "./schema";
 
 function unique<T>(fn: () => T): () => T {
     const used = new Set<T>();
@@ -81,6 +81,15 @@ export const TicketFactory = defineFactory(Ticket, {
     memberDiscord: () => { throw new Error("Not implemented"); },
     createdAt: () => faker.date.recent(),
     hash: () => faker.string.alphanumeric(32),
+});
+
+export const TunicwildFactory = defineFactory(Tunicwild, {
+    memberDiscord: () => { throw new Error("Not implemented"); },
+    composer: () => faker.person.firstName(),
+    title: () => faker.music.songName(),
+    game: () => faker.commerce.productName(),
+    releaseDate: () => faker.date.past(),
+    officialLink: () => faker.internet.url(),
 });
 
 export const WordFactory = defineFactory(Word, {

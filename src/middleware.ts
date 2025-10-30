@@ -9,7 +9,11 @@ const checkHmacForApi = defineMiddleware(async (context, next) => {
         return next();
     }
 
-    if (context.url.pathname.startsWith("/api/action") && context.request.method === "GET") {
+    if (
+        (
+            context.url.pathname.startsWith("/api/action") ||
+            context.url.pathname.startsWith("/api/tunicwild")
+        ) && context.request.method === "GET") {
         return next();
     }
 
@@ -59,6 +63,10 @@ const serveUploadedFilesInDev = defineMiddleware(async (context, next) => {
         return new Response("SOUNDS_UPLOAD_DIRECTORY not set", { status: 500 });
     }
 
+    if (!process.env.TUNICWILDS_RENDERED_DIRECTORY) {
+        return new Response("TUNICWILDS_RENDERED_DIRECTORY not set", { status: 500 });
+    }
+
     if (!process.env.WORDS_UPLOAD_DIRECTORY) {
         return new Response("WORDS_UPLOAD_DIRECTORY not set", { status: 500 });
     }
@@ -66,6 +74,7 @@ const serveUploadedFilesInDev = defineMiddleware(async (context, next) => {
     const rewrites = [
         ["/sights-uploads/", process.env.SIGHTS_UPLOAD_DIRECTORY + "/"],
         ["/sounds-uploads/", process.env.SOUNDS_UPLOAD_DIRECTORY + "/"],
+        ["/tunicwilds-rendered/", process.env.TUNICWILDS_RENDERED_DIRECTORY + "/"],
         ["/words-uploads/", process.env.WORDS_UPLOAD_DIRECTORY + "/"],
     ] as const;
 

@@ -1,5 +1,11 @@
 import { faker } from "@faker-js/faker";
-import { ActionFactory, ActionItemFactory, MemberFactory, MotionFactory, SightFactory, SoundFactory, WordFactory } from "./factories";
+import { ActionFactory, ActionItemFactory, MemberFactory, MotionFactory, SightFactory, SoundFactory, TunicwildFactory, WordFactory } from "./factories";
+import { writeFile } from "fs/promises";
+import { join } from "path";
+
+if (!process.env.TUNICWILDS_UPLOAD_DIRECTORY) {
+    throw new Error("TUNICWILDS_UPLOAD_DIRECTORY not set");
+}
 
 export default async function seed() {
     const members = await new MemberFactory().count(20).create();
@@ -43,4 +49,18 @@ export default async function seed() {
     await new WordFactory().count(10).create({
         memberDiscord: () => faker.helpers.arrayElement(members.map((member) => member.discord)),
     });
+
+    const tunicwilds = await new TunicwildFactory().count(10).create({
+        memberDiscord: () => faker.helpers.arrayElement(members.map((member) => member.discord)),
+    });
+
+    const placeholderAudioResponse = await fetch("https://interactive-examples.mdn.mozilla.net/media/cc0-audio/t-rex-roar.mp3");
+    const placeholderAudio = await placeholderAudioResponse.bytes();
+
+    for (const tunicwild of tunicwilds) {
+        await writeFile(
+            join(process.env.TUNICWILDS_UPLOAD_DIRECTORY!, tunicwild.id.toString()),
+            placeholderAudio,
+        );
+    }
 }
