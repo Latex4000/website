@@ -47,20 +47,30 @@
     let frequencyScale: d3.ScaleLinear<number, number>;
     let panningScale: d3.ScaleLinear<number, number>;
 
-    const fetchCSSColors = () => {
-        const backgroundColor = getComputedStyle(
-            document.body,
-        ).getPropertyValue("--background-color");
-        const textColor = getComputedStyle(document.body).getPropertyValue(
-            "--text-color",
-        );
-        return { backgroundColor, textColor };
+    const sanitizeColor = (candidate: string, fallback: string): string =>
+        candidate && candidate.trim().length ? candidate.trim() : fallback;
+
+    const parseSequentialRamp = (raw: string) => {
+        const byDelimiter = raw
+            .split(/[|,]/)
+            .map((token) => token.trim())
+            .filter(Boolean);
+        if (byDelimiter.length) {
+            return { values: byDelimiter, hasCustom: true };
+        }
+
+        const byWhitespace = raw
+            .split(/\s+/)
+            .map((token) => token.trim())
+            .filter(Boolean);
+        if (byWhitespace.length) {
+            return { values: byWhitespace, hasCustom: true };
+        }
+
+        return { values: [], hasCustom: false };
     };
-    let { backgroundColor, textColor } = fetchCSSColors();
-    // Custom Color Scale: Black -> Orange -> White -> Purple
-    let gradientChoice = 1;
-    const gradientChoices = [
-        [textColor],
+
+    const staticGradientPalettes: string[][] = [
         [
             "#9e0142",
             "#d53e4f",
@@ -139,25 +149,130 @@
             "#2166ac",
             "#053061",
         ],
-    ].map((g) => [backgroundColor, ...g]); // All gradients start with black and then go to the specified colors
-    const updateColourScale = () => {
-        return d3
-            .scaleLinear<string>()
-            .domain(
-                gradientChoices[gradientChoice - 1]!.map(
-                    (_, i) =>
-                        i / (gradientChoices[gradientChoice - 1]!.length - 1),
-                ),
-            )
-            .range(gradientChoices[gradientChoice - 1]!);
+    ];
+
+    const buildDefaultGradientChoices = (
+        background: string,
+        text: string,
+    ): string[][] => {
+        const choices: string[][] = [[background, text]];
+        staticGradientPalettes.forEach((palette) => {
+            choices.push([background, ...palette]);
+        });
+        return choices;
     };
-    let customColorScale = updateColourScale();
+
+    const buildThemeGradientChoices = (
+        background: string,
+        text: string,
+        ramp: string[],
+        hasCustom: boolean,
+    ): string[][] => {
+        if (!hasCustom) return [];
+        const normalized = ramp
+            .map((color) => sanitizeColor(color, text))
+            .filter(Boolean);
+        if (!normalized.length) return [];
+
+        const themePalettes: string[][] = [[background, ...normalized]];
+
+        if (normalized.length >= 3)
+            themePalettes.push([background, ...[...normalized].reverse()]);
+
+        const evens = normalized.filter((_, index) => index % 2 === 0);
+        const odds = normalized.filter((_, index) => index % 2 === 1);
+        if (evens.length >= 2) themePalettes.push([background, ...evens]);
+        if (odds.length >= 2) themePalettes.push([background, ...odds]);
+
+        return themePalettes;
+    };
+
+    const fetchCssContext = () => {
+        if (typeof window === "undefined" || !document?.body) {
+            return {
+                backgroundColor: "#000000",
+                textColor: "#ffffff",
+                sequentialRamp: [],
+                hasCustomRamp: false,
+            };
+        }
+
+        const style = getComputedStyle(document.body);
+        const rawRampValue = style
+            .getPropertyValue("--viz-sequential-ramp")
+            .trim();
+        const { values: sequentialRamp, hasCustom: hasCustomRamp } =
+            parseSequentialRamp(rawRampValue);
+        return {
+            backgroundColor: style
+                .getPropertyValue("--background-color")
+                .trim(),
+            textColor: style.getPropertyValue("--text-color").trim(),
+            sequentialRamp,
+            hasCustomRamp,
+        };
+    };
+
+    let { backgroundColor, textColor, sequentialRamp, hasCustomRamp } =
+        fetchCssContext();
+
+    let gradientChoice = 1;
+    let gradientChoices: string[][] = [];
+
+    let customColorScale = d3
+        .scaleLinear<string>()
+        .domain([0, 1])
+        .range([
+            sanitizeColor(backgroundColor, "#000000"),
+            sanitizeColor(textColor, "#ffffff"),
+        ]);
+
+    const clampGradientChoice = () => {
+        if (gradientChoice < 1) gradientChoice = 1;
+        if (gradientChoice > gradientChoices.length) {
+            gradientChoice = gradientChoices.length;
+        }
+    };
+
+    const updateColourScale = () => {
+        clampGradientChoice();
+        const palette = gradientChoices[gradientChoice - 1] ?? [
+            sanitizeColor(backgroundColor, "#000000"),
+            sanitizeColor(textColor, "#ffffff"),
+        ];
+        const stops = palette.map((_, index) =>
+            palette.length <= 1 ? 0 : index / (palette.length - 1),
+        );
+        return d3.scaleLinear<string>().domain(stops).range(palette);
+    };
+
+    const rebuildGradientChoices = () => {
+        const sanitizedBackground = sanitizeColor(backgroundColor, "#000000");
+        const sanitizedText = sanitizeColor(textColor, "#ffffff");
+        const themePalettes = buildThemeGradientChoices(
+            sanitizedBackground,
+            sanitizedText,
+            sequentialRamp,
+            hasCustomRamp,
+        );
+        const defaults = buildDefaultGradientChoices(
+            sanitizedBackground,
+            sanitizedText,
+        );
+        gradientChoices = [...themePalettes, ...defaults];
+        if (!gradientChoices.length) {
+            gradientChoices = [[sanitizedBackground, sanitizedText]];
+        }
+        clampGradientChoice();
+        customColorScale = updateColourScale();
+    };
+
+    rebuildGradientChoices();
 
     const updateColours = () => {
-        ({ backgroundColor, textColor } = fetchCSSColors());
-        gradientChoices[0] = [backgroundColor, textColor];
-        gradientChoices.forEach((g) => (g[0] = backgroundColor));
-        customColorScale = updateColourScale();
+        ({ backgroundColor, textColor, sequentialRamp, hasCustomRamp } =
+            fetchCssContext());
+        rebuildGradientChoices();
     };
 
     function resizeCanvas() {
@@ -193,8 +308,11 @@
         // A touch event anywhere outside the canvas changes gradient
         window.addEventListener("touchstart", (event) => {
             if (!canvas.contains(event.target as Node)) {
-                gradientChoice = (gradientChoice + 1) % gradientChoices.length;
-                customColorScale = updateColourScale();
+                if (gradientChoices.length) {
+                    gradientChoice =
+                        (gradientChoice % gradientChoices.length) + 1;
+                    customColorScale = updateColourScale();
+                }
             }
         });
         window.addEventListener("resize", resizeCanvas);

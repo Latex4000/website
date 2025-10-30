@@ -4,6 +4,46 @@
     import dataFile from "../../data/messageData.json";
     import { type MessageData } from "../../typing/messageData";
 
+    const fallbackGridColor = "rgba(187, 187, 187, 0.45)";
+    const fallbackAxisColor = "#ffffff";
+    const fallbackFocusColor = "#ffffff";
+
+    let focusColor = fallbackFocusColor;
+
+    function readCssVar(
+        style: CSSStyleDeclaration | null,
+        name: string,
+    ): string {
+        if (!style) return "";
+        return style.getPropertyValue(name).trim();
+    }
+
+    function buildSeriesPalette(
+        style: CSSStyleDeclaration | null,
+        count: number,
+    ): string[] {
+        const raw = readCssVar(style, "--viz-series-palette");
+        const parsed = raw
+            .split(/[|,]/)
+            .map((token) => token.trim())
+            .filter(Boolean);
+
+        if (!parsed.length) {
+            const size = count > 0 ? count : 10;
+            return Array.from({ length: size }, (_, index) => {
+                const ratio = size <= 1 ? 0.5 : index / Math.max(1, size - 1);
+                return d3.interpolatePuBuGn(ratio);
+            });
+        }
+
+        if (!count) return parsed;
+
+        return Array.from(
+            { length: count },
+            (_, index) => parsed[index % parsed.length]!,
+        );
+    }
+
     let interval = $state("week");
     let windowSize = $state(3);
     let includeBotMessages = $state(false);
@@ -195,8 +235,19 @@
         const yTicks = yScale.ticks(6);
 
         // X ticks
+        const style =
+            typeof document !== "undefined" && document.body
+                ? getComputedStyle(document.body)
+                : null;
+
+        const gridColor = readCssVar(style, "--viz-grid") || fallbackGridColor;
+        const axisColor = readCssVar(style, "--viz-axis") || fallbackAxisColor;
+        const resolvedFocusColor =
+            readCssVar(style, "--viz-focus") || fallbackFocusColor;
+        focusColor = resolvedFocusColor;
+
         context.beginPath();
-        context.strokeStyle = "#bbb";
+        context.strokeStyle = gridColor;
         xTicks.forEach((t) => {
             const tx = xScale(t);
             context!.moveTo(tx, height - margin.bottom);
@@ -206,7 +257,7 @@
 
         context.textAlign = "center";
         context.textBaseline = "top";
-        context.fillStyle = "#fff";
+        context.fillStyle = axisColor;
         xTicks.forEach((t) => {
             const tx = xScale(t);
             context!.fillText(
@@ -218,7 +269,7 @@
 
         // Y ticks
         context.beginPath();
-        context.strokeStyle = "#bbb";
+        context.strokeStyle = gridColor;
         yTicks.forEach((t) => {
             const ty = yScale(t);
             context!.moveTo(margin.left, ty);
@@ -228,7 +279,7 @@
 
         context.textAlign = "right";
         context.textBaseline = "middle";
-        context.fillStyle = "#fff";
+        context.fillStyle = axisColor;
         yTicks.forEach((t) => {
             const ty = yScale(t);
             context!.fillText(`${t}`, margin.left - 8, ty);
@@ -237,9 +288,7 @@
         const channels = channelsArray
             .map((arr) => arr[0]?.channelID)
             .filter(Boolean) as string[];
-        colorRange = channels.map((_, i) =>
-            d3.interpolatePuBuGn(i / (channels.length - 1 || 1)),
-        );
+        colorRange = buildSeriesPalette(style, channels.length);
         const color = d3.scaleOrdinal(colorRange).domain(channels);
 
         channelsArray.forEach((series) => {
@@ -396,6 +445,10 @@
         d3.select(canvasRef).call(zoomBehavior);
     }
 
+    function handleThemeChange() {
+        updateChart();
+    }
+
     function onCanvasClick(e: MouseEvent) {
         if (!currentChannels.length || !canvasRef || !context) return;
         const rect = canvasRef.getBoundingClientRect();
@@ -496,7 +549,8 @@
                 .map((arr) => arr[0]?.channelID)
                 .filter(Boolean) as string[];
             const color = d3.scaleOrdinal(colorRange).domain(channels);
-            const circleColor = color(closest.channelID) || "#fff";
+            const circleColor =
+                color(closest.channelID) || focusColor || fallbackFocusColor;
 
             context.beginPath();
             context.arc(
@@ -535,6 +589,7 @@
 
     onMount(() => {
         window.addEventListener("resize", updateChart);
+        window.addEventListener("themechange", handleThemeChange);
         updateChart();
     });
 
@@ -634,8 +689,8 @@
 
     .dropdown-content {
         position: absolute;
-        background: var(--surface-overlay-strong, rgba(0, 0, 0, 0.35));
-        color: var(--text-on-overlay, #fff);
+        background: var(--surface-overlay-strong);
+        color: var(--text-on-overlay);
         padding: var(--space-static-xs);
         display: flex;
         flex-direction: column;
@@ -653,8 +708,8 @@
     #tooltip {
         position: absolute;
         pointer-events: none;
-        background: var(--surface-overlay, rgba(0, 0, 0, 0.2));
-        color: var(--text-on-overlay, #fff);
+        background: var(--surface-overlay);
+        color: var(--text-on-overlay);
         padding: var(--space-static-xs);
         font-size: var(--font-size-sm);
         visibility: hidden;

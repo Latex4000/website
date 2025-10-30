@@ -159,6 +159,40 @@ export const themeGroups = [
             "--surface-overlay-strong":
                 "color-mix(in srgb, var(--text-color) 35%, transparent)",
             "--text-on-overlay": ["#ffffff", "#111111"],
+            "--viz-grid":
+                "color-mix(in srgb, var(--text-color) 15%, transparent)",
+            "--viz-axis":
+                "color-mix(in srgb, var(--text-color) 90%, transparent)",
+            "--viz-focus":
+                "color-mix(in srgb, var(--text-color) 70%, var(--background-color) 30%)",
+            "--viz-series-palette": [
+                "#0a0a0a,#191919,#2b2b2b,#3d3d3d,#4f4f4f,#626262,#767676,#8a8a8a,#9f9f9f,#b4b4b4",
+                "#f4f4f4,#dddddd,#c7c7c7,#b0b0b0,#9a9a9a,#848484,#6d6d6d,#575757,#414141,#2c2c2c",
+            ],
+            "--viz-sequential-ramp": [
+                "hsl(0 0% 82%)|hsl(0 0% 62%)|hsl(0 0% 45%)|hsl(0 0% 30%)|hsl(0 0% 12%)",
+                "hsl(0 0% 88%)|hsl(0 0% 74%)|hsl(0 0% 58%)|hsl(0 0% 42%)|hsl(0 0% 26%)",
+            ],
+            "--feedback-accent": [
+                "color-mix(in srgb, #272727 72%, var(--background-color) 28%)",
+                "color-mix(in srgb, #e5e5e5 74%, var(--background-color) 26%)",
+            ],
+            "--feedback-helpful": [
+                "color-mix(in srgb, #335e33 34%, var(--background-color) 66%)",
+                "color-mix(in srgb, #7dcb7d 44%, var(--background-color) 56%)",
+            ],
+            "--feedback-harmful": [
+                "color-mix(in srgb, #5e2f2f 34%, var(--background-color) 66%)",
+                "color-mix(in srgb, #c96f6f 44%, var(--background-color) 56%)",
+            ],
+            "--feedback-neutral": [
+                "color-mix(in srgb, #2f3f5e 34%, var(--background-color) 66%)",
+                "color-mix(in srgb, #7ca2cf 44%, var(--background-color) 56%)",
+            ],
+            "--feedback-arrow": [
+                "color-mix(in srgb, #272727 74%, transparent)",
+                "color-mix(in srgb, #e5e5e5 74%, transparent)",
+            ],
             "--webring-prev-icon": '"<--"',
             "--webring-next-icon": '"-->"',
             "--srclink": "https://owickstrom.github.io/the-monospace-web/",
@@ -226,6 +260,30 @@ export const themeGroups = [
             "--surface-overlay-strong":
                 "color-mix(in srgb, var(--text-color) 35%, transparent)",
             "--text-on-overlay": ["#ffffff", "#111111"],
+            "--viz-grid":
+                "color-mix(in srgb, var(--text-color) 15%, transparent)",
+            "--viz-axis":
+                "color-mix(in srgb, var(--text-color) 90%, transparent)",
+            "--viz-focus":
+                "color-mix(in srgb, var(--text-color) 70%, var(--background-color) 30%)",
+            "--viz-series-palette": [
+                "#0f1f3a,#1f3354,#2f496f,#3f5f8b,#5175a7,#648abf,#779fd5,#8db3e3,#b8862a,#8f6b1e",
+                "#dbe6f5,#c0d1e8,#a6bad9,#8ca4ca,#728dba,#5a76a4,#425e89,#2c4268,#e1bb6a,#b7924d",
+            ],
+            "--viz-sequential-ramp": [
+                "hsl(214 50% 88%)|hsl(214 60% 70%)|hsl(214 65% 54%)|hsl(214 70% 40%)|hsl(214 74% 28%)",
+                "hsl(214 60% 28%)|hsl(213 58% 38%)|hsl(212 55% 50%)|hsl(210 58% 62%)|hsl(206 62% 74%)",
+            ],
+            "--feedback-accent":
+                "color-mix(in srgb, #244066 48%, var(--background-color) 52%)",
+            "--feedback-helpful":
+                "color-mix(in srgb, #255443 34%, var(--background-color) 66%)",
+            "--feedback-harmful":
+                "color-mix(in srgb, #6a2d35 34%, var(--background-color) 66%)",
+            "--feedback-neutral":
+                "color-mix(in srgb, #28486d 36%, var(--background-color) 64%)",
+            "--feedback-arrow":
+                "color-mix(in srgb, #244066 70%, transparent)",
             "--webring-prev-icon": '"←"',
             "--webring-next-icon": '"→"',
             "--srclink": "https://latex.vercel.app/",
@@ -281,6 +339,26 @@ export const themeGroups = [
             "--surface-overlay-strong":
                 "color-mix(in srgb, var(--text-color) 35%, transparent)",
             "--text-on-overlay": "#dedfd6",
+            "--viz-grid":
+                "color-mix(in srgb, var(--text-color) 18%, transparent)",
+            "--viz-axis":
+                "color-mix(in srgb, var(--text-color) 92%, transparent)",
+            "--viz-focus":
+                "color-mix(in srgb, var(--text-color) 65%, var(--background-color) 35%)",
+            "--viz-series-palette":
+                "#133416,#1f4a23,#2c6131,#3a7a40,#4b944f,#5cab61,#70c275,#87d88d,#a4efaa,#d0ffe0",
+            "--viz-sequential-ramp":
+                "hsl(124 38% 18%)|hsl(120 44% 32%)|hsl(116 52% 48%)|hsl(110 60% 64%)|hsl(102 68% 80%)",
+            "--feedback-accent":
+                "color-mix(in srgb, #8ad04e 56%, var(--background-color) 44%)",
+            "--feedback-helpful":
+                "color-mix(in srgb, #56c77f 46%, var(--background-color) 54%)",
+            "--feedback-harmful":
+                "color-mix(in srgb, #d77249 44%, var(--background-color) 56%)",
+            "--feedback-neutral":
+                "color-mix(in srgb, #4fa287 44%, var(--background-color) 56%)",
+            "--feedback-arrow":
+                "color-mix(in srgb, #c8f7d4 74%, transparent)",
             "--webring-prev-icon": '"<--"',
             "--webring-next-icon": '"-->"',
             "--srclink": "https://cs16.samke.me/",

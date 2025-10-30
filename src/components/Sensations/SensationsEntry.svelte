@@ -132,11 +132,22 @@
         save({ entry: newEntry });
     }
 
-    // Compute background color for the major emotion area.
+    // Compute feedback blends based on the selected emotion.
     let currentColor: [number, number, number] = $derived.by(() =>
         mainEmotion === "other"
             ? emotionColours.other
             : emotionColours[mainEmotion],
+    );
+    const currentColorCss = $derived.by(
+        () => `rgb(${currentColor[0]}, ${currentColor[1]}, ${currentColor[2]})`,
+    );
+    const emotionBackground = $derived.by(
+        () =>
+            `color-mix(in srgb, var(--feedback-accent) 55%, ${currentColorCss} 45%)`,
+    );
+    const emotionArrowColor = $derived.by(
+        () =>
+            `color-mix(in srgb, var(--feedback-arrow) 70%, ${currentColorCss} 30%)`,
     );
 </script>
 
@@ -174,7 +185,7 @@
                 </div>
                 <div
                     class="subsection core-event"
-                    style="background-color: rgba({currentColor[0]}, {currentColor[1]}, {currentColor[2]}, 0.2);"
+                    style={`background-color: ${emotionBackground};`}
                 >
                     <div>Core Event</div>
                     <textarea
@@ -196,10 +207,7 @@
                 </div>
             </div>
 
-            <div
-                class="arrow arrow-1"
-                style="color: rgba({currentColor[0]}, {currentColor[1]}, {currentColor[2]}, 0.5);"
-            >
+            <div class="arrow arrow-1" style={`color: ${emotionArrowColor};`}>
                 <span>➜</span>
             </div>
 
@@ -217,7 +225,7 @@
                 </div>
                 <div
                     class="reaction major-emotion"
-                    style="background-color: rgba({currentColor[0]}, {currentColor[1]}, {currentColor[2]}, 0.2);"
+                    style={`background-color: ${emotionBackground};`}
                 >
                     <div>Major Emotion</div>
                     <select bind:value={mainEmotion}>
@@ -277,10 +285,7 @@
                 </div>
             </div>
 
-            <div
-                class="arrow arrow-2"
-                style="color: rgba({currentColor[0]}, {currentColor[1]}, {currentColor[2]}, 0.5);"
-            >
+            <div class="arrow arrow-2" style={`color: ${emotionArrowColor};`}>
                 <span>➜</span>
             </div>
 
@@ -326,7 +331,7 @@
 
 <style>
     .entry-editor {
-        border: var(--border-thickness) solid var(--border-color-muted, #ccc);
+        border: var(--border-thickness) solid var(--border-color-muted);
         padding: var(--space-static-md);
         margin-top: var(--space-static-md);
         overflow-x: scroll;
@@ -394,13 +399,13 @@
         padding: var(--space-static-xs);
     }
     .harmful {
-        background-color: rgba(255, 100, 100, 0.2);
+        background-color: var(--feedback-harmful);
     }
     .helpful {
-        background-color: rgba(100, 255, 100, 0.2);
+        background-color: var(--feedback-helpful);
     }
     .neutral {
-        background-color: rgba(100, 100, 255, 0.2);
+        background-color: var(--feedback-neutral);
     }
     .response {
         display: flex;
@@ -409,7 +414,7 @@
     .arrow {
         font-size: calc(var(--font-size-lg) * 20 / 14);
         align-self: center;
-        color: #888;
+        color: var(--feedback-arrow);
     }
     .options {
         display: flex;

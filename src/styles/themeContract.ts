@@ -54,6 +54,22 @@ const surfaces = [
     "--text-on-overlay",
 ] as const;
 
+const viz = [
+    "--viz-grid",
+    "--viz-axis",
+    "--viz-focus",
+    "--viz-series-palette",
+    "--viz-sequential-ramp",
+] as const;
+
+const feedback = [
+    "--feedback-accent",
+    "--feedback-helpful",
+    "--feedback-harmful",
+    "--feedback-neutral",
+    "--feedback-arrow",
+] as const;
+
 const meta = ["--webring-prev-icon", "--webring-next-icon", "--srclink", "--srctext"] as const;
 
 export const themeContract = {
@@ -62,6 +78,8 @@ export const themeContract = {
     typography,
     borders,
     surfaces,
+    viz,
+    feedback,
     meta,
 } as const;
 
@@ -71,6 +89,8 @@ export const requiredCssKeys = [
     ...typography,
     ...borders,
     ...surfaces,
+    ...viz,
+    ...feedback,
     ...meta,
 ] as const;
 

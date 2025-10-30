@@ -261,7 +261,7 @@
         gap: var(--space-static-md);
     }
     .calendar-container {
-        border: var(--border-thickness) solid var(--border-color-muted, #ccc);
+        border: var(--border-thickness) solid var(--border-color-muted);
         padding: var(--space-static-md);
     }
     .calendar-nav {
@@ -274,7 +274,7 @@
         margin: 0;
     }
     .day-entries {
-        border: var(--border-thickness) solid var(--border-color-muted, #ccc);
+        border: var(--border-thickness) solid var(--border-color-muted);
         padding: var(--space-static-md);
     }
     .entry {

@@ -183,7 +183,7 @@
         gap: var(--space-static-xs);
     }
     .day {
-        border: var(--border-thickness) solid var(--border-color-muted, #ccc);
+        border: var(--border-thickness) solid var(--border-color-muted);
         padding: var(--space-static-xs);
         text-align: center;
         cursor: pointer;
