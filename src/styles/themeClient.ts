@@ -73,6 +73,9 @@ export function applyThemeToDocument(theme: Theme): void {
     appliedThemeSlug = theme.slug;
 
     if (typeof window !== "undefined") {
+        window.dispatchEvent(
+            new CustomEvent("themechange", { detail: { slug: theme.slug } }),
+        );
         window.__initialThemeSlug = theme.slug;
     }
 }
