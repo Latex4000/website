@@ -1,4 +1,4 @@
-import type { Theme } from "./createThemes";
+import { themes, type Theme } from "./config";
 
 declare global {
     interface Window {
@@ -77,8 +77,7 @@ export function applyThemeToDocument(theme: Theme): void {
     }
 }
 
-export function applyThemeFromSlug(
-    themes: Theme[],
+export function applyTheme(
     themeSlug: string,
 ): Theme | undefined {
     const theme = themes.find(({ slug }) => slug === themeSlug);

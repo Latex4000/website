@@ -1,11 +1,17 @@
 ---
-import { defaultDarkTheme, defaultTheme, ssrStyle, themes } from "./themeData";
+import { defaultDarkTheme, defaultTheme, themes } from "./config";
 
 const initJson = JSON.stringify({ defaultDarkTheme, defaultTheme, themes });
 ---
 
 {/* Initial default theme styles for noscript */}
-<style is:inline set:html={ssrStyle()} data-theme></style>
+<style data-theme>
+    :root { ${valuesToString(defaultTheme.values)} }
+
+        @media (prefers-color-scheme: dark) {
+            :root { ${valuesToString(defaultDarkTheme.values)} }
+        }
+</style>
 {
     // Assumes defaultDarkTheme has the same cssUrls
     defaultTheme.cssUrls.map((cssUrl) => (

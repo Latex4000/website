@@ -1,5 +1,6 @@
 <script lang="ts">
-    import { applyTheme, defaultTheme, themes } from "./themeData";
+    import { applyTheme } from "./themeClient";
+    import { defaultTheme, themes } from "./config";
 
     let themeSlug = $state(
         import.meta.env.SSR ? defaultTheme.slug : document.body.dataset.theme!,
