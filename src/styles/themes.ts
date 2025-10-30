@@ -1,6 +1,9 @@
 import cs16 from "./themes/cs16";
 import latex from "./themes/latex";
 import mono from "./themes/mono";
+import { getThemeRuntime } from "./themeRuntime";
+
+export type { ThemeRuntime } from "./themeRuntime";
 
 export const themes = [...mono, ...latex, ...cs16];
 export const defaultTheme = mono[0]!;
@@ -23,46 +26,5 @@ export function ssrStyle(): string {
 }
 
 export function applyTheme(themeSlug: string): void {
-    const theme = themes.find(({ slug }) => slug === themeSlug);
-
-    if (theme == null) {
-        return;
-    }
-
-    // Query previous theme elements in <head>
-    const prevHeadChildren = document.head.querySelectorAll("[data-theme]");
-
-    // Create new theme elements
-    const newHeadChildren: HTMLElement[] = [];
-
-    const styleElement = document.createElement("style");
-    styleElement.dataset.theme = "";
-    styleElement.textContent = `:root { ${valuesToString(theme.values)} }`;
-    newHeadChildren.push(styleElement);
-
-    for (const cssUrl of theme.cssUrls) {
-        const linkElement = document.createElement("link");
-        linkElement.dataset.theme = "";
-        linkElement.href = cssUrl;
-        linkElement.rel = "stylesheet";
-        newHeadChildren.push(linkElement);
-    }
-
-    // Remove previous theme elements
-    prevHeadChildren.forEach((element) => element.remove());
-
-    // Add new theme elements
-    newHeadChildren.forEach((element) =>
-        document.head.appendChild(element),
-    );
-
-    // Write theme slug to <body> dataset
-    document.body.dataset.theme = theme.slug;
-
-    // Set new style source link and text
-    const styleSource = document.getElementById(
-        "style-source",
-    ) as HTMLAnchorElement;
-    styleSource.href = theme.values["--srclink"];
-    styleSource.textContent = theme.values["--srctext"];
+    getThemeRuntime()?.applyTheme(themeSlug);
 }
