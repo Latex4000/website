@@ -1,17 +1,19 @@
 ---
 import { defaultDarkTheme, defaultTheme, themes } from "./config";
+import { valuesToString } from "./themeClient";
 
 const initJson = JSON.stringify({ defaultDarkTheme, defaultTheme, themes });
----
-
-{/* Initial default theme styles for noscript */}
-<style data-theme>
-    :root { ${valuesToString(defaultTheme.values)} }
+const noScript = `
+        :root { ${valuesToString(defaultTheme.values)} }
 
         @media (prefers-color-scheme: dark) {
             :root { ${valuesToString(defaultDarkTheme.values)} }
         }
-</style>
+    `;
+---
+
+{/* Initial default theme styles for noscript */}
+<style is:inline set:html={noScript} data-theme></style>
 {
     // Assumes defaultDarkTheme has the same cssUrls
     defaultTheme.cssUrls.map((cssUrl) => (
