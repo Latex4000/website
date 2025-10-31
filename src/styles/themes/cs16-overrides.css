@@ -1,8 +1,7 @@
-body {
-    padding-block: var(--space-sm);
-}
-
-/* Restore the heading size that reset.css strips with font: inherit */
 h1 {
-    font-size: calc(var(--line-height) * 2);
+    font-size: 50px;
+}
+h2,
+nav {
+    font-size: 24px;
 }
