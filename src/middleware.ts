@@ -3,13 +3,17 @@ import { defineMiddleware, sequence } from "astro:middleware";
 import { jsonError, ResponseError } from "./server/responses";
 import { openAsBlob } from "fs";
 import { loadSession, saveSession } from "./server/session";
+import { recordPageView } from "./server/analytics";
 
 const checkHmacForApi = defineMiddleware(async (context, next) => {
     if (!context.url.pathname.startsWith("/api/")) {
         return next();
     }
 
-    if (context.url.pathname.startsWith("/api/action") && context.request.method === "GET") {
+    if (context.request.method === "GET" && (
+        context.url.pathname.startsWith("/api/action") ||
+        context.url.pathname.startsWith("/api/analytics")
+    )) {
         return next();
     }
 
@@ -44,10 +48,15 @@ const handleResponseErrors = defineMiddleware(async (_, next) => {
     }
 });
 
-const loadAndSaveSession = defineMiddleware(async (context, next) => {
+const loadLogAndSaveSession = defineMiddleware(async (context, next) => {
     await loadSession(context);
-    await next();
+
+    const response = await next();
+
+    await recordPageView(context, response);
     await saveSession(context);
+
+    return response;
 });
 
 const serveUploadedFilesInDev = defineMiddleware(async (context, next) => {
@@ -93,7 +102,7 @@ if (process.env.NODE_ENV === "development") {
 }
 
 if (!process.env.PRERENDERING) {
-    handlers.push(loadAndSaveSession);
+    handlers.push(loadLogAndSaveSession);
 }
 
 export const onRequest = sequence(...handlers);
