@@ -5,6 +5,7 @@ import latexOverridesUrl from "./themes/latex-overrides.css?url";
 import monoCssUrl from "./themes/mono.css?url";
 import monoOverridesUrl from "./themes/mono-overrides.css?url";
 import sakuraCssUrl from "./themes/sakura.css?url";
+import waterCssUrl from "./themes/water.css?url";
 import tufteCssUrl from "./themes/tufte.css?url";
 import tufteOverridesUrl from "./themes/tufte-overrides.css?url";
 import { requiredCssKeys, type RequiredCssKey } from "./themeContract";
@@ -395,6 +396,95 @@ export const themeGroups = [
             "--webring-next-icon": '"→"',
             "--srclink": "https://github.com/oxalorg/sakura",
             "--srctext": "Design implemented from Sakura.css",
+        } satisfies ThemeValues,
+    }),
+    defineThemeGroup({
+        slug: ["water", "water-dark"] as const,
+        name: ["Water", "Water dark"] as const,
+        cssUrls: [waterCssUrl] as const,
+        values: {
+            "--layout-header-margin-block": "1lh",
+            "--layout-footer-font-scale": "0.85em",
+            "--layout-max-width": "calc(min(800px, round(down, 100%, 1ch)))",
+            "--layout-padding-inline": "1.25rem",
+            "--sidebar-max-width": "calc(min(30ch, round(down, 100%, 1ch)))",
+            "--home-grid-margin-block-start": "0.5lh",
+            "--home-grid-row-gap": "0.5lh",
+            "--home-grid-width": "round(down, 100%, 6ch)",
+            "--sights-grid-margin-block-start": "0",
+            "--media-cover-size-lg": "11lh",
+            "--media-cover-size-md": "8lh",
+            "--media-cover-size-sm": "5lh",
+            "--media-cover-size-xs": "3lh",
+            "--media-video-width": "16lh",
+            "--media-video-height": "9lh",
+            "--space-2xs": "calc(var(--line-height) / 4)",
+            "--space-xs": "calc(var(--line-height) / 2)",
+            "--space-sm": "var(--line-height)",
+            "--space-md": "calc(var(--line-height) * 1.5)",
+            "--space-lg": "calc(var(--line-height) * 2)",
+            "--space-inline-sm": "1rem",
+            "--space-inline-md": "2rem",
+            "--space-static-xs": "0.5rem",
+            "--space-static-sm": "0.75rem",
+            "--space-static-md": "1rem",
+            "--line-height": "1.4rem",
+            "--font-size-sm": "0.85rem",
+            "--font-size-lg": "1.6rem",
+            "--border-thickness": "1px",
+            "--border-thickness-thin": "calc(var(--border-thickness) / 2)",
+            "--border-thickness-thick": "calc(var(--border-thickness) * 1.5)",
+            "--border-radius-sm": "4px",
+            "--border-radius-md": "6px",
+            "--background-color": ["#ffffff", "#202b38"],
+            "--background-color-alt": ["#f7f7f7", "#1a242f"],
+            "--text-color": ["#363636", "#dbdbdb"],
+            "--text-color-alt": ["#000000", "#ffffff"],
+            "--border-color-muted": ["#dbdbdb", "#526980"],
+            "--surface-overlay": ["#efefef", "#161f27"],
+            "--surface-overlay-strong": ["#d0cfcf", "#0c151c"],
+            "--text-on-overlay": ["#1d1d1d", "#ffffff"],
+            "--viz-grid": [
+                "color-mix(in srgb, #363636 18%, transparent)",
+                "color-mix(in srgb, #dbdbdb 18%, transparent)",
+            ],
+            "--viz-axis": [
+                "color-mix(in srgb, #363636 92%, transparent)",
+                "color-mix(in srgb, #dbdbdb 85%, transparent)",
+            ],
+            "--viz-focus": [
+                "color-mix(in srgb, #0096bf 60%, #ffffff 40%)",
+                "color-mix(in srgb, #41adff 65%, #202b38 35%)",
+            ],
+            "--viz-series-palette": [
+                "#0076d1,#0096bf,#39a33c,#d941e2,#efdb43,#ffbe85,#161f27,#70777f,#ff6f59,#00c4a7",
+                "#41adff,#33d4ff,#7fe57f,#d177ff,#ffe66d,#ffbe85,#93a5ff,#a9b1ba,#ff9280,#3cd1b5",
+            ],
+            "--viz-sequential-ramp": [
+                "hsl(204 100% 42%)|hsl(200 95% 50%)|hsl(196 88% 58%)|hsl(192 82% 66%)|hsl(190 76% 74%)",
+                "hsl(204 100% 76%)|hsl(200 90% 68%)|hsl(196 80% 60%)|hsl(192 70% 52%)|hsl(190 60% 44%)",
+            ],
+            "--feedback-accent": ["#0076d1", "#41adff"],
+            "--feedback-helpful": [
+                "color-mix(in srgb, #39a33c 54%, var(--background-color) 46%)",
+                "color-mix(in srgb, #7dd87f 60%, var(--background-color) 40%)",
+            ],
+            "--feedback-harmful": [
+                "color-mix(in srgb, #d45d5d 56%, var(--background-color) 44%)",
+                "color-mix(in srgb, #e48f8f 56%, var(--background-color) 44%)",
+            ],
+            "--feedback-neutral": [
+                "color-mix(in srgb, #70777f 60%, var(--background-color) 40%)",
+                "color-mix(in srgb, #a9b1ba 60%, var(--background-color) 40%)",
+            ],
+            "--feedback-arrow": [
+                "color-mix(in srgb, #0096bf 70%, transparent)",
+                "color-mix(in srgb, #41adff 70%, transparent)",
+            ],
+            "--webring-prev-icon": '"←"',
+            "--webring-next-icon": '"→"',
+            "--srclink": "https://watercss.kognise.dev/",
+            "--srctext": "Design implemented from Water.css",
         } satisfies ThemeValues,
     }),
     defineThemeGroup({
