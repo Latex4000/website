@@ -1,0 +1,61 @@
+/* Tufte headings are already pronounced; keep nav balanced */
+nav {
+    font-style: italic;
+    font-size: var(--font-size-lg);
+}
+
+/* Give form controls a quiet, typeset look like the surrounding prose */
+input,
+select,
+textarea,
+button {
+    font: inherit;
+    color: inherit;
+    background-color: color-mix(
+        in srgb,
+        var(--background-color) 92%,
+        var(--text-color) 8%
+    );
+    border: var(--border-thickness) solid
+        color-mix(in srgb, var(--text-color) 40%, transparent);
+    border-radius: calc(var(--border-radius-sm) * 1.5);
+    padding: calc(var(--line-height) / 2) calc(var(--space-inline-sm));
+    transition:
+        border-color 120ms ease,
+        box-shadow 120ms ease;
+    box-shadow: 0 1px 0 color-mix(in srgb, var(--text-color) 12%, transparent);
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+textarea,
+textarea {
+    min-height: calc(var(--line-height) * 4);
+}
+
+button {
+    cursor: pointer;
+    font-variant: small-caps;
+    letter-spacing: 0.05em;
+}
+
+input:focus,
+select:focus,
+textarea:focus,
+button:focus {
+    outline: 2px solid var(--link-focus-outline);
+    outline-offset: 2px;
+    border-color: color-mix(
+        in srgb,
+        var(--link-focus-outline) 70%,
+        transparent
+    );
+    box-shadow: 0 0 0 2px
+        color-mix(in srgb, var(--link-focus-outline) 15%, transparent);
+}
+
+input::placeholder,
+textarea::placeholder,
+textarea::placeholder {
+    color: color-mix(in srgb, var(--text-color) 45%, transparent);
+}

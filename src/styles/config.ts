@@ -4,6 +4,8 @@ import latexCssUrl from "./themes/latex.css?url";
 import latexOverridesUrl from "./themes/latex-overrides.css?url";
 import monoCssUrl from "./themes/mono.css?url";
 import monoOverridesUrl from "./themes/mono-overrides.css?url";
+import tufteCssUrl from "./themes/tufte.css?url";
+import tufteOverridesUrl from "./themes/tufte-overrides.css?url";
 import { requiredCssKeys, type RequiredCssKey } from "./themeContract";
 
 type CssPrimitive = number | string;
@@ -288,6 +290,81 @@ export const themeGroups = [
             "--webring-next-icon": '"→"',
             "--srclink": "https://latex.vercel.app/",
             "--srctext": "Design implemented from LaTeX.css",
+        } satisfies ThemeValues,
+    }),
+    defineThemeGroup({
+        slug: ["tufte"] as const,
+        name: ["Tufte"] as const,
+        cssUrls: [tufteCssUrl, tufteOverridesUrl] as const,
+        values: {
+            "--layout-header-margin-block": "2lh",
+            "--layout-footer-font-scale": "0.85em",
+            "--layout-max-width": "calc(min(68ch, round(down, 100%, 1ch)))",
+            "--layout-padding-inline": "1.5rem",
+            "--sidebar-max-width": "calc(min(26ch, round(down, 100%, 1ch)))",
+            "--home-grid-margin-block-start": "1.25lh",
+            "--home-grid-row-gap": "1lh",
+            "--home-grid-width": "round(down, 100%, 6ch)",
+            "--sights-grid-margin-block-start": "1rem",
+            "--media-cover-size-lg": "12lh",
+            "--media-cover-size-md": "8lh",
+            "--media-cover-size-sm": "5lh",
+            "--media-cover-size-xs": "3lh",
+            "--media-video-width": "16lh",
+            "--media-video-height": "9lh",
+            "--space-2xs": "calc(var(--line-height) / 4)",
+            "--space-xs": "calc(var(--line-height) / 2)",
+            "--space-sm": "calc(var(--line-height) * 0.9)",
+            "--space-md": "calc(var(--line-height) * 1.8)",
+            "--space-lg": "calc(var(--line-height) * 2.4)",
+            "--space-inline-sm": "1.5ch",
+            "--space-inline-md": "3ch",
+            "--space-static-xs": "0.5rem",
+            "--space-static-sm": "0.875rem",
+            "--space-static-md": "1.25rem",
+            "--line-height": "1.4rem",
+            "--font-size-sm": "0.8rem",
+            "--font-size-lg": "1.6rem",
+            "--border-thickness": "1px",
+            "--border-thickness-thin": "calc(var(--border-thickness) / 2)",
+            "--border-thickness-thick": "calc(var(--border-thickness) * 2)",
+            "--border-radius-sm": "2px",
+            "--border-radius-md": "6px",
+            "--background-color": "#151515",
+            "--background-color-alt": "#202020",
+            "--text-color": "#dddddd",
+            "--text-color-alt": "#c4c4c4",
+            "--border-color-muted":
+                "color-mix(in srgb, var(--text-color) 16%, var(--background-color) 84%)",
+            "--surface-overlay":
+                "color-mix(in srgb, var(--text-color) 18%, transparent)",
+            "--surface-overlay-strong":
+                "color-mix(in srgb, var(--text-color) 32%, transparent)",
+            "--text-on-overlay": "#f7f7f7",
+            "--viz-grid":
+                "color-mix(in srgb, var(--text-color) 20%, transparent)",
+            "--viz-axis":
+                "color-mix(in srgb, var(--text-color) 82%, transparent)",
+            "--viz-focus":
+                "color-mix(in srgb, #a2c8ff 60%, var(--background-color) 40%)",
+            "--viz-series-palette":
+                "#b4d2f0,#8fbcdc,#6fa6c4,#578fad,#417896,#2f617f,#1f4b69,#143754,#0c263f,#08162a",
+            "--viz-sequential-ramp":
+                "hsl(201 28% 30%)|hsl(201 32% 42%)|hsl(201 40% 54%)|hsl(201 50% 66%)|hsl(201 62% 78%)",
+            "--feedback-accent":
+                "color-mix(in srgb, #91b7ff 55%, var(--background-color) 45%)",
+            "--feedback-helpful":
+                "color-mix(in srgb, #78c48a 55%, var(--background-color) 45%)",
+            "--feedback-harmful":
+                "color-mix(in srgb, #d68171 55%, var(--background-color) 45%)",
+            "--feedback-neutral":
+                "color-mix(in srgb, #9e94c7 55%, var(--background-color) 45%)",
+            "--feedback-arrow":
+                "color-mix(in srgb, #bcd7ff 70%, transparent)",
+            "--webring-prev-icon": '"←"',
+            "--webring-next-icon": '"→"',
+            "--srclink": "https://edwardtufte.github.io/tufte-css/",
+            "--srctext": "Design implemented from Tufte CSS by Dave Liepmann",
         } satisfies ThemeValues,
     }),
     defineThemeGroup({
