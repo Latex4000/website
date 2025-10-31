@@ -323,7 +323,7 @@ export const themeGroups = [
             "--space-static-xs": "0.5rem",
             "--space-static-sm": "0.75rem",
             "--space-static-md": "1rem",
-            "--line-height": "1.618rem",
+            "--line-height": "1.6",
             "--font-size-sm": "0.85rem",
             "--font-size-lg": "1.6rem",
             "--border-thickness": "1px",

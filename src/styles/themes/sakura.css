@@ -5,7 +5,6 @@
  */
 
 body[data-theme="sakura"] {
-    --line-height: 1.618rem;
     --link-color: #1d7484;
     --link-visited: #144f5a;
     --link-focus-outline: #982c61;
@@ -31,7 +30,6 @@ body[data-theme="sakura"] {
 }
 
 body[data-theme="sakura-dark"] {
-    --line-height: 1.618rem;
     --link-color: #ffffff;
     --link-visited: #e6e6e6;
     --link-focus-outline: #c9c9c9;
@@ -127,6 +125,7 @@ h6 {
 }
 
 p {
+    line-height: var(--line-height);
     margin-top: 0;
     margin-bottom: 2.5rem;
 }
@@ -171,7 +170,10 @@ blockquote {
     padding: 0.8em 0.8em 0.8em 1em;
     border-left: 5px solid var(--sakura-blockquote-border, currentColor);
     margin-bottom: 2.5rem;
-    background-color: var(--sakura-blockquote-background, var(--surface-overlay));
+    background-color: var(
+        --sakura-blockquote-background,
+        var(--surface-overlay)
+    );
 }
 
 blockquote p {
@@ -222,7 +224,8 @@ table {
 td,
 th {
     padding: 0.5em;
-    border-bottom: 1px solid var(--sakura-table-border, var(--border-color-muted));
+    border-bottom: 1px solid
+        var(--sakura-table-border, var(--border-color-muted));
 }
 
 textarea {
@@ -254,7 +257,10 @@ input[type="submit"]:hover,
 input[type="reset"]:hover,
 input[type="button"]:hover,
 input[type="file"]::file-selector-button:hover {
-    background-color: var(--sakura-button-hover-background, var(--surface-overlay));
+    background-color: var(
+        --sakura-button-hover-background,
+        var(--surface-overlay)
+    );
     color: var(--sakura-button-hover-color, var(--text-on-overlay));
     outline: 0;
 }
