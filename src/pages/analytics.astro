@@ -1,0 +1,421 @@
+---
+import { and, desc, eq, gt, like, ne, not, sql } from "drizzle-orm";
+import Layout from "../layouts/Layout.astro";
+import db from "../database/db";
+import {
+    PageView,
+    Member,
+    Action,
+    Sound,
+    Motion,
+    Sight,
+    Word,
+} from "../database/schema";
+
+export const prerender = false;
+
+const now = Date.now();
+const dayAgo = new Date(now - 24 * 60 * 60 * 1000);
+const weekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
+
+const pageViewFilter = and(
+    not(like(PageView.path, "/api/%")),
+    ne(PageView.path, "__presence__")
+);
+
+const totalsRow = await db
+    .select({
+        views: sql<number>`count(*)`,
+        fingerprints: sql<number>`count(distinct ${PageView.fingerprint})`,
+    })
+    .from(PageView)
+    .where(pageViewFilter)
+    .get();
+
+const lastDayRow = await db
+    .select({
+        views: sql<number>`count(*)`,
+        fingerprints: sql<number>`count(distinct ${PageView.fingerprint})`,
+    })
+    .from(PageView)
+    .where(and(pageViewFilter, gt(PageView.createdAt, dayAgo)))
+    .get();
+
+const lastWeekRow = await db
+    .select({
+        views: sql<number>`count(*)`,
+        fingerprints: sql<number>`count(distinct ${PageView.fingerprint})`,
+    })
+    .from(PageView)
+    .where(and(pageViewFilter, gt(PageView.createdAt, weekAgo)))
+    .get();
+
+const topPagesOverall = await db
+    .select({
+        path: PageView.path,
+        views: sql<number>`count(*)`,
+        fingerprints: sql<number>`count(distinct ${PageView.fingerprint})`,
+    })
+    .from(PageView)
+    .where(pageViewFilter)
+    .groupBy(PageView.path)
+    .orderBy(sql`count(*) DESC`)
+    .limit(10);
+
+const topPagesWeek = await db
+    .select({
+        path: PageView.path,
+        views: sql<number>`count(*)`,
+        fingerprints: sql<number>`count(distinct ${PageView.fingerprint})`,
+    })
+    .from(PageView)
+    .where(and(pageViewFilter, gt(PageView.createdAt, weekAgo)))
+    .groupBy(PageView.path)
+    .orderBy(sql`count(*) DESC`)
+    .limit(10);
+
+const latestPageViews = await db
+    .select({
+        path: PageView.path,
+        createdAt: PageView.createdAt,
+        method: PageView.method,
+        status: PageView.status,
+        referer: PageView.referer,
+    })
+    .from(PageView)
+    .where(pageViewFilter)
+    .orderBy(desc(PageView.createdAt))
+    .limit(20);
+
+const totals = {
+    views: totalsRow?.views ?? 0,
+    fingerprints: totalsRow?.fingerprints ?? 0,
+    viewsDay: lastDayRow?.views ?? 0,
+    fingerprintsDay: lastDayRow?.fingerprints ?? 0,
+    viewsWeek: lastWeekRow?.views ?? 0,
+    fingerprintsWeek: lastWeekRow?.fingerprints ?? 0,
+};
+
+const [membersRow, actionsRow, soundsRow, motionsRow, sightsRow, wordsRow] =
+    await Promise.all([
+        db
+            .select({ count: sql<number>`count(*)` })
+            .from(Member)
+            .where(eq(Member.deleted, false))
+            .get(),
+        db
+            .select({ count: sql<number>`count(*)` })
+            .from(Action)
+            .where(eq(Action.deleted, false))
+            .get(),
+        db
+            .select({ count: sql<number>`count(*)` })
+            .from(Sound)
+            .where(eq(Sound.deleted, false))
+            .get(),
+        db
+            .select({ count: sql<number>`count(*)` })
+            .from(Motion)
+            .where(eq(Motion.deleted, false))
+            .get(),
+        db
+            .select({ count: sql<number>`count(*)` })
+            .from(Sight)
+            .where(eq(Sight.deleted, false))
+            .get(),
+        db
+            .select({ count: sql<number>`count(*)` })
+            .from(Word)
+            .where(eq(Word.deleted, false))
+            .get(),
+    ]);
+
+const contentTotals = {
+    members: membersRow?.count ?? 0,
+    actions: actionsRow?.count ?? 0,
+    sounds: soundsRow?.count ?? 0,
+    motions: motionsRow?.count ?? 0,
+    sights: sightsRow?.count ?? 0,
+    words: wordsRow?.count ?? 0,
+};
+---
+
+<Layout
+    header="Analytics"
+    title="Analytics"
+    description="Analytics for the LaTeX 4000 website"
+>
+    {
+        totals.views === 0 ? (
+            <p>
+                No page view data yet. Traffic will begin to appear here once
+                the site receives requests.
+            </p>
+        ) : (
+            <section class="summary">
+                <div>
+                    <h3>Total</h3>
+                    <p>{totals.views.toLocaleString()} page views</p>
+                    <p>
+                        {totals.fingerprints.toLocaleString()} active
+                        fingerprints (5 min buckets)
+                    </p>
+                </div>
+                <div>
+                    <h3>Last 7 days</h3>
+                    <p>{totals.viewsWeek.toLocaleString()} page views</p>
+                    <p>
+                        {totals.fingerprintsWeek.toLocaleString()} active
+                        fingerprints (5 min buckets)
+                    </p>
+                </div>
+                <div>
+                    <h3>Last 24 hours</h3>
+                    <p>{totals.viewsDay.toLocaleString()} page views</p>
+                    <p>
+                        {totals.fingerprintsDay.toLocaleString()} active
+                        fingerprints (5 min buckets)
+                    </p>
+                </div>
+            </section>
+        )
+    }
+
+    <p class="fingerprint-note">
+        Active fingerprint counts approximate unique visitors within five-minute
+        windows. They reset frequently and do not persist between visits.
+    </p>
+
+    {
+        contentTotals.members +
+            contentTotals.actions +
+            contentTotals.sounds +
+            contentTotals.motions +
+            contentTotals.sights +
+            contentTotals.words >
+            0 && (
+            <section>
+                <h3>Content overview</h3>
+                <div class="content-grid">
+                    <div class="content-card">
+                        <h4>Members</h4>
+                        <p>{contentTotals.members.toLocaleString()}</p>
+                    </div>
+                    <div class="content-card">
+                        <h4>Actions</h4>
+                        <p>{contentTotals.actions.toLocaleString()}</p>
+                    </div>
+                    <div class="content-card">
+                        <h4>Sounds</h4>
+                        <p>{contentTotals.sounds.toLocaleString()}</p>
+                    </div>
+                    <div class="content-card">
+                        <h4>Motions</h4>
+                        <p>{contentTotals.motions.toLocaleString()}</p>
+                    </div>
+                    <div class="content-card">
+                        <h4>Sights</h4>
+                        <p>{contentTotals.sights.toLocaleString()}</p>
+                    </div>
+                    <div class="content-card">
+                        <h4>Words</h4>
+                        <p>{contentTotals.words.toLocaleString()}</p>
+                    </div>
+                </div>
+            </section>
+        )
+    }
+
+    {
+        topPagesOverall.length > 0 && (
+            <section>
+                <h3>Top pages overall</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th scope="col">Path</th>
+                                <th scope="col">Views</th>
+                                <th scope="col">Active fingerprints</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {topPagesOverall.map((entry) => (
+                                <tr>
+                                    <td>{entry.path}</td>
+                                    <td>{entry.views.toLocaleString()}</td>
+                                    <td>
+                                        {entry.fingerprints.toLocaleString()}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        )
+    }
+
+    {
+        topPagesWeek.length > 0 && (
+            <section>
+                <h3>Top pages this week</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th scope="col">Path</th>
+                                <th scope="col">Views</th>
+                                <th scope="col">Active fingerprints</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {topPagesWeek.map((entry) => (
+                                <tr>
+                                    <td>{entry.path}</td>
+                                    <td>{entry.views.toLocaleString()}</td>
+                                    <td>
+                                        {entry.fingerprints.toLocaleString()}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        )
+    }
+
+    {
+        latestPageViews.length > 0 && (
+            <section>
+                <h3>Latest page views</h3>
+                <div class="table-wrapper">
+                    <table class="wide-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Time</th>
+                                <th scope="col">Path</th>
+                                <th scope="col" class="nowrap">
+                                    Method
+                                </th>
+                                <th scope="col" class="nowrap">
+                                    Status
+                                </th>
+                                <th scope="col">Referer</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {latestPageViews.map((entry) => (
+                                <tr>
+                                    <td>{entry.createdAt.toLocaleString()}</td>
+                                    <td>{entry.path}</td>
+                                    <td>{entry.method}</td>
+                                    <td>{entry.status}</td>
+                                    <td>{entry.referer ?? ""}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        )
+    }
+</Layout>
+
+<style>
+    section {
+        display: flex;
+        flex-direction: column;
+        gap: 1lh;
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
+    }
+
+    .summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(16ch, 1fr));
+        gap: 2ch;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th,
+    td {
+        padding: calc(0.5lh - var(--border-thickness))
+            calc(1ch - var(--border-thickness));
+        border: var(--border-thickness) solid var(--text-color);
+        text-align: left;
+        overflow-wrap: anywhere;
+    }
+
+    th {
+        text-transform: uppercase;
+        font-size: 0.8em;
+
+        &.nowrap {
+            overflow-wrap: normal;
+        }
+    }
+
+    tbody tr:nth-child(even) {
+        background-color: color-mix(
+            in srgb,
+            var(--background-color) 80%,
+            var(--text-color) 20%
+        );
+    }
+
+    .content-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(14ch, 1fr));
+        gap: 1ch;
+    }
+
+    .fingerprint-note {
+        font-size: 0.8em;
+        color: var(--text-color-alt);
+        margin: 1lh 0 0;
+    }
+
+    .content-card {
+        border: var(--border-thickness) solid var(--text-color);
+        padding: calc(1lh - var(--border-thickness));
+    }
+
+    .content-card h4 {
+        margin: 0 0 0.25lh;
+        text-transform: uppercase;
+        font-size: 0.8em;
+    }
+
+    .content-card p {
+        margin: 0;
+    }
+
+    .wide-table {
+        min-width: 60ch;
+    }
+
+    @media (max-width: 700px) {
+        table {
+            font-size: 0.9em;
+        }
+
+        th,
+        td {
+            white-space: nowrap;
+        }
+
+        td:nth-child(2),
+        td:nth-child(5) {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
+</style>

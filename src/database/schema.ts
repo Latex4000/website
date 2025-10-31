@@ -1,5 +1,5 @@
 import { relations, sql } from "drizzle-orm";
-import { sqliteTable, integer, text, customType, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { sqliteTable, integer, text, customType, uniqueIndex, index } from "drizzle-orm/sqlite-core";
 import type { SessionData } from "../server/session";
 
 const date = customType<{ data: Date; driverData: string }>({
@@ -162,3 +162,18 @@ export const WordRelations = relations(Word, ({ one }) => ({
         references: [Member.discord],
     }),
 }));
+
+export const PageView = sqliteTable("PageView", {
+    id: integer().primaryKey({ autoIncrement: true }),
+    fingerprint: text().notNull(),
+    path: text().notNull(),
+    method: text().notNull(),
+    status: integer().notNull(),
+    referer: text(),
+    userAgent: text(),
+    createdAt: date().default(sql`CURRENT_TIMESTAMP`).notNull(),
+}, (table) => [
+    index("PageView_createdAt_idx").on(table.createdAt),
+    index("PageView_path_createdAt_idx").on(table.path, table.createdAt),
+    index("PageView_fingerprint_createdAt_idx").on(table.fingerprint, table.createdAt),
+]);

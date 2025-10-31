@@ -2,6 +2,7 @@
 import ThemeInit from "../styles/ThemeInit.astro";
 import { defaultTheme } from "../styles/themes";
 import ThemeSelector from "../styles/ThemeSelector.svelte";
+import OnlineCounter from "../components/Analytics/OnlineCounter.svelte";
 
 const { header, title, description, colour } = Astro.props;
 const keywords =
@@ -106,6 +107,9 @@ const schema = JSON.stringify({
                 |
                 <a href="/things">Things</a>
             </nav>
+            <div class="online-indicator">
+                <OnlineCounter client:load />
+            </div>
             <h2>{header}</h2>
         </header>
         <main>
@@ -172,6 +176,11 @@ const schema = JSON.stringify({
     nav {
         margin: 1lh 0;
         position: relative;
+    }
+
+    .online-indicator {
+        margin-bottom: 1lh;
+        text-align: right;
     }
 
     .ch {
@@ -286,6 +295,10 @@ const schema = JSON.stringify({
         .header-nav {
             justify-content: center;
             align-items: center;
+        }
+
+        .online-indicator {
+            text-align: center;
         }
     }
 </style>
