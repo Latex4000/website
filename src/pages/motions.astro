@@ -33,8 +33,8 @@ const motions = await db
                     <iframe
                         src={motion.youtubeUrl.replace(/watch\?v=/, "embed/")}
                         style={{
-                            width: "16lh",
-                            height: "9lh",
+                            width: "var(--media-video-width, 16lh)",
+                            height: "var(--media-video-height, 9lh)",
                             border: motion.memberColor
                                 ? `var(--border-thickness) solid ${motion.memberColor}`
                                 : "none",
@@ -67,44 +67,44 @@ const motions = await db
 <style>
     /* This is straightup copypasted and barely edited from sounds.astro... probably should just make a component that works for both */
     .motions {
-        margin: 1lh 0;
+        margin: var(--space-sm) 0;
         display: flex;
         flex-direction: column;
-        gap: 1lh;
+        gap: var(--space-sm);
     }
 
     .motion {
         display: flex;
-        gap: 2ch;
-        flex: 0 0 11lh;
-        flex: 0 0 round(11lh, 1ch);
+        gap: var(--space-inline-md);
+        flex: 0 0 var(--media-cover-size-lg, 11lh);
+        flex: 0 0 round(var(--media-cover-size-lg, 11lh), 1ch);
         line-height: 1;
     }
 
     .details {
         display: flex;
         flex-direction: column;
-        gap: 1lh;
+        gap: var(--space-sm);
         flex-grow: 1;
         min-width: 0;
     }
 
     h2 {
-        height: 2lh;
+        height: var(--space-lg);
         margin: 0;
         text-transform: none;
     }
 
     .tags {
         display: flex;
-        gap: 2ch;
+        gap: var(--space-inline-md);
         overflow-x: auto;
     }
 
     .tags > span {
-        border: var(--border-thickness) solid white;
-        padding: calc(0.5lh - var(--border-thickness))
-            calc(2ch - var(--border-thickness));
+        border: var(--border-thickness) solid var(--text-color);
+        padding: calc(var(--space-xs) - var(--border-thickness))
+            calc(var(--space-inline-md) - var(--border-thickness));
         text-wrap: nowrap;
     }
 

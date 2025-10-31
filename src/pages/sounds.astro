@@ -104,55 +104,61 @@ const sounds = await db
 
 <style>
     body {
-        margin-bottom: 4lh !important;
+        margin-bottom: calc(var(--space-lg) * 2) !important;
     }
 
     .sounds {
-        margin: 1lh 0;
+        margin: var(--space-sm) 0;
         display: flex;
         flex-direction: column;
-        gap: 1lh;
+        gap: var(--space-sm);
     }
 
     .sound {
         display: flex;
-        gap: 2ch;
-        flex: 0 0 11lh;
-        flex: 0 0 round(11lh, 1ch);
+        gap: var(--space-inline-md);
+        flex: 0 0 var(--media-cover-size-lg, 11lh);
+        flex: 0 0 round(var(--media-cover-size-lg, 11lh), 1ch);
     }
 
-    img {
-        width: 11lh;
-        height: 11lh;
+    .sound img {
+        width: var(--media-cover-size-lg, 11lh);
+        height: var(--media-cover-size-lg, 11lh);
         flex: none;
         object-fit: cover;
+    }
 
-        @media (max-width: 800px) {
-            width: 8lh;
-            height: 8lh;
+    @media (max-width: 800px) {
+        .sound img {
+            width: var(--media-cover-size-md, 8lh);
+            height: var(--media-cover-size-md, 8lh);
         }
+    }
 
-        @media (max-width: 600px) {
-            width: 5lh;
-            height: 5lh;
+    @media (max-width: 600px) {
+        .sound img {
+            width: var(--media-cover-size-sm, 5lh);
+            height: var(--media-cover-size-sm, 5lh);
         }
+    }
 
-        @media (max-width: 400px) {
-            width: 3lh;
-            height: 3lh;
+    @media (max-width: 400px) {
+        .sound img {
+            width: var(--media-cover-size-xs, 3lh);
+            height: var(--media-cover-size-xs, 3lh);
         }
     }
 
     .details {
         display: flex;
         flex-direction: column;
-        gap: 1lh;
+        gap: var(--space-sm);
         flex-grow: 1;
         min-width: 0;
     }
 
     h2 {
-        height: 2lh;
+        height: var(--space-lg);
         margin: 0;
         text-transform: none;
     }
@@ -164,15 +170,15 @@ const sounds = await db
 
     .tags {
         display: flex;
-        gap: 2ch;
+        gap: var(--space-inline-md);
         overflow-x: auto;
         margin-top: auto;
     }
 
     .tags > span {
         border: var(--border-thickness) solid var(--text-color);
-        padding: calc(0.5lh - var(--border-thickness))
-            calc(2ch - var(--border-thickness));
+        padding: calc(var(--space-xs) - var(--border-thickness))
+            calc(var(--space-inline-md) - var(--border-thickness));
         text-wrap: nowrap;
     }
 

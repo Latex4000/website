@@ -258,35 +258,36 @@
     .app {
         display: flex;
         flex-direction: column;
-        gap: 1rem;
+        gap: var(--space-static-md);
     }
     .calendar-container {
-        border: var(--border-thickness) solid #ccc;
-        padding: 1rem;
+        border: var(--border-thickness) solid var(--border-color-muted);
+        padding: var(--space-static-md);
     }
     .calendar-nav {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 1rem;
+        margin-bottom: var(--space-static-md);
     }
     .calendar-title {
         margin: 0;
     }
     .day-entries {
-        border: var(--border-thickness) solid #ccc;
-        padding: 1rem;
+        border: var(--border-thickness) solid var(--border-color-muted);
+        padding: var(--space-static-md);
     }
     .entry {
         cursor: pointer;
-        padding: 0.5rem;
-        border-bottom: var(--border-thickness) solid #eee;
+        padding: var(--space-static-xs);
+        border-bottom: var(--border-thickness-thin) solid
+            var(--border-color-muted);
     }
     .entry:hover {
-        background: #f9f9f9;
+        background: var(--background-color-alt);
     }
     .export-section {
-        margin-top: 1rem;
+        margin-top: var(--space-static-md);
         text-align: center;
     }
 </style>

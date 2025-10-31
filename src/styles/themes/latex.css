@@ -5,8 +5,6 @@
  * Licensed under MIT (https://github.com/vincentdoerig/latex-css/blob/master/LICENSE)
 */
 
-/* Unmerged updates from source: https://github.com/vincentdoerig/latex-css/compare/15a7ee272d8951ffe95f3f08e09405c6165aefdf...master */
-
 @font-face {
     font-family: "Latin Modern";
     font-style: normal;
@@ -51,6 +49,54 @@
         url("./fonts/LM-bold-italic.ttf") format("truetype");
 }
 
+@font-face {
+    font-family: "Libertinus";
+    font-style: normal;
+    font-weight: normal;
+    font-display: swap;
+    src: url("./fonts/Libertinus-regular.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "Libertinus";
+    font-style: italic;
+    font-weight: normal;
+    font-display: swap;
+    src: url("./fonts/Libertinus-italic.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "Libertinus";
+    font-style: normal;
+    font-weight: bold;
+    font-display: swap;
+    src: url("./fonts/Libertinus-bold.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "Libertinus";
+    font-style: italic;
+    font-weight: bold;
+    font-display: swap;
+    src: url("./fonts/Libertinus-bold-italic.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "Libertinus";
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url("./fonts/Libertinus-semibold.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "Libertinus";
+    font-style: italic;
+    font-weight: 600;
+    font-display: swap;
+    src: url("./fonts/Libertinus-semibold-italic.woff2") format("woff2");
+}
+
 /* Box sizing rules */
 *,
 *::before,
@@ -59,13 +105,45 @@
 }
 
 :root {
-    --border-width-thin: 1.36px;
-    --border-width-thick: 2.27px;
+    --link-visited: hsl(0, 100%, 33%);
+    --link-focus-outline: hsl(220, 90%, 52%);
+    --pre-bg-color: hsl(210, 28%, 93%);
+    --kbd-bg-color: hsl(210, 5%, 100%);
+    --kbd-border-color: hsl(210, 5%, 70%);
+    --table-border-color: black;
+    --sidenote-target-border-color: hsl(55, 55%, 70%);
+    --footnotes-border-color: hsl(0, 0%, 39%);
     --text-indent-size: 1.463rem; /* In 12pt [Latin Modern font] LaTeX article
-    \parindent =~ 17.625pt; taking also into account the ratio
-    1pt[LaTeX] = (72 / 72.27) * 1pt[HTML], with default 12pt/1rem LaTeX.css font
-    size, the identation value in rem CSS units is:
-    \parindent =~ 17.625 * (72 / 72.27) / 12 = 1.463rem. */
+  \parindent =~ 17.625pt; taking also into account the ratio
+  1pt[LaTeX] = (72 / 72.27) * 1pt[HTML], with default 12pt/1rem LaTeX.css font
+  size, the identation value in rem CSS units is:
+  \parindent =~ 17.625 * (72 / 72.27) / 12 = 1.463rem. */
+}
+
+.latex-dark {
+    --link-visited: hsl(196 80% 77%);
+    --link-focus-outline: hsl(215, 63%, 73%);
+    --pre-bg-color: hsl(0, 1%, 25%);
+    --kbd-bg-color: hsl(0, 0%, 16%);
+    --kbd-border-color: hsl(210, 5%, 70%);
+    --table-border-color: white;
+    --sidenote-target-border-color: hsl(0, 0%, 59%);
+    --footnotes-border-color: hsl(0, 0%, 59%);
+    --proof-symbol-filter: invert(80%);
+}
+
+@media (prefers-color-scheme: dark) {
+    .latex-dark-auto {
+        --link-visited: hsl(196 80% 77%);
+        --link-focus-outline: hsl(215, 63%, 73%);
+        --pre-bg-color: hsl(0, 1%, 25%);
+        --kbd-bg-color: hsl(0, 0%, 16%);
+        --kbd-border-color: hsl(210, 5%, 70%);
+        --table-border-color: white;
+        --sidenote-target-border-color: hsl(0, 0%, 59%);
+        --footnotes-border-color: hsl(0, 0%, 59%);
+        --proof-symbol-filter: invert(80%);
+    }
 }
 
 /* Remove default margin */
@@ -93,6 +171,10 @@ html {
     html {
         scroll-behavior: smooth;
     }
+}
+
+body.libertinus {
+    font-family: "Libertinus", Georgia, Cambria, "Times New Roman", Times, serif;
 }
 
 .text-justify {
@@ -167,9 +249,9 @@ a:focus {
 /* Allow line breaks between any two characters */
 .break-all {
     /*
-        NOTE: Whith `break-all` value no hyphens are shown, even if the word breaks
-        at a hyphenation point
-    */
+    NOTE: Whith `break-all` value no hyphens are shown, even if the word breaks
+    at a hyphenation point
+  */
     word-break: break-all;
 }
 
@@ -232,8 +314,8 @@ table:not(.borders-custom) {
     border-spacing: 0;
     width: auto;
     max-width: 100%;
-    border-top: var(--border-width-thick) solid var(--table-border-color);
-    border-bottom: var(--border-width-thick) solid var(--table-border-color);
+    border-top: var(--border-thickness-thick) solid var(--table-border-color);
+    border-bottom: var(--border-thickness-thick) solid var(--table-border-color);
     /* display: block; */
     overflow-x: auto; /* does not work because element is not block */
     /* white-space: nowrap; */
@@ -241,19 +323,19 @@ table:not(.borders-custom) {
 }
 /* add bottom border on column table headings  */
 table:not(.borders-custom) tr > th[scope="col"] {
-    border-bottom: var(--border-width-thin) solid var(--table-border-color);
+    border-bottom: var(--border-thickness-thin) solid var(--table-border-color);
 }
 /* add right border on row table headings  */
 table:not(.borders-custom) tr > th[scope="row"] {
-    border-right: var(--border-width-thin) solid var(--table-border-color);
+    border-right: var(--border-thickness-thin) solid var(--table-border-color);
 }
 table:not(.borders-custom) > tbody > tr:first-child > td,
 table:not(.borders-custom) > tbody > tr:first-child > th {
-    border-top: var(--border-width-thin) solid var(--table-border-color);
+    border-top: var(--border-thickness-thin) solid var(--table-border-color);
 }
 table:not(.borders-custom) > tbody > tr:last-child > td,
 table:not(.borders-custom) > tbody > tr:last-child > th {
-    border-bottom: var(--border-width-thin) solid var(--table-border-color);
+    border-bottom: var(--border-thickness-thin) solid var(--table-border-color);
 }
 
 th,
@@ -283,7 +365,7 @@ caption::before {
 }
 
 /* if a table is wrapped in a scroll wrapper,
-    the table cells shouldn't wrap */
+  the table cells shouldn't wrap */
 .scroll-wrapper > table td {
     white-space: nowrap;
 }
@@ -299,29 +381,29 @@ table.borders-custom {
 }
 
 .border-top-thick {
-    border-top: var(--border-width-thick) solid var(--table-border-color);
+    border-top: var(--border-thickness-thick) solid var(--table-border-color);
 }
 .border-right-thick {
-    border-right: var(--border-width-thick) solid var(--table-border-color);
+    border-right: var(--border-thickness-thick) solid var(--table-border-color);
 }
 .border-bottom-thick {
-    border-bottom: var(--border-width-thick) solid var(--table-border-color);
+    border-bottom: var(--border-thickness-thick) solid var(--table-border-color);
 }
 .border-left-thick {
-    border-left: var(--border-width-thick) solid var(--table-border-color);
+    border-left: var(--border-thickness-thick) solid var(--table-border-color);
 }
 
 .border-top-thin {
-    border-top: var(--border-width-thin) solid var(--table-border-color);
+    border-top: var(--border-thickness-thin) solid var(--table-border-color);
 }
 .border-right-thin {
-    border-right: var(--border-width-thin) solid var(--table-border-color);
+    border-right: var(--border-thickness-thin) solid var(--table-border-color);
 }
 .border-bottom-thin {
-    border-bottom: var(--border-width-thin) solid var(--table-border-color);
+    border-bottom: var(--border-thickness-thin) solid var(--table-border-color);
 }
 .border-left-thin {
-    border-left: var(--border-width-thin) solid var(--table-border-color);
+    border-left: var(--border-thickness-thin) solid var(--table-border-color);
 }
 
 /* Table column alignment */

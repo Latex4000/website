@@ -1,10 +1,17 @@
-/* Source: https://github.com/owickstrom/the-monospace-web */
-/* Unmerged updates from source: https://github.com/owickstrom/the-monospace-web/compare/c0d05c9f4dc113ef0fc8fe5e18b4bc6c5522fee4...main */
-
+/**
+ * By Oskar Wickström
+ * Licensed under the MIT License (https://github.com/owickstrom/the-monospace-web/blob/main/LICENSE.md)
+ **/
 @import url("https://fonts.cdnfonts.com/css/jetbrains-mono-2");
 
 :root {
     --font-family: "JetBrains Mono", monospace;
+    /* --line-height: 1.2rem;
+    --border-thickness: 2px;
+    --text-color: #000;
+    --text-color-alt: #666;
+    --background-color: #fff;
+    --background-color-alt: #eee; */
 
     --font-weight-normal: 500;
     --font-weight-medium: 600;
@@ -18,8 +25,21 @@
     font-size: 16px;
 }
 
+/* @media (prefers-color-scheme: dark) {
+    :root {
+        --text-color: #fff;
+        --text-color-alt: #aaa;
+        --background-color: #000;
+        --background-color-alt: #111;
+    }
+} */
+
 * {
     box-sizing: border-box;
+}
+
+* + * {
+    margin-top: var(--line-height);
 }
 
 html {

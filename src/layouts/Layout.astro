@@ -1,7 +1,9 @@
 ---
 import ThemeInit from "../styles/ThemeInit.astro";
-import { defaultTheme } from "../styles/themes";
+import { defaultTheme } from "../styles/config";
 import ThemeSelector from "../styles/ThemeSelector.svelte";
+import baseStylesUrl from "../styles/base.css?url";
+import resetStylesUrl from "../styles/reset.css?url";
 
 const { header, title, description, colour } = Astro.props;
 const keywords =
@@ -41,7 +43,10 @@ const schema = JSON.stringify({
         />
         <meta name="author" content="LaTeX 4000" />
         <meta name="keywords" content={keywords} />
-        <meta name="theme-color" content={colour || "#111111"} />
+        <meta
+            name="theme-color"
+            content={colour ?? defaultTheme.values["--background-color"]}
+        />
 
         <meta name="twitter:card" content="summary" />
         <meta name="twitter:site" content="@Latex4000" />
@@ -66,6 +71,8 @@ const schema = JSON.stringify({
         <script is:inline type="application/ld+json" set:html={schema} />
 
         <ThemeInit />
+        <link data-reset-styles href={resetStylesUrl} rel="stylesheet" />
+        <link data-base-styles href={baseStylesUrl} rel="stylesheet" />
     </head>
     <body data-theme={defaultTheme.slug}>
         <header>
@@ -151,27 +158,10 @@ const schema = JSON.stringify({
 </html>
 
 <style>
-    header h1 {
-        margin: 0;
-    }
-
-    header h1 a {
-        text-decoration: none;
-    }
-
-    :global(body:not([data-theme^="latex"])) header {
-        margin: 1lh 0;
-    }
-
     .title-bar {
         display: flex;
         justify-content: space-between;
         align-items: center;
-    }
-
-    nav {
-        margin: 1lh 0;
-        position: relative;
     }
 
     .ch {
@@ -223,38 +213,17 @@ const schema = JSON.stringify({
         }
     }
 
-    main {
-        /* For slotted components that need to use absolute positioning */
-        position: relative;
-    }
-
-    footer {
-        margin-block: 2lh;
-    }
-
-    :global(body:not([data-theme^="mono"])) footer {
-        font-size: 0.8em;
-    }
-
     .webring {
-        margin-bottom: 1lh;
+        margin-bottom: var(--space-sm);
         text-align: center;
     }
 
     .webring__prev::after {
-        content: "<--";
-    }
-
-    :global(body[data-theme^="latex"]) .webring__prev::after {
-        content: "←";
+        content: var(--webring-prev-icon, "<--");
     }
 
     .webring__next::after {
-        content: "-->";
-    }
-
-    :global(body[data-theme^="latex"]) .webring__next::after {
-        content: "→";
+        content: var(--webring-next-icon, "-->");
     }
 
     .footer-row {
@@ -270,19 +239,12 @@ const schema = JSON.stringify({
     @media only screen and (max-width: 767px) {
         .footer-info {
             flex-direction: column;
-            gap: 1lh;
+            gap: var(--space-sm);
             text-align: center;
         }
     }
 
     @media only screen and (max-width: 600px) {
-        header {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
         .header-nav {
             justify-content: center;
             align-items: center;
