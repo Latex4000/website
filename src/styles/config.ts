@@ -4,6 +4,7 @@ import latexCssUrl from "./themes/latex.css?url";
 import latexOverridesUrl from "./themes/latex-overrides.css?url";
 import monoCssUrl from "./themes/mono.css?url";
 import monoOverridesUrl from "./themes/mono-overrides.css?url";
+import sakuraCssUrl from "./themes/sakura.css?url";
 import tufteCssUrl from "./themes/tufte.css?url";
 import tufteOverridesUrl from "./themes/tufte-overrides.css?url";
 import { requiredCssKeys, type RequiredCssKey } from "./themeContract";
@@ -290,6 +291,110 @@ export const themeGroups = [
             "--webring-next-icon": '"→"',
             "--srclink": "https://latex.vercel.app/",
             "--srctext": "Design implemented from LaTeX.css",
+        } satisfies ThemeValues,
+    }),
+    defineThemeGroup({
+        slug: ["sakura", "sakura-dark"] as const,
+        name: ["Sakura", "Sakura dark"] as const,
+        cssUrls: [sakuraCssUrl] as const,
+        values: {
+            "--layout-header-margin-block": "0",
+            "--layout-footer-font-scale": "0.85em",
+            "--layout-max-width": "calc(min(38em, round(down, 100%, 1ch)))",
+            "--layout-padding-inline": "13px",
+            "--sidebar-max-width": "calc(min(30ch, round(down, 100%, 1ch)))",
+            "--home-grid-margin-block-start": "0",
+            "--home-grid-row-gap": "0",
+            "--home-grid-width": "100%",
+            "--sights-grid-margin-block-start": "0",
+            "--media-cover-size-lg": "11lh",
+            "--media-cover-size-md": "8lh",
+            "--media-cover-size-sm": "5lh",
+            "--media-cover-size-xs": "3lh",
+            "--media-video-width": "16lh",
+            "--media-video-height": "9lh",
+            "--space-2xs": "calc(var(--line-height) / 4)",
+            "--space-xs": "calc(var(--line-height) / 2)",
+            "--space-sm": "var(--line-height)",
+            "--space-md": "calc(var(--line-height) * 1.5)",
+            "--space-lg": "calc(var(--line-height) * 2)",
+            "--space-inline-sm": "1.4rem",
+            "--space-inline-md": "2.4rem",
+            "--space-static-xs": "0.5rem",
+            "--space-static-sm": "0.75rem",
+            "--space-static-md": "1rem",
+            "--line-height": "1.618rem",
+            "--font-size-sm": "0.85rem",
+            "--font-size-lg": "1.6rem",
+            "--border-thickness": "1px",
+            "--border-thickness-thin": "calc(var(--border-thickness) / 2)",
+            "--border-thickness-thick": "calc(var(--border-thickness) * 1.5)",
+            "--border-radius-sm": "2px",
+            "--border-radius-md": "4px",
+            "--background-color": ["#f9f9f9", "#222222"],
+            "--background-color-alt": [
+                "color-mix(in srgb, #f9f9f9 85%, #4a4a4a 15%)",
+                "color-mix(in srgb, #222222 80%, #4a4a4a 20%)",
+            ],
+            "--text-color": ["#4a4a4a", "#c9c9c9"],
+            "--text-color-alt": ["#4a4a4a", "#e6e6e6"],
+            "--border-color-muted": [
+                "color-mix(in srgb, #4a4a4a 12%, #f9f9f9 88%)",
+                "color-mix(in srgb, #c9c9c9 22%, #222222 78%)",
+            ],
+            "--surface-overlay": [
+                "color-mix(in srgb, #4a4a4a 10%, #f9f9f9 90%)",
+                "color-mix(in srgb, #c9c9c9 25%, #222222 75%)",
+            ],
+            "--surface-overlay-strong": [
+                "color-mix(in srgb, #4a4a4a 18%, #f9f9f9 82%)",
+                "color-mix(in srgb, #c9c9c9 40%, #222222 60%)",
+            ],
+            "--text-on-overlay": ["#222222", "#f9f9f9"],
+            "--viz-grid": [
+                "color-mix(in srgb, #4a4a4a 15%, transparent)",
+                "color-mix(in srgb, #c9c9c9 15%, transparent)",
+            ],
+            "--viz-axis": [
+                "color-mix(in srgb, #4a4a4a 80%, transparent)",
+                "color-mix(in srgb, #c9c9c9 85%, transparent)",
+            ],
+            "--viz-focus": [
+                "color-mix(in srgb, #982c61 60%, #f9f9f9 40%)",
+                "color-mix(in srgb, #c9c9c9 70%, #222222 30%)",
+            ],
+            "--viz-series-palette": [
+                "#1d7484,#982c61,#4a4a4a,#5aa5b4,#c95f9d,#6c4f8a,#f2cadc,#88a196,#d991bc,#3c6e71",
+                "#d1e8ef,#f0b1ce,#c9c9c9,#8acdd7,#f3cce1,#b7a4dd,#6fb7bc,#f4a5bf,#e7d6f3,#9fd4d9",
+            ],
+            "--viz-sequential-ramp": [
+                "hsl(194 65% 46%)|hsl(280 40% 52%)|hsl(210 18% 42%)|hsl(24 55% 58%)|hsl(320 48% 66%)",
+                "hsl(194 50% 74%)|hsl(280 45% 70%)|hsl(210 14% 64%)|hsl(24 55% 68%)|hsl(320 48% 78%)",
+            ],
+            "--feedback-accent": [
+                "color-mix(in srgb, #982c61 45%, #f9f9f9 55%)",
+                "color-mix(in srgb, #c9c9c9 50%, #222222 50%)",
+            ],
+            "--feedback-helpful": [
+                "color-mix(in srgb, #3c8f73 40%, #f9f9f9 60%)",
+                "color-mix(in srgb, #7fd4af 55%, #222222 45%)",
+            ],
+            "--feedback-harmful": [
+                "color-mix(in srgb, #b35656 40%, #f9f9f9 60%)",
+                "color-mix(in srgb, #e09393 50%, #222222 50%)",
+            ],
+            "--feedback-neutral": [
+                "color-mix(in srgb, #1d7484 40%, #f9f9f9 60%)",
+                "color-mix(in srgb, #8ec3cf 55%, #222222 45%)",
+            ],
+            "--feedback-arrow": [
+                "color-mix(in srgb, #1d7484 70%, transparent)",
+                "color-mix(in srgb, #c9c9c9 70%, transparent)",
+            ],
+            "--webring-prev-icon": '"←"',
+            "--webring-next-icon": '"→"',
+            "--srclink": "https://github.com/oxalorg/sakura",
+            "--srctext": "Design implemented from Sakura.css",
         } satisfies ThemeValues,
     }),
     defineThemeGroup({

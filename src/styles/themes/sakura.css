@@ -1,0 +1,312 @@
+/* Sakura.css v1.5.1
+ * ================
+ * Minimal css theme.
+ * Project: https://github.com/oxalorg/sakura/
+ */
+
+body[data-theme="sakura"] {
+    --line-height: 1.618rem;
+    --link-color: #1d7484;
+    --link-visited: #144f5a;
+    --link-focus-outline: #982c61;
+    --link-hover: #982c61;
+    --link-hover-border: #4a4a4a;
+    --sakura-hr-color: #1d7484;
+    --sakura-blockquote-border: #1d7484;
+    --sakura-blockquote-background: #f1f1f1;
+    --sakura-code-background: #f1f1f1;
+    --sakura-table-border: #f1f1f1;
+    --sakura-button-background: #1d7484;
+    --sakura-button-color: #f9f9f9;
+    --sakura-button-border: #1d7484;
+    --sakura-button-hover-background: #982c61;
+    --sakura-button-hover-color: #f9f9f9;
+    --sakura-form-color: #4a4a4a;
+    --sakura-form-background: #f1f1f1;
+    --sakura-form-border: #f1f1f1;
+    --sakura-form-border-focus: #1d7484;
+    --sakura-body-font-size: 1.8rem;
+    --sakura-body-max-width: 38em;
+    --sakura-body-padding: 13px;
+}
+
+body[data-theme="sakura-dark"] {
+    --line-height: 1.618rem;
+    --link-color: #ffffff;
+    --link-visited: #e6e6e6;
+    --link-focus-outline: #c9c9c9;
+    --link-hover: #c9c9c9;
+    --link-hover-border: #c9c9c9;
+    --sakura-hr-color: #ffffff;
+    --sakura-blockquote-border: #ffffff;
+    --sakura-blockquote-background: #4a4a4a;
+    --sakura-code-background: #4a4a4a;
+    --sakura-table-border: #4a4a4a;
+    --sakura-button-background: #ffffff;
+    --sakura-button-color: #222222;
+    --sakura-button-border: #ffffff;
+    --sakura-button-hover-background: #c9c9c9;
+    --sakura-button-hover-color: #222222;
+    --sakura-form-color: #c9c9c9;
+    --sakura-form-background: #4a4a4a;
+    --sakura-form-border: #4a4a4a;
+    --sakura-form-border-focus: #ffffff;
+    --sakura-body-font-size: 1.8rem;
+    --sakura-body-max-width: 38em;
+    --sakura-body-padding: 13px;
+}
+
+html {
+    font-size: 62.5%;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+}
+
+body {
+    font-size: var(--sakura-body-font-size, 1.8rem);
+    line-height: var(--line-height);
+    max-width: var(--sakura-body-max-width, 38em);
+    margin: auto;
+    color: var(--text-color);
+    background-color: var(--background-color);
+    padding: var(--sakura-body-padding, 13px);
+}
+
+@media (max-width: 684px) {
+    body {
+        font-size: calc(var(--sakura-body-font-size, 1.8rem) * 0.85);
+    }
+}
+
+@media (max-width: 382px) {
+    body {
+        font-size: calc(var(--sakura-body-font-size, 1.8rem) * 0.75);
+    }
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    line-height: 1.1;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+    font-weight: 700;
+    margin-top: 3rem;
+    margin-bottom: 1.5rem;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    -ms-word-break: break-all;
+    word-break: break-word;
+}
+
+h1 {
+    font-size: 2.35em;
+}
+
+h2 {
+    font-size: 2em;
+}
+
+h3 {
+    font-size: 1.75em;
+}
+
+h4 {
+    font-size: 1.5em;
+}
+
+h5 {
+    font-size: 1.25em;
+}
+
+h6 {
+    font-size: 1em;
+}
+
+p {
+    margin-top: 0;
+    margin-bottom: 2.5rem;
+}
+
+small,
+sub,
+sup {
+    font-size: 75%;
+}
+
+hr {
+    border-color: var(--sakura-hr-color, var(--border-color-muted));
+}
+
+a {
+    text-decoration: none;
+    color: var(--link-color, inherit);
+}
+
+a:visited {
+    color: var(--link-visited, currentColor);
+}
+
+a:hover {
+    color: var(--link-hover, var(--link-color));
+    border-bottom: 2px solid var(--link-hover-border, currentColor);
+}
+
+ul {
+    padding-left: 1.4em;
+    margin-top: 0;
+    margin-bottom: 2.5rem;
+}
+
+li {
+    margin-bottom: 0.4em;
+}
+
+blockquote {
+    margin-left: 0;
+    margin-right: 0;
+    padding: 0.8em 0.8em 0.8em 1em;
+    border-left: 5px solid var(--sakura-blockquote-border, currentColor);
+    margin-bottom: 2.5rem;
+    background-color: var(--sakura-blockquote-background, var(--surface-overlay));
+}
+
+blockquote p {
+    margin-bottom: 0;
+}
+
+img,
+video {
+    height: auto;
+    max-width: 100%;
+    margin-top: 0;
+    margin-bottom: 2.5rem;
+}
+
+pre {
+    background-color: var(--sakura-code-background, var(--surface-overlay));
+    display: block;
+    padding: 1em;
+    overflow-x: auto;
+    margin-top: 0;
+    margin-bottom: 2.5rem;
+    font-size: 0.9em;
+}
+
+code,
+kbd,
+samp {
+    font-size: 0.9em;
+    padding: 0 0.5em;
+    background-color: var(--sakura-code-background, var(--surface-overlay));
+    white-space: pre-wrap;
+}
+
+pre > code {
+    padding: 0;
+    background-color: transparent;
+    white-space: pre;
+    font-size: 1em;
+}
+
+table {
+    text-align: justify;
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 2rem;
+}
+
+td,
+th {
+    padding: 0.5em;
+    border-bottom: 1px solid var(--sakura-table-border, var(--border-color-muted));
+}
+
+textarea {
+    width: 100%;
+}
+
+.button,
+button,
+input[type="submit"],
+input[type="reset"],
+input[type="button"],
+input[type="file"]::file-selector-button {
+    display: inline-block;
+    padding: 5px 10px;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+    background-color: var(--sakura-button-background, var(--feedback-accent));
+    color: var(--sakura-button-color, var(--text-on-overlay));
+    border-radius: 1px;
+    border: 1px solid var(--sakura-button-border, currentColor);
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.button:hover,
+button:hover,
+input[type="submit"]:hover,
+input[type="reset"]:hover,
+input[type="button"]:hover,
+input[type="file"]::file-selector-button:hover {
+    background-color: var(--sakura-button-hover-background, var(--surface-overlay));
+    color: var(--sakura-button-hover-color, var(--text-on-overlay));
+    outline: 0;
+}
+
+.button[disabled],
+button[disabled],
+input[type="submit"][disabled],
+input[type="reset"][disabled],
+input[type="button"][disabled],
+input[type="file"][disabled] {
+    cursor: default;
+    opacity: 0.5;
+}
+
+.button:focus-visible,
+button:focus-visible,
+input[type="submit"]:focus-visible,
+input[type="reset"]:focus-visible,
+input[type="button"]:focus-visible,
+input[type="file"]:focus-visible {
+    outline-style: solid;
+    outline-width: 2px;
+}
+
+textarea,
+select,
+input {
+    color: var(--sakura-form-color, var(--text-color));
+    padding: 6px 10px;
+    margin-bottom: 10px;
+    background-color: var(--sakura-form-background, var(--surface-overlay));
+    border: 1px solid var(--sakura-form-border, var(--border-color-muted));
+    border-radius: 4px;
+    box-shadow: none;
+    box-sizing: border-box;
+}
+
+textarea:focus,
+select:focus,
+input:focus {
+    border: 1px solid var(--sakura-form-border-focus, var(--link-focus-outline));
+    outline: 0;
+}
+
+input[type="checkbox"]:focus {
+    outline: 1px dotted var(--link-focus-outline, currentColor);
+}
+
+label,
+legend,
+fieldset {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
