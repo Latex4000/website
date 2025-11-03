@@ -14,6 +14,10 @@ import {
 
 export const prerender = false;
 
+if (Astro.locals.session.data.memberDiscord == null) {
+    return new Response(null, { status: 404 });
+}
+
 const now = Date.now();
 const dayAgo = new Date(now - 24 * 60 * 60 * 1000);
 const weekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
