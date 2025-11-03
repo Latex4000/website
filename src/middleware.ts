@@ -109,15 +109,15 @@ const updateAnalytics = defineMiddleware(async (context, next) => {
 
 const handlers: MiddlewareHandler[] = [];
 
+if (process.env.NODE_ENV === "development") {
+    handlers.push(serveUploadedFilesInDev);
+}
+
 if (!process.env.PRERENDERING) {
     handlers.push(updateAnalytics);
 }
 
 handlers.push(handleResponseErrors, checkHmacForApi);
-
-if (process.env.NODE_ENV === "development") {
-    handlers.push(serveUploadedFilesInDev);
-}
 
 if (!process.env.PRERENDERING) {
     handlers.push(loadAndSaveSession);

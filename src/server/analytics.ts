@@ -4,17 +4,6 @@ import { gt, sql } from "drizzle-orm";
 import db from "../database/db";
 import { PageView } from "../database/schema";
 
-const assetPrefixes = [
-    "/_astro/",
-    "/assets/",
-    "/favicon",
-    "/fonts/",
-    "/images/",
-    "/sounds-uploads/",
-    "/sights-uploads/",
-    "/words-uploads/",
-];
-
 const fingerprintWindowMs = 5 * 60 * 1000;
 
 function shouldRecordPageView(context: APIContext): boolean {
@@ -38,12 +27,6 @@ function shouldRecordPageView(context: APIContext): boolean {
 
     if (pathname.startsWith("/api/")) {
         return false;
-    }
-
-    for (const prefix of assetPrefixes) {
-        if (pathname.startsWith(prefix)) {
-            return false;
-        }
     }
 
     return true;
