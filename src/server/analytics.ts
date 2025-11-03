@@ -35,14 +35,17 @@ export async function recordPageView(context: APIContext, response: Response): P
         return;
     }
 
+    const now = new Date();
+
     await db.insert(PageView).values({
-        fingerprint: makeFingerprint(context, Date.now()),
+        fingerprint: makeFingerprint(context, now),
         path: context.url.pathname,
         status: response.status,
         referrer: context.request.headers.get("Referer"),
         userAgent: context.request.headers.get("User-Agent"),
         memberDiscord: context.locals.session.data.memberDiscord,
         address: getClientAddress(context),
+        createdAt: now,
     });
 }
 
@@ -51,7 +54,7 @@ export async function getOnlineVisitorCount(context: APIContext, windowMs = fing
         return 0;
     }
 
-    const now = Date.now();
+    const now = new Date();
 
     try {
         await db.insert(PageView).values({
@@ -62,12 +65,13 @@ export async function getOnlineVisitorCount(context: APIContext, windowMs = fing
             userAgent: context.request.headers.get("User-Agent"),
             memberDiscord: context.locals.session.data.memberDiscord,
             address: getClientAddress(context),
+            createdAt: now,
         });
     } catch (error) {
         console.error("Failed to record presence ping", error);
     }
 
-    const since = new Date(now - windowMs);
+    const since = new Date(now.getTime() - windowMs);
     const result = await db
         .select({
             count: sql<number>`count(distinct ${PageView.fingerprint})`,
@@ -79,14 +83,14 @@ export async function getOnlineVisitorCount(context: APIContext, windowMs = fing
     return result?.count ?? 0;
 }
 
-function makeFingerprint(context: APIContext, timestampMs: number): string {
+function makeFingerprint(context: APIContext, date: Date): string {
     if (!process.env.ANALYTICS_FINGERPRINT_SECRET) {
         throw new Error("ANALYTICS_FINGERPRINT_SECRET not set");
     }
 
     const clientIp = getClientAddress(context);
     const userAgent = context.request.headers.get("User-Agent") ?? "";
-    const bucket = Math.floor(timestampMs / fingerprintWindowMs).toString(10);
+    const bucket = Math.floor(date.getTime() / fingerprintWindowMs).toString(10);
 
     const hash = createHash("sha256");
     hash.update(clientIp);
