@@ -52,6 +52,10 @@ const handleResponseErrors = defineMiddleware(async (_, next) => {
 });
 
 const loadAndSaveSession = defineMiddleware(async (context, next) => {
+    if (context.isPrerendered) {
+        return next();
+    }
+
     await loadSession(context);
     const response = await next();
     await saveSession(context);
@@ -95,6 +99,10 @@ const serveUploadedFilesInDev = defineMiddleware(async (context, next) => {
 });
 
 const updateAnalytics = defineMiddleware(async (context, next) => {
+    if (context.isPrerendered) {
+        return next();
+    }
+
     const response = await next();
 
     try {
@@ -113,14 +121,6 @@ if (process.env.NODE_ENV === "development") {
     handlers.push(serveUploadedFilesInDev);
 }
 
-if (!process.env.PRERENDERING) {
-    handlers.push(updateAnalytics);
-}
-
-handlers.push(handleResponseErrors, checkHmacForApi);
-
-if (!process.env.PRERENDERING) {
-    handlers.push(loadAndSaveSession);
-}
+handlers.push(updateAnalytics, handleResponseErrors, checkHmacForApi, loadAndSaveSession);
 
 export const onRequest = sequence(...handlers);

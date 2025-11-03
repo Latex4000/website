@@ -7,7 +7,7 @@ import { PageView } from "../database/schema";
 const fingerprintWindowMs = 5 * 60 * 1000;
 
 function shouldRecordPageView(context: APIContext): boolean {
-    if (process.env.PRERENDERING) {
+    if (context.isPrerendered) {
         return false;
     }
 
@@ -50,7 +50,7 @@ export async function recordPageView(context: APIContext, response: Response): P
 }
 
 export async function getOnlineVisitorCount(context: APIContext, windowMs = fingerprintWindowMs): Promise<number | null> {
-    if (process.env.PRERENDERING) {
+    if (context.isPrerendered) {
         return null;
     }
 
