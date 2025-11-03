@@ -106,10 +106,13 @@ export async function getOnlineVisitorCount(context: APIContext, windowMs = fing
 }
 
 function makeFingerprint(context: APIContext, timestampMs: number): string {
+    if (!process.env.ANALYTICS_FINGERPRINT_SECRET) {
+        throw new Error("ANALYTICS_FINGERPRINT_SECRET not set");
+    }
+
     const clientIp = getClientAddress(context);
     const userAgent = context.request.headers.get("user-agent") ?? "";
     const bucket = Math.floor(timestampMs / fingerprintWindowMs).toString(10);
-    const secret = process.env.ANALYTICS_FINGERPRINT_SECRET ?? "";
 
     const hash = createHash("sha256");
     hash.update(clientIp);
@@ -117,11 +120,8 @@ function makeFingerprint(context: APIContext, timestampMs: number): string {
     hash.update(userAgent);
     hash.update("\n");
     hash.update(bucket);
-
-    if (secret) {
-        hash.update("\n");
-        hash.update(secret);
-    }
+    hash.update("\n");
+    hash.update(process.env.ANALYTICS_FINGERPRINT_SECRET);
 
     return hash.digest("base64url");
 }
