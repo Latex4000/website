@@ -1,4 +1,5 @@
 import { validateHmac } from "@latex4000/fetch-hmac";
+import type { MiddlewareHandler } from "astro";
 import { defineMiddleware, sequence } from "astro:middleware";
 import { jsonError, ResponseError } from "./server/responses";
 import { openAsBlob } from "fs";
@@ -10,10 +11,12 @@ const checkHmacForApi = defineMiddleware(async (context, next) => {
         return next();
     }
 
-    if (context.request.method === "GET" && (
-        context.url.pathname.startsWith("/api/action") ||
-        context.url.pathname.startsWith("/api/analytics")
-    )) {
+    if (
+        context.request.method === "GET" && (
+            context.url.pathname.startsWith("/api/action") ||
+            context.url.pathname.startsWith("/api/analytics")
+        )
+    ) {
         return next();
     }
 
@@ -48,14 +51,10 @@ const handleResponseErrors = defineMiddleware(async (_, next) => {
     }
 });
 
-const loadLogAndSaveSession = defineMiddleware(async (context, next) => {
+const loadAndSaveSession = defineMiddleware(async (context, next) => {
     await loadSession(context);
-
     const response = await next();
-
-    await recordPageView(context, response);
     await saveSession(context);
-
     return response;
 });
 
@@ -95,14 +94,33 @@ const serveUploadedFilesInDev = defineMiddleware(async (context, next) => {
     return next();
 });
 
-const handlers = [handleResponseErrors, checkHmacForApi];
+const updateAnalytics = defineMiddleware(async (context, next) => {
+    const response = await next();
+
+    try {
+        await recordPageView(context, response);
+    } catch (error) {
+        console.error(error);
+        // No need to signal this to the user
+    }
+
+    return response;
+});
+
+const handlers: MiddlewareHandler[] = [];
+
+if (!process.env.PRERENDERING) {
+    handlers.push(updateAnalytics);
+}
+
+handlers.push(handleResponseErrors, checkHmacForApi);
 
 if (process.env.NODE_ENV === "development") {
     handlers.push(serveUploadedFilesInDev);
 }
 
 if (!process.env.PRERENDERING) {
-    handlers.push(loadLogAndSaveSession);
+    handlers.push(loadAndSaveSession);
 }
 
 export const onRequest = sequence(...handlers);
