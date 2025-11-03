@@ -63,7 +63,7 @@ export async function recordPageView(context: APIContext, response: Response): P
             path: context.url.pathname,
             method: context.request.method,
             status: response.status,
-            referer: context.request.headers.get("referer"),
+            referrer: context.request.headers.get("referer"),
             userAgent: context.request.headers.get("user-agent"),
         });
     } catch (error) {
@@ -85,7 +85,7 @@ export async function getOnlineVisitorCount(context: APIContext, windowMs = fing
             path: "__presence__",
             method: "PING",
             status: 200,
-            referer: context.request.headers.get("referer"),
+            referrer: context.request.headers.get("referer"),
             userAgent: context.request.headers.get("user-agent"),
         });
     } catch (error) {

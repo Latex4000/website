@@ -80,7 +80,7 @@ const latestPageViews = await db
         createdAt: PageView.createdAt,
         method: PageView.method,
         status: PageView.status,
-        referer: PageView.referer,
+        referrer: PageView.referrer,
     })
     .from(PageView)
     .where(pageViewFilter)
@@ -302,7 +302,7 @@ const contentTotals = {
                                 <th scope="col" class="nowrap">
                                     Status
                                 </th>
-                                <th scope="col">Referer</th>
+                                <th scope="col">Referrer</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -312,7 +312,7 @@ const contentTotals = {
                                     <td>{entry.path}</td>
                                     <td>{entry.method}</td>
                                     <td>{entry.status}</td>
-                                    <td>{entry.referer ?? ""}</td>
+                                    <td>{entry.referrer ?? ""}</td>
                                 </tr>
                             ))}
                         </tbody>

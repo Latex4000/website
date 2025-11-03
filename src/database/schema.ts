@@ -169,7 +169,7 @@ export const PageView = sqliteTable("PageView", {
     path: text().notNull(),
     method: text().notNull(),
     status: integer().notNull(),
-    referer: text(),
+    referrer: text(),
     userAgent: text(),
     createdAt: date().default(sql`CURRENT_TIMESTAMP`).notNull(),
 }, (table) => [

@@ -4,7 +4,7 @@ CREATE TABLE "PageView" (
     "path" text NOT NULL,
     "method" text NOT NULL,
     "status" integer NOT NULL,
-    "referer" text,
+    "referrer" text,
     "userAgent" text,
     "createdAt" text NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
