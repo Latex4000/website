@@ -15,7 +15,7 @@ function shouldRecordPageView(context: APIContext): boolean {
         return false;
     }
 
-    const purposeHeader = context.request.headers.get("purpose") ?? context.request.headers.get("sec-purpose");
+    const purposeHeader = context.request.headers.get("Purpose") || context.request.headers.get("Sec-Purpose");
     if (purposeHeader) {
         const normalizedPurpose = purposeHeader.toLowerCase();
         if (normalizedPurpose.includes("prefetch") || normalizedPurpose.includes("prerender")) {
