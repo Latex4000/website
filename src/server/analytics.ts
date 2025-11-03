@@ -49,9 +49,9 @@ export async function recordPageView(context: APIContext, response: Response): P
     });
 }
 
-export async function getOnlineVisitorCount(context: APIContext, windowMs = fingerprintWindowMs): Promise<number> {
+export async function getOnlineVisitorCount(context: APIContext, windowMs = fingerprintWindowMs): Promise<number | null> {
     if (process.env.PRERENDERING) {
-        return 0;
+        return null;
     }
 
     const now = new Date();
@@ -80,7 +80,7 @@ export async function getOnlineVisitorCount(context: APIContext, windowMs = fing
         .where(gt(PageView.createdAt, since))
         .get();
 
-    return result?.count ?? 0;
+    return result?.count ?? null;
 }
 
 function makeFingerprint(context: APIContext, date: Date): string {

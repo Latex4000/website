@@ -1,8 +1,9 @@
 <script lang="ts">
     import { onMount } from "svelte";
 
-    let online: number | null = null;
-    let isError = false;
+    const { initialCount }: { initialCount: number | null } = $props();
+
+    let online = $state(initialCount);
 
     async function fetchOnlineCount(): Promise<void> {
         try {
@@ -13,24 +14,22 @@
 
             const data: { online?: number } = await response.json();
             online = typeof data.online === "number" ? data.online : 0;
-            isError = false;
         } catch (error) {
             console.error(error);
-            isError = true;
+            online = null;
         }
     }
 
     onMount(() => {
-        fetchOnlineCount();
         const interval = setInterval(fetchOnlineCount, 30000);
         return () => clearInterval(interval);
     });
 
-    $: label = isError
-        ? "online status unavailable"
-        : online == null
-          ? "loading online status..."
-          : `${online} ${online === 1 ? "person" : "people"} online`;
+    let label = $derived(
+        online == null
+            ? "online status unavailable"
+            : `${online} ${online === 1 ? "person" : "people"} online`,
+    );
 </script>
 
 <span class="online-counter" aria-live="polite">{label}</span>
