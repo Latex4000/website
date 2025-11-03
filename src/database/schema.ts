@@ -168,7 +168,6 @@ export const PageView = sqliteTable("PageView", {
     id: integer().primaryKey({ autoIncrement: true }),
     fingerprint: text().notNull(),
     path: text().notNull(),
-    method: text().notNull(),
     status: integer().notNull(),
     referrer: text(),
     userAgent: text(),

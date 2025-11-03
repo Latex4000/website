@@ -38,7 +38,6 @@ export async function recordPageView(context: APIContext, response: Response): P
     await db.insert(PageView).values({
         fingerprint: makeFingerprint(context, Date.now()),
         path: context.url.pathname,
-        method: context.request.method,
         status: response.status,
         referrer: context.request.headers.get("Referer"),
         userAgent: context.request.headers.get("User-Agent"),
@@ -57,9 +56,8 @@ export async function getOnlineVisitorCount(context: APIContext, windowMs = fing
     try {
         await db.insert(PageView).values({
             fingerprint: makeFingerprint(context, now),
-            path: "__presence__",
-            method: "PING",
-            status: 200,
+            path: "",
+            status: 0,
             referrer: context.request.headers.get("Referer"),
             userAgent: context.request.headers.get("User-Agent"),
             memberDiscord: context.locals.session.data.memberDiscord,

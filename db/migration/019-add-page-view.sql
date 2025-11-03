@@ -2,7 +2,6 @@ CREATE TABLE "PageView" (
     "id" integer PRIMARY KEY AUTOINCREMENT,
     "fingerprint" text NOT NULL,
     "path" text NOT NULL,
-    "method" text NOT NULL,
     "status" integer NOT NULL,
     "referrer" text,
     "userAgent" text,

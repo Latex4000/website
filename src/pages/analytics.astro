@@ -18,10 +18,7 @@ const now = Date.now();
 const dayAgo = new Date(now - 24 * 60 * 60 * 1000);
 const weekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
 
-const pageViewFilter = and(
-    not(like(PageView.path, "/api/%")),
-    ne(PageView.path, "__presence__")
-);
+const pageViewFilter = ne(PageView.path, "");
 
 const totalsRow = await db
     .select({
@@ -78,7 +75,6 @@ const latestPageViews = await db
     .select({
         path: PageView.path,
         createdAt: PageView.createdAt,
-        method: PageView.method,
         status: PageView.status,
         referrer: PageView.referrer,
     })
@@ -297,9 +293,6 @@ const contentTotals = {
                                 <th scope="col">Time</th>
                                 <th scope="col">Path</th>
                                 <th scope="col" class="nowrap">
-                                    Method
-                                </th>
-                                <th scope="col" class="nowrap">
                                     Status
                                 </th>
                                 <th scope="col">Referrer</th>
@@ -310,7 +303,6 @@ const contentTotals = {
                                 <tr>
                                     <td>{entry.createdAt.toLocaleString()}</td>
                                     <td>{entry.path}</td>
-                                    <td>{entry.method}</td>
                                     <td>{entry.status}</td>
                                     <td>{entry.referrer ?? ""}</td>
                                 </tr>
