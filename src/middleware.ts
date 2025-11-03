@@ -100,7 +100,7 @@ const updateAnalytics = defineMiddleware(async (context, next) => {
     try {
         await recordPageView(context, response);
     } catch (error) {
-        console.error(error);
+        console.error("Error recording page view:", error);
         // No need to signal this to the user
     }
 

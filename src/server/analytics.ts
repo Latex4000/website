@@ -23,9 +23,7 @@ function shouldRecordPageView(context: APIContext): boolean {
         }
     }
 
-    const pathname = context.url.pathname;
-
-    if (pathname.startsWith("/api/")) {
+    if (context.url.pathname.startsWith("/api/")) {
         return false;
     }
 
@@ -37,21 +35,14 @@ export async function recordPageView(context: APIContext, response: Response): P
         return;
     }
 
-    const now = Date.now();
-    const fingerprint = makeFingerprint(context, now);
-
-    try {
-        await db.insert(PageView).values({
-            fingerprint,
-            path: context.url.pathname,
-            method: context.request.method,
-            status: response.status,
-            referrer: context.request.headers.get("referer"),
-            userAgent: context.request.headers.get("user-agent"),
-        });
-    } catch (error) {
-        console.error("Failed to record page view", error);
-    }
+    await db.insert(PageView).values({
+        fingerprint: makeFingerprint(context, Date.now()),
+        path: context.url.pathname,
+        method: context.request.method,
+        status: response.status,
+        referrer: context.request.headers.get("Referer"),
+        userAgent: context.request.headers.get("User-Agent"),
+    });
 }
 
 export async function getOnlineVisitorCount(context: APIContext, windowMs = fingerprintWindowMs): Promise<number> {
@@ -62,21 +53,19 @@ export async function getOnlineVisitorCount(context: APIContext, windowMs = fing
     const now = Date.now();
 
     try {
-        const fingerprint = makeFingerprint(context, now);
         await db.insert(PageView).values({
-            fingerprint,
+            fingerprint: makeFingerprint(context, now),
             path: "__presence__",
             method: "PING",
             status: 200,
-            referrer: context.request.headers.get("referer"),
-            userAgent: context.request.headers.get("user-agent"),
+            referrer: context.request.headers.get("Referer"),
+            userAgent: context.request.headers.get("User-Agent"),
         });
     } catch (error) {
         console.error("Failed to record presence ping", error);
     }
 
     const since = new Date(now - windowMs);
-
     const result = await db
         .select({
             count: sql<number>`count(distinct ${PageView.fingerprint})`,
@@ -94,7 +83,7 @@ function makeFingerprint(context: APIContext, timestampMs: number): string {
     }
 
     const clientIp = getClientAddress(context);
-    const userAgent = context.request.headers.get("user-agent") ?? "";
+    const userAgent = context.request.headers.get("User-Agent") ?? "";
     const bucket = Math.floor(timestampMs / fingerprintWindowMs).toString(10);
 
     const hash = createHash("sha256");
