@@ -42,6 +42,8 @@ export async function recordPageView(context: APIContext, response: Response): P
         status: response.status,
         referrer: context.request.headers.get("Referer"),
         userAgent: context.request.headers.get("User-Agent"),
+        memberDiscord: context.locals.session.data.memberDiscord,
+        address: getClientAddress(context),
     });
 }
 
@@ -60,6 +62,8 @@ export async function getOnlineVisitorCount(context: APIContext, windowMs = fing
             status: 200,
             referrer: context.request.headers.get("Referer"),
             userAgent: context.request.headers.get("User-Agent"),
+            memberDiscord: context.locals.session.data.memberDiscord,
+            address: getClientAddress(context),
         });
     } catch (error) {
         console.error("Failed to record presence ping", error);

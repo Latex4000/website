@@ -6,7 +6,10 @@ CREATE TABLE "PageView" (
     "status" integer NOT NULL,
     "referrer" text,
     "userAgent" text,
-    "createdAt" text NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "createdAt" text NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "memberDiscord" text,
+    "address" text NOT NULL,
+    FOREIGN KEY ("memberDiscord") REFERENCES "Member" ("discord")
 );
 
 CREATE INDEX "PageView_createdAt_idx" ON "PageView" ("createdAt");
