@@ -110,36 +110,5 @@ function makeFingerprint(context: APIContext, timestampMs: number): string {
 }
 
 function getClientAddress(context: APIContext): string {
-    const forwardedFor = context.request.headers.get("x-forwarded-for");
-    if (forwardedFor) {
-        const [first] = forwardedFor.split(",");
-        if (first) {
-            return first.trim();
-        }
-    }
-
-    const forwarded = context.request.headers.get("forwarded");
-    if (forwarded) {
-        const match = forwarded.match(/for="?([^;,"]+)/i);
-        if (match?.[1]) {
-            return match[1];
-        }
-    }
-
-    const realIp = context.request.headers.get("x-real-ip");
-    if (realIp) {
-        return realIp;
-    }
-
-    const cloudflareIp = context.request.headers.get("cf-connecting-ip");
-    if (cloudflareIp) {
-        return cloudflareIp;
-    }
-
-    const fastlyIp = context.request.headers.get("fastly-client-ip");
-    if (fastlyIp) {
-        return fastlyIp;
-    }
-
-    return "unknown";
+    return context.request.headers.get("X-Real-IP") || context.clientAddress;
 }
