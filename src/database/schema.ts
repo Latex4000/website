@@ -1,5 +1,5 @@
 import { relations, sql } from "drizzle-orm";
-import { sqliteTable, integer, text, customType, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { sqliteTable, integer, text, customType, uniqueIndex, index } from "drizzle-orm/sqlite-core";
 import type { SessionData } from "../server/session";
 
 const date = customType<{ data: Date; driverData: string }>({
@@ -64,6 +64,7 @@ export const MemberRelations = relations(Member, ({ many }) => ({
     sounds: many(Sound),
     tickets: many(Ticket),
     words: many(Word),
+    pageViews: many(PageView),
 }));
 
 export const Motion = sqliteTable("Motion", {
@@ -159,6 +160,29 @@ export const Word = sqliteTable("Word", {
 export const WordRelations = relations(Word, ({ one }) => ({
     member: one(Member, {
         fields: [Word.memberDiscord],
+        references: [Member.discord],
+    }),
+}));
+
+export const PageView = sqliteTable("PageView", {
+    id: integer().primaryKey({ autoIncrement: true }),
+    fingerprint: text().notNull(),
+    path: text().notNull(),
+    status: integer().notNull(),
+    referrer: text(),
+    userAgent: text(),
+    createdAt: date().default(sql`CURRENT_TIMESTAMP`).notNull(),
+    memberDiscord: text().references(() => Member.discord),
+    address: text().notNull(),
+}, (table) => [
+    index("PageView_createdAt_idx").on(table.createdAt),
+    index("PageView_path_createdAt_idx").on(table.path, table.createdAt),
+    index("PageView_fingerprint_createdAt_idx").on(table.fingerprint, table.createdAt),
+]);
+
+export const PageViewRelations = relations(PageView, ({ one }) => ({
+    member: one(Member, {
+        fields: [PageView.memberDiscord],
         references: [Member.discord],
     }),
 }));

@@ -1,15 +1,22 @@
 import { validateHmac } from "@latex4000/fetch-hmac";
+import type { MiddlewareHandler } from "astro";
 import { defineMiddleware, sequence } from "astro:middleware";
 import { jsonError, ResponseError } from "./server/responses";
 import { openAsBlob } from "fs";
 import { loadSession, saveSession } from "./server/session";
+import { recordPageView } from "./server/analytics";
 
 const checkHmacForApi = defineMiddleware(async (context, next) => {
     if (!context.url.pathname.startsWith("/api/")) {
         return next();
     }
 
-    if (context.url.pathname.startsWith("/api/action") && context.request.method === "GET") {
+    if (
+        context.request.method === "GET" && (
+            context.url.pathname.startsWith("/api/action") ||
+            context.url.pathname.startsWith("/api/analytics")
+        )
+    ) {
         return next();
     }
 
@@ -45,9 +52,14 @@ const handleResponseErrors = defineMiddleware(async (_, next) => {
 });
 
 const loadAndSaveSession = defineMiddleware(async (context, next) => {
+    if (context.isPrerendered) {
+        return next();
+    }
+
     await loadSession(context);
-    await next();
+    const response = await next();
     await saveSession(context);
+    return response;
 });
 
 const serveUploadedFilesInDev = defineMiddleware(async (context, next) => {
@@ -86,14 +98,29 @@ const serveUploadedFilesInDev = defineMiddleware(async (context, next) => {
     return next();
 });
 
-const handlers = [handleResponseErrors, checkHmacForApi];
+const updateAnalytics = defineMiddleware(async (context, next) => {
+    if (context.isPrerendered) {
+        return next();
+    }
+
+    const response = await next();
+
+    try {
+        await recordPageView(context, response);
+    } catch (error) {
+        console.error("Error recording page view:", error);
+        // No need to signal this to the user
+    }
+
+    return response;
+});
+
+const handlers: MiddlewareHandler[] = [];
 
 if (process.env.NODE_ENV === "development") {
     handlers.push(serveUploadedFilesInDev);
 }
 
-if (!process.env.PRERENDERING) {
-    handlers.push(loadAndSaveSession);
-}
+handlers.push(updateAnalytics, handleResponseErrors, checkHmacForApi, loadAndSaveSession);
 
 export const onRequest = sequence(...handlers);

@@ -1,4 +1,6 @@
 ---
+import OnlineCounter from "../components/Analytics/OnlineCounter.svelte";
+import { getOnlineVisitorCount } from "../server/analytics";
 import ThemeInit from "../styles/ThemeInit.astro";
 import { defaultTheme } from "../styles/config";
 import ThemeSelector from "../styles/ThemeSelector.svelte";
@@ -17,6 +19,8 @@ const schema = JSON.stringify({
     keywords,
     logo: new URL("/logo.png", Astro.url).toString(),
 });
+
+const onlineCount = await getOnlineVisitorCount(Astro);
 
 /* eslint-disable astro/jsx-a11y/anchor-is-valid */
 ---
@@ -113,6 +117,17 @@ const schema = JSON.stringify({
                 |
                 <a href="/things">Things</a>
             </nav>
+            {
+                !Astro.isPrerendered &&
+                    Astro.locals.session.data.memberDiscord != null && (
+                        <div class="online-indicator">
+                            <OnlineCounter
+                                client:load
+                                initialCount={onlineCount}
+                            />
+                        </div>
+                    )
+            }
             <h2>{header}</h2>
         </header>
         <main>
@@ -248,6 +263,10 @@ const schema = JSON.stringify({
         .header-nav {
             justify-content: center;
             align-items: center;
+        }
+
+        .online-indicator {
+            text-align: center;
         }
     }
 </style>
