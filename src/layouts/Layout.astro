@@ -86,7 +86,18 @@ const onlineCount = await getOnlineVisitorCount(Astro);
                         >L<span>a</span>T<span>e</span>X 4000 / L4K</a
                     >
                 </h1>
-                <ThemeSelector client:load />
+                <div class="title-bar__right">
+                    {
+                        !Astro.isPrerendered &&
+                            Astro.locals.session.data.memberDiscord != null && (
+                                <OnlineCounter
+                                    client:load
+                                    initialCount={onlineCount}
+                                />
+                            )
+                    }
+                    <ThemeSelector client:load />
+                </div>
             </div>
             <nav>
                 <div class="ch">
@@ -117,17 +128,6 @@ const onlineCount = await getOnlineVisitorCount(Astro);
                 |
                 <a href="/things">Things</a>
             </nav>
-            {
-                !Astro.isPrerendered &&
-                    Astro.locals.session.data.memberDiscord != null && (
-                        <div class="online-indicator">
-                            <OnlineCounter
-                                client:load
-                                initialCount={onlineCount}
-                            />
-                        </div>
-                    )
-            }
             <h2>{header}</h2>
         </header>
         <main>
@@ -177,6 +177,13 @@ const onlineCount = await getOnlineVisitorCount(Astro);
         display: flex;
         justify-content: space-between;
         align-items: center;
+    }
+
+    .title-bar__right {
+        display: flex;
+        align-items: center;
+        gap: var(--space-inline-sm);
+        margin-left: var(--space-inline-sm);
     }
 
     .ch {
@@ -265,8 +272,10 @@ const onlineCount = await getOnlineVisitorCount(Astro);
             align-items: center;
         }
 
-        .online-indicator {
-            text-align: center;
+        .title-bar__right {
+            flex-direction: column-reverse;
+            align-items: end;
+            gap: var(--space-xs);
         }
     }
 </style>
