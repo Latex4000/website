@@ -1,33 +1,35 @@
-import { themes, type Theme } from "./config";
+import { defaultDarkTheme, defaultTheme, themes } from "./config";
 
-let appliedThemeSlug = document.body.dataset.theme;
-
-export function valuesToString(
-    values: Record<`--${string}`, string>,
-): string {
+function valuesToString(values: Record<`--${string}`, string>): string {
     return Object.entries(values)
         .map(([key, value]) => `${key}: ${value};`)
         .join("");
 }
 
-export function applyThemeToDocument(theme: Theme): void {
-    if (typeof document === "undefined") {
+export const noScriptStyle = `
+    :root { ${valuesToString(defaultTheme.values)} }
+
+    @media (prefers-color-scheme: dark) {
+        :root { ${valuesToString(defaultDarkTheme.values)} }
+    }
+`;
+
+// Keep in sync with ThemeInit applyTheme
+export function applyTheme(themeSlug: string): void {
+    if (document.body.dataset.theme === themeSlug) {
         return;
     }
 
-    const existingThemeSlug = document.body?.dataset.theme;
-    const hasThemeElements = document.head.querySelector("[data-theme]") != null;
+    const theme = themes.find(({ slug }) => slug === themeSlug);
 
-    if (
-        appliedThemeSlug === theme.slug &&
-        existingThemeSlug === theme.slug &&
-        hasThemeElements
-    ) {
+    if (theme == null) {
         return;
     }
 
+    // Query previous theme elements in <head>
     const prevHeadChildren = document.head.querySelectorAll("[data-theme]");
 
+    // Create new theme elements
     const newHeadChildren: HTMLElement[] = [];
 
     const styleElement = document.createElement("style");
@@ -43,37 +45,28 @@ export function applyThemeToDocument(theme: Theme): void {
         newHeadChildren.push(linkElement);
     }
 
+    // Remove previous theme elements
     prevHeadChildren.forEach((element) => element.remove());
-    newHeadChildren.forEach((element) => document.head.appendChild(element));
 
+    // Add new theme elements
+    newHeadChildren.forEach((element) =>
+        document.head.appendChild(element),
+    );
+
+    // Write theme slug to <body> dataset
     document.body.dataset.theme = theme.slug;
 
-    const styleSource = document.getElementById("style-source") as
-        | HTMLAnchorElement
-        | null;
-    if (styleSource) {
+    // Set new style source link and text
+    const styleSource = document.getElementById(
+        "style-source"
+    ) as HTMLAnchorElement | null;
+    if (styleSource != null) {
         styleSource.href = theme.values["--srclink"];
         styleSource.textContent = theme.values["--srctext"];
     }
 
-    appliedThemeSlug = theme.slug;
-
-    if (typeof window !== "undefined") {
-        window.dispatchEvent(
-            new CustomEvent("themechange", { detail: { slug: theme.slug } }),
-        );
-    }
-}
-
-export function applyTheme(
-    themeSlug: string,
-): Theme | undefined {
-    const theme = themes.find(({ slug }) => slug === themeSlug);
-
-    if (theme == null) {
-        return undefined;
-    }
-
-    applyThemeToDocument(theme);
-    return theme;
+    // Send event for pages that use JS to compute style-dependent features
+    window.dispatchEvent(
+        new CustomEvent("themechange", { detail: { slug: theme.slug } }),
+    );
 }

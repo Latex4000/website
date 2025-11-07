@@ -1,19 +1,12 @@
 ---
 import { defaultDarkTheme, defaultTheme, themes } from "./config";
-import { valuesToString } from "./themeClient";
+import { noScriptStyle } from "./themeClient";
 
 const initJson = JSON.stringify({ defaultDarkTheme, defaultTheme, themes });
-const noScript = `
-    :root { ${valuesToString(defaultTheme.values)} }
-
-    @media (prefers-color-scheme: dark) {
-        :root { ${valuesToString(defaultDarkTheme.values)} }
-    }
-`;
 ---
 
 {/* Initial default theme styles for noscript */}
-<style is:inline set:html={noScript} data-theme></style>
+<style is:inline set:html={noScriptStyle} data-theme></style>
 {
     // Assumes defaultDarkTheme has the same cssUrls
     defaultTheme.cssUrls.map((cssUrl) => (
@@ -61,7 +54,12 @@ const noScript = `
             : defaultTheme;
     }
 
+    // Keep in sync with themeClient applyTheme
     function applyTheme(theme: Theme): void {
+        if (document.body.dataset.theme === theme.slug) {
+            return;
+        }
+
         // Query previous theme elements in <head>
         const prevHeadChildren = document.head.querySelectorAll("[data-theme]");
 
@@ -100,6 +98,11 @@ const noScript = `
             styleSource.href = theme.values["--srclink"];
             styleSource.textContent = theme.values["--srctext"];
         }
+
+        // Send event for pages that use JS to compute style-dependent features
+        window.dispatchEvent(
+            new CustomEvent("themechange", { detail: { slug: theme.slug } })
+        );
     }
 
     applyTheme(getInitialTheme());
