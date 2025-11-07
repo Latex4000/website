@@ -56,10 +56,6 @@ const initJson = JSON.stringify({ defaultDarkTheme, defaultTheme, themes });
 
     // Keep in sync with themeClient applyTheme
     function applyTheme(theme: Theme): void {
-        if (document.body.dataset.theme === theme.slug) {
-            return;
-        }
-
         // Query previous theme elements in <head>
         const prevHeadChildren = document.head.querySelectorAll("[data-theme]");
 

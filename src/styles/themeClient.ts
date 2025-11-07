@@ -16,10 +16,6 @@ export const noScriptStyle = `
 
 // Keep in sync with ThemeInit applyTheme
 export function applyTheme(themeSlug: string): void {
-    if (document.body.dataset.theme === themeSlug) {
-        return;
-    }
-
     const theme = themes.find(({ slug }) => slug === themeSlug);
 
     if (theme == null) {
