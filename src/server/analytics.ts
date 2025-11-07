@@ -47,6 +47,7 @@ export async function recordPageView(context: APIContext, response: Response): P
     );
 }
 
+// NOTE: If we ever move from single process to multi process then we gotta change this shit
 export async function getOnlineVisitorCount(context: APIContext, windowMs = fingerprintWindowMs): Promise<number | null> {
     if (context.isPrerendered) {
         return null;
@@ -72,7 +73,7 @@ function makeFingerprint(context: APIContext): string {
         throw new Error("ANALYTICS_FINGERPRINT_SECRET not set");
     }
 
-    const clientIp = getClientAddress(context);
+    const clientIp = context.clientAddress || "unknown";
     const userAgent = context.request.headers.get("User-Agent") ?? "";
 
     const hash = createHash("sha256");
@@ -83,8 +84,4 @@ function makeFingerprint(context: APIContext): string {
     hash.update(process.env.ANALYTICS_FINGERPRINT_SECRET);
 
     return hash.digest("base64url");
-}
-
-function getClientAddress(context: APIContext): string {
-    return context.request.headers.get("X-Real-IP") || context.clientAddress;
 }
