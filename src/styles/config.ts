@@ -37,7 +37,7 @@ function createThemes(definition: ThemeGroupDefinition): Theme[] {
         });
     }
 
-    if (slugs.length !== name.length || slugs.length !== cssUrls.length) {
+    if (slugs.length !== name.length) {
         throw new Error("Theme group specifies inconsistent amount of themes");
     }
 
