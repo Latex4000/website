@@ -20,63 +20,67 @@ const weekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
 
 const pageViewFilter = ne(PageView.path, "");
 
-const totalsRow = await db
-    .select({
-        views: sql<number>`count(*)`,
-    })
-    .from(PageView)
-    .where(pageViewFilter)
-    .get();
-
-const lastDayRow = await db
-    .select({
-        views: sql<number>`count(*)`,
-    })
-    .from(PageView)
-    .where(and(pageViewFilter, gt(PageView.createdAt, dayAgo)))
-    .get();
-
-const lastWeekRow = await db
-    .select({
-        views: sql<number>`count(*)`,
-    })
-    .from(PageView)
-    .where(and(pageViewFilter, gt(PageView.createdAt, weekAgo)))
-    .get();
-
-const topPagesOverall = await db
-    .select({
-        path: PageView.path,
-        views: sql<number>`count(*)`,
-    })
-    .from(PageView)
-    .where(pageViewFilter)
-    .groupBy(PageView.path)
-    .orderBy(sql`count(*) DESC`)
-    .limit(10);
-
-const topPagesWeek = await db
-    .select({
-        path: PageView.path,
-        views: sql<number>`count(*)`,
-    })
-    .from(PageView)
-    .where(and(pageViewFilter, gt(PageView.createdAt, weekAgo)))
-    .groupBy(PageView.path)
-    .orderBy(sql`count(*) DESC`)
-    .limit(10);
-
-const latestPageViews = await db
-    .select({
-        path: PageView.path,
-        createdAt: PageView.createdAt,
-        status: PageView.status,
-        referrer: PageView.referrer,
-    })
-    .from(PageView)
-    .where(pageViewFilter)
-    .orderBy(desc(PageView.createdAt))
-    .limit(20);
+const [
+    totalsRow,
+    lastDayRow,
+    lastWeekRow,
+    topPagesOverall,
+    topPagesWeek,
+    latestPageViews,
+] = await Promise.all([
+    db
+        .select({
+            views: sql<number>`count(*)`,
+        })
+        .from(PageView)
+        .where(pageViewFilter)
+        .get(),
+    db
+        .select({
+            views: sql<number>`count(*)`,
+        })
+        .from(PageView)
+        .where(and(pageViewFilter, gt(PageView.createdAt, dayAgo)))
+        .get(),
+    db
+        .select({
+            views: sql<number>`count(*)`,
+        })
+        .from(PageView)
+        .where(and(pageViewFilter, gt(PageView.createdAt, weekAgo)))
+        .get(),
+    db
+        .select({
+            path: PageView.path,
+            views: sql<number>`count(*)`,
+        })
+        .from(PageView)
+        .where(pageViewFilter)
+        .groupBy(PageView.path)
+        .orderBy(sql`count(*) DESC`)
+        .limit(10),
+    db
+        .select({
+            path: PageView.path,
+            views: sql<number>`count(*)`,
+        })
+        .from(PageView)
+        .where(and(pageViewFilter, gt(PageView.createdAt, weekAgo)))
+        .groupBy(PageView.path)
+        .orderBy(sql`count(*) DESC`)
+        .limit(10),
+    db
+        .select({
+            path: PageView.path,
+            createdAt: PageView.createdAt,
+            status: PageView.status,
+            referrer: PageView.referrer,
+        })
+        .from(PageView)
+        .where(pageViewFilter)
+        .orderBy(desc(PageView.createdAt))
+        .limit(20),
+]);
 
 const totals = {
     views: totalsRow?.views ?? 0,
