@@ -6,93 +6,58 @@ import monoCssUrl from "./themes/mono.css?url";
 import monoOverridesUrl from "./themes/mono-overrides.css?url";
 import { requiredCssKeys, type RequiredCssKey } from "./themeContract";
 
-type CssPrimitive = number | string;
+type ThemeValue = string | readonly string[];
 
-export type ThemeValue =
-    | CssPrimitive
-    | null
-    | readonly (CssPrimitive | null)[];
-
-export type ThemeValues = {
-    readonly [K in RequiredCssKey]: ThemeValue;
-};
-
-export interface ThemeGroupDefinition<
-    Slugs extends readonly [string, ...string[]],
-    Names extends readonly [string, ...string[]],
-> {
-    readonly slug: Slugs;
-    readonly name: Names;
-    readonly cssUrls: readonly string[];
-    readonly values: ThemeValues;
-}
-
-export function defineThemeGroup<
-    const Slugs extends readonly [string, ...string[]],
-    const Names extends readonly [string, ...string[]],
->(
-    definition: Names["length"] extends Slugs["length"]
-        ? ThemeGroupDefinition<Slugs, Names>
-        : never,
-): ThemeGroupDefinition<Slugs, Names> {
-    return definition;
+interface ThemeGroupDefinition {
+    cssUrls: string[];
+    name: string[];
+    slugs: string[];
+    values: Record<RequiredCssKey, ThemeValue>;
 }
 
 export interface Theme {
     cssUrls: string[];
     name: string;
     slug: string;
-    values: Record<RequiredCssKey, string> & Record<`--${string}`, string>;
+    values: Record<RequiredCssKey, string>;
 }
 
-export function createThemes(
-    definition: ThemeGroupDefinition<
-        readonly [string, ...string[]],
-        readonly [string, ...string[]]
-    >,
-): Theme[] {
-    const { cssUrls, name, slug, values } = definition;
+function createThemes(definition: ThemeGroupDefinition): Theme[] {
+    const { cssUrls, name, slugs, values } = definition;
 
-    const themeCount = slug.length;
+    const themeCount = slugs.length;
     const themes: Theme[] = [];
 
     for (let i = 0; i < themeCount; i++) {
         themes.push({
-            cssUrls: Array.from(cssUrls, (url) => String(url)),
+            cssUrls,
             name: name[i]!,
-            slug: slug[i]!,
-            values: {} as Theme["values"],
+            slug: slugs[i]!,
+            values: {} as Theme['values'],
         });
     }
 
-    const entries = Object.entries(values) as [
-        RequiredCssKey,
-        ThemeValue,
-    ][];
+    if (slugs.length !== name.length || slugs.length !== cssUrls.length) {
+        throw new Error("Theme group specifies inconsistent amount of themes");
+    }
+
+    const entries = Object.entries(values) as [RequiredCssKey, ThemeValue][];
 
     for (const [key, value] of entries) {
-        if (value == null) {
-            continue;
-        }
-
-        if (!Array.isArray(value)) {
+        if (typeof value === "string") {
             for (const theme of themes) {
-                theme.values[key] = String(value);
+                theme.values[key] = value;
             }
 
             continue;
         }
 
-        if (value.length > themes.length) {
-            throw new Error("Invalid theme definition: too many value entries.");
+        if (value.length !== themes.length) {
+            throw new Error("Amount of values differs from amount of themes in theme group");
         }
 
         for (let i = 0; i < value.length; i++) {
-            const entry = value[i];
-
-            if (entry != null) {
-                themes[i]!.values[key] = String(entry);
-            }
+            themes[i]!.values[key] = value[i]!;
         }
     }
 
@@ -109,11 +74,11 @@ export function createThemes(
     return themes;
 }
 
-export const themeGroups = [
-    defineThemeGroup({
-        slug: ["mono", "mono-dark"] as const,
-        name: ["Mono", "Mono dark"] as const,
-        cssUrls: [monoCssUrl, monoOverridesUrl] as const,
+const themeGroups: ThemeGroupDefinition[] = [
+    {
+        slugs: ["mono", "mono-dark"],
+        name: ["Mono", "Mono dark"],
+        cssUrls: [monoCssUrl, monoOverridesUrl],
         values: {
             "--layout-header-margin-block": "1lh",
             "--layout-footer-font-scale": "1em",
@@ -197,12 +162,12 @@ export const themeGroups = [
             "--webring-next-icon": '"-->"',
             "--srclink": "https://owickstrom.github.io/the-monospace-web/",
             "--srctext": "Design implemented from The Monospace Web",
-        } satisfies ThemeValues,
-    }),
-    defineThemeGroup({
-        slug: ["latex", "latex-dark"] as const,
-        name: ["LaTeX", "LaTeX dark"] as const,
-        cssUrls: [latexCssUrl, latexOverridesUrl] as const,
+        },
+    },
+    {
+        slugs: ["latex", "latex-dark"],
+        name: ["LaTeX", "LaTeX dark"],
+        cssUrls: [latexCssUrl, latexOverridesUrl],
         values: {
             "--layout-header-margin-block": "0",
             "--layout-footer-font-scale": "0.8em",
@@ -288,12 +253,12 @@ export const themeGroups = [
             "--webring-next-icon": '"→"',
             "--srclink": "https://latex.vercel.app/",
             "--srctext": "Design implemented from LaTeX.css",
-        } satisfies ThemeValues,
-    }),
-    defineThemeGroup({
-        slug: ["cs16"] as const,
-        name: ["CS 1.6"] as const,
-        cssUrls: [cs16CssUrl, cs16OverridesUrl] as const,
+        },
+    },
+    {
+        slugs: ["cs16"],
+        name: ["CS 1.6"],
+        cssUrls: [cs16CssUrl, cs16OverridesUrl],
         values: {
             "--layout-header-margin-block": "1lh",
             "--layout-footer-font-scale": "0.8em",
@@ -363,15 +328,14 @@ export const themeGroups = [
             "--webring-next-icon": '"-->"',
             "--srclink": "https://cs16.samke.me/",
             "--srctext": "Design implemented from cs16.css with font altered to Unifont",
-        } satisfies ThemeValues,
-    }),
-] as const;
+        },
+    },
+];
 
-export type ThemeGroups = typeof themeGroups;
+export const themes = themeGroups.flatMap(createThemes);
 
-const themesCreated = themeGroups.flatMap((group) => createThemes(group));
-export const themes = themesCreated;
-export const defaultTheme = themesCreated.find(({ slug }) => slug === "mono")!;
-export const defaultDarkTheme = themesCreated.find(
+// Note that these themes must share the same cssUrls
+export const defaultTheme = themes.find(({ slug }) => slug === "mono")!;
+export const defaultDarkTheme = themes.find(
     ({ slug }) => slug === "mono-dark",
 )!;
