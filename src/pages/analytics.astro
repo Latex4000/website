@@ -14,10 +14,6 @@ import {
 
 export const prerender = false;
 
-if (Astro.locals.session.data.memberDiscord == null) {
-    return new Response(null, { status: 404 });
-}
-
 const now = Date.now();
 const dayAgo = new Date(now - 24 * 60 * 60 * 1000);
 const weekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
@@ -27,7 +23,6 @@ const pageViewFilter = ne(PageView.path, "");
 const totalsRow = await db
     .select({
         views: sql<number>`count(*)`,
-        fingerprints: sql<number>`count(distinct ${PageView.fingerprint})`,
     })
     .from(PageView)
     .where(pageViewFilter)
@@ -36,7 +31,6 @@ const totalsRow = await db
 const lastDayRow = await db
     .select({
         views: sql<number>`count(*)`,
-        fingerprints: sql<number>`count(distinct ${PageView.fingerprint})`,
     })
     .from(PageView)
     .where(and(pageViewFilter, gt(PageView.createdAt, dayAgo)))
@@ -45,7 +39,6 @@ const lastDayRow = await db
 const lastWeekRow = await db
     .select({
         views: sql<number>`count(*)`,
-        fingerprints: sql<number>`count(distinct ${PageView.fingerprint})`,
     })
     .from(PageView)
     .where(and(pageViewFilter, gt(PageView.createdAt, weekAgo)))
@@ -55,7 +48,6 @@ const topPagesOverall = await db
     .select({
         path: PageView.path,
         views: sql<number>`count(*)`,
-        fingerprints: sql<number>`count(distinct ${PageView.fingerprint})`,
     })
     .from(PageView)
     .where(pageViewFilter)
@@ -67,7 +59,6 @@ const topPagesWeek = await db
     .select({
         path: PageView.path,
         views: sql<number>`count(*)`,
-        fingerprints: sql<number>`count(distinct ${PageView.fingerprint})`,
     })
     .from(PageView)
     .where(and(pageViewFilter, gt(PageView.createdAt, weekAgo)))
@@ -89,11 +80,8 @@ const latestPageViews = await db
 
 const totals = {
     views: totalsRow?.views ?? 0,
-    fingerprints: totalsRow?.fingerprints ?? 0,
     viewsDay: lastDayRow?.views ?? 0,
-    fingerprintsDay: lastDayRow?.fingerprints ?? 0,
     viewsWeek: lastWeekRow?.views ?? 0,
-    fingerprintsWeek: lastWeekRow?.fingerprints ?? 0,
 };
 
 const [membersRow, actionsRow, soundsRow, motionsRow, sightsRow, wordsRow] =
@@ -156,35 +144,18 @@ const contentTotals = {
                 <div>
                     <h3>Total</h3>
                     <p>{totals.views.toLocaleString()} page views</p>
-                    <p>
-                        {totals.fingerprints.toLocaleString()} active
-                        fingerprints (5 min buckets)
-                    </p>
                 </div>
                 <div>
                     <h3>Last 7 days</h3>
                     <p>{totals.viewsWeek.toLocaleString()} page views</p>
-                    <p>
-                        {totals.fingerprintsWeek.toLocaleString()} active
-                        fingerprints (5 min buckets)
-                    </p>
                 </div>
                 <div>
                     <h3>Last 24 hours</h3>
                     <p>{totals.viewsDay.toLocaleString()} page views</p>
-                    <p>
-                        {totals.fingerprintsDay.toLocaleString()} active
-                        fingerprints (5 min buckets)
-                    </p>
                 </div>
             </section>
         )
     }
-
-    <p class="fingerprint-note">
-        Active fingerprint counts approximate unique visitors within five-minute
-        windows. They reset frequently and do not persist between visits.
-    </p>
 
     {
         contentTotals.members +
@@ -236,7 +207,6 @@ const contentTotals = {
                             <tr>
                                 <th scope="col">Path</th>
                                 <th scope="col">Views</th>
-                                <th scope="col">Active fingerprints</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -244,9 +214,6 @@ const contentTotals = {
                                 <tr>
                                     <td>{entry.path}</td>
                                     <td>{entry.views.toLocaleString()}</td>
-                                    <td>
-                                        {entry.fingerprints.toLocaleString()}
-                                    </td>
                                 </tr>
                             ))}
                         </tbody>
@@ -266,7 +233,6 @@ const contentTotals = {
                             <tr>
                                 <th scope="col">Path</th>
                                 <th scope="col">Views</th>
-                                <th scope="col">Active fingerprints</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -274,9 +240,6 @@ const contentTotals = {
                                 <tr>
                                     <td>{entry.path}</td>
                                     <td>{entry.views.toLocaleString()}</td>
-                                    <td>
-                                        {entry.fingerprints.toLocaleString()}
-                                    </td>
                                 </tr>
                             ))}
                         </tbody>
@@ -371,12 +334,6 @@ const contentTotals = {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(14ch, 1fr));
         gap: 1ch;
-    }
-
-    .fingerprint-note {
-        font-size: 0.8em;
-        color: var(--text-color-alt);
-        margin: 1lh 0 0;
     }
 
     .content-card {

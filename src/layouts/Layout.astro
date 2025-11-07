@@ -109,9 +109,11 @@ const onlineCount = await getOnlineVisitorCount(Astro);
                 <a href="/actions">Actions</a>
                 |
                 <a href="/things">Things</a>
+                |
+                <a href="/analytics">Analytics</a>
             </nav>
             {
-                !Astro.isPrerendered && Astro.locals.session.data.memberDiscord != null && (
+                !Astro.isPrerendered && (
                     <div class="online-indicator">
                         <OnlineCounter client:load initialCount={onlineCount} />
                     </div>
