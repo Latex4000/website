@@ -74,9 +74,9 @@ const onlineCount = await getOnlineVisitorCount(Astro);
 
         <script is:inline type="application/ld+json" set:html={schema} />
 
-        <ThemeInit />
         <link data-reset-styles href={resetStylesUrl} rel="stylesheet" />
         <link data-base-styles href={baseStylesUrl} rel="stylesheet" />
+        <ThemeInit />
     </head>
     <body data-theme={defaultTheme.slug}>
         <header>
