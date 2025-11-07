@@ -102,9 +102,5 @@ const noScript = `
         }
     }
 
-    const theme = getInitialTheme();
-    applyTheme(theme);
-
-    window.__initialThemeSlug = theme.slug;
-    window.localStorage.setItem("theme-slug", theme.slug);
+    applyTheme(getInitialTheme());
 </script>

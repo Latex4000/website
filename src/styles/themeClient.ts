@@ -1,20 +1,6 @@
 import { themes, type Theme } from "./config";
 
-declare global {
-    interface Window {
-        __initialThemeSlug?: string;
-    }
-}
-
-const initialAppliedSlug =
-    typeof window !== "undefined"
-        ? window.__initialThemeSlug ??
-        (typeof document !== "undefined"
-            ? document.body?.dataset.theme
-            : undefined)
-        : undefined;
-
-let appliedThemeSlug: string | undefined = initialAppliedSlug;
+let appliedThemeSlug = document.body.dataset.theme;
 
 export function valuesToString(
     values: Record<`--${string}`, string>,
@@ -76,7 +62,6 @@ export function applyThemeToDocument(theme: Theme): void {
         window.dispatchEvent(
             new CustomEvent("themechange", { detail: { slug: theme.slug } }),
         );
-        window.__initialThemeSlug = theme.slug;
     }
 }
 
