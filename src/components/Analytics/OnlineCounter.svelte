@@ -1,9 +1,7 @@
 <script lang="ts">
     import { onMount } from "svelte";
 
-    const { initialCount }: { initialCount: number | null } = $props();
-
-    let online = $state(initialCount);
+    let online: number | null = $state(0);
 
     async function fetchOnlineCount(): Promise<void> {
         try {
@@ -21,6 +19,7 @@
     }
 
     onMount(() => {
+        fetchOnlineCount();
         const interval = setInterval(fetchOnlineCount, 30000);
         return () => clearInterval(interval);
     });

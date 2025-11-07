@@ -3,7 +3,6 @@ import ThemeInit from "../styles/ThemeInit.astro";
 import { defaultTheme } from "../styles/themes";
 import ThemeSelector from "../styles/ThemeSelector.svelte";
 import OnlineCounter from "../components/Analytics/OnlineCounter.svelte";
-import { getOnlineVisitorCount } from "../server/analytics";
 
 const { header, title, description, colour } = Astro.props;
 const keywords =
@@ -17,8 +16,6 @@ const schema = JSON.stringify({
     keywords,
     logo: new URL("/logo.png", Astro.url).toString(),
 });
-
-const onlineCount = await getOnlineVisitorCount(Astro);
 
 /* eslint-disable astro/jsx-a11y/anchor-is-valid */
 ---
@@ -112,13 +109,9 @@ const onlineCount = await getOnlineVisitorCount(Astro);
                 |
                 <a href="/analytics">Analytics</a>
             </nav>
-            {
-                !Astro.isPrerendered && (
-                    <div class="online-indicator">
-                        <OnlineCounter client:load initialCount={onlineCount} />
-                    </div>
-                )
-            }
+            <div class="online-indicator">
+                <OnlineCounter client:only="svelte" />
+            </div>
             <h2>{header}</h2>
         </header>
         <main>
