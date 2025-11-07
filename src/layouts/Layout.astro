@@ -173,6 +173,33 @@ const onlineCount = await getOnlineVisitorCount(Astro);
 </html>
 
 <style>
+    header {
+        margin-block: var(--layout-header-margin-block, 1lh);
+    }
+
+    header h1 {
+        margin: 0;
+    }
+
+    header h1 a {
+        text-decoration: none;
+    }
+
+    nav {
+        margin-block: var(--space-sm);
+        position: relative;
+    }
+
+    main {
+        /* For slotted components that need to use absolute positioning */
+        position: relative;
+    }
+
+    footer {
+        margin-block: var(--space-lg);
+        font-size: var(--layout-footer-font-scale, 0.8em);
+    }
+
     .title-bar {
         display: flex;
         justify-content: space-between;
@@ -267,11 +294,6 @@ const onlineCount = await getOnlineVisitorCount(Astro);
     }
 
     @media only screen and (max-width: 600px) {
-        .header-nav {
-            justify-content: center;
-            align-items: center;
-        }
-
         .title-bar__right {
             flex-direction: column-reverse;
             align-items: end;
