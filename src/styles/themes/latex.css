@@ -5,6 +5,8 @@
  * Licensed under MIT (https://github.com/vincentdoerig/latex-css/blob/master/LICENSE)
 */
 
+/* Unmerged updates from source: https://github.com/vincentdoerig/latex-css/compare/74383e1e4fba37750cff0e78580376ce98a56b44...master */
+
 @font-face {
     font-family: "Latin Modern";
     font-style: normal;
@@ -276,9 +278,10 @@ textarea {
 }
 
 /* Natural flow and rhythm in articles by default */
-article > * + * {
+/* Too difficult to style around */
+/* article > * + * {
     margin-top: 1em;
-}
+} */
 
 /* Styles for inline code or code snippets */
 code,

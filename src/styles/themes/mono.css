@@ -2,10 +2,15 @@
  * By Oskar Wickström
  * Licensed under the MIT License (https://github.com/owickstrom/the-monospace-web/blob/main/LICENSE.md)
  **/
+
+/* Source: https://github.com/owickstrom/the-monospace-web */
+/* Unmerged updates from source: https://github.com/owickstrom/the-monospace-web/compare/6992b7c1a9051bbf969fc491c1af775a36d59449...main */
+
 @import url("https://fonts.cdnfonts.com/css/jetbrains-mono-2");
 
 :root {
     --font-family: "JetBrains Mono", monospace;
+    /* Set as variables in theme definition */
     /* --line-height: 1.2rem;
     --border-thickness: 2px;
     --text-color: #000;
@@ -25,6 +30,7 @@
     font-size: 16px;
 }
 
+/* Set as variables in theme definition */
 /* @media (prefers-color-scheme: dark) {
     :root {
         --text-color: #fff;
@@ -38,9 +44,10 @@
     box-sizing: border-box;
 }
 
-* + * {
+/* Too difficult to style around */
+/* * + * {
     margin-top: var(--line-height);
-}
+} */
 
 html {
     display: flex;
