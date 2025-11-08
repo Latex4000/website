@@ -11,6 +11,7 @@ database='dev/latex.db'
 
 export ANALYTICS_FINGERPRINT_SECRET='dev'
 export CORPORATE_URL=
+export CRAWLER_UA_JSON='dev/crawler-user-agents.json'
 export DATABASE_URL="file:./$database"
 export DIGITALOCEAN_DNS_TOKEN=
 export LATEX_WEB_SYSTEMD_UNIT=
@@ -30,6 +31,12 @@ rm -rf "$database" "$SIGHTS_UPLOAD_DIRECTORY" "$SOUNDS_UPLOAD_DIRECTORY" "$WORDS
 mkdir -p "$SIGHTS_UPLOAD_DIRECTORY"
 mkdir -p "$SOUNDS_UPLOAD_DIRECTORY"
 mkdir -p "$WORDS_UPLOAD_DIRECTORY"
+
+# Download crawler-user-agents.json
+if test ! -f "$CRAWLER_UA_JSON"; then
+    printf 'Downloading crawler-user-agents.json\n' >&2
+    curl -Ls -o "$CRAWLER_UA_JSON" 'https://raw.githubusercontent.com/monperrus/crawler-user-agents/master/crawler-user-agents.json'
+fi
 
 # Create database
 node db/migrate.mjs "$database"
