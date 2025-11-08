@@ -36,7 +36,7 @@
     );
 </script>
 
-<span class="online-counter" aria-live="polite">{label}</span>
+<a class="online-counter" aria-live="polite" href="/watcher">{label}</a>
 
 <style>
     .online-counter {
