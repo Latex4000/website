@@ -1,8 +1,24 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import db from "../database/db";
-import { Member } from "../database/schema";
-import { eq } from "drizzle-orm";
+import {
+    Action,
+    ActionItem,
+    Member,
+    Motion,
+    Sight,
+    Sound,
+    Word,
+} from "../database/schema";
+import { and, desc, eq } from "drizzle-orm";
+import {
+    FEED_TYPE,
+    detectFeedType,
+    linkChanger,
+    removeTitleDescriptionDuplicates,
+} from "../server/rss";
+import type { FeedType } from "../server/rss";
+import { thingColourHandler } from "../server/thingUtils";
 
 export const prerender = false;
 
@@ -11,15 +27,223 @@ function rotateArray<T>(array: readonly T[]): T[] {
     return [...array.slice(startIndex), ...array.slice(0, startIndex)];
 }
 
-const members = await db
-    .select({
-        addedRingToSite: Member.addedRingToSite,
-        site: Member.site,
-        alias: Member.alias,
-    })
-    .from(Member)
-    .where(eq(Member.deleted, false))
-    .then(rotateArray);
+const PER_TYPE_LIMIT = 15;
+const HOME_SITE_LIMIT = 15;
+const HOME_EXTERNAL_LIMIT = 10;
+const COLLECTIVE_QUERY_LIMIT = HOME_EXTERNAL_LIMIT * 3;
+const ALLOWED_FEED_TYPES = new Set<FeedType>([
+    FEED_TYPE[2],
+    FEED_TYPE[3],
+    FEED_TYPE[7],
+    FEED_TYPE[12],
+]);
+
+function toPlainText(html: string): string {
+    return html
+        .replace(/<[^>]*>/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+function summarize(text: string, maxLength = 140): string | undefined {
+    if (!text) return undefined;
+    if (text.length <= maxLength) return text;
+    return `${text.slice(0, maxLength - 3).trimEnd()}...`;
+}
+
+function slug(slugType: string, id: number, title: string): string {
+    return `/${slugType}/${id}-${title.toLowerCase().replaceAll(/[\s_-]+/g, "-")}`;
+}
+
+type SiteFeedItem = {
+    type: "sound" | "motion" | "sight" | "word";
+    label: string;
+    title: string;
+    url: string;
+    memberColor?: string;
+    date: Date;
+};
+
+type ExternalFeedItem = {
+    title: string;
+    url: string;
+    memberAlias: string;
+    date: Date;
+    summary?: string;
+    sourceTitle: string;
+    feedType: string;
+    isExternal: boolean;
+};
+
+const [memberRows, soundRows, motionRows, sightRows, wordRows, actionItemRows] =
+    await Promise.all([
+        db
+            .select({
+                addedRingToSite: Member.addedRingToSite,
+                site: Member.site,
+                alias: Member.alias,
+            })
+            .from(Member)
+            .where(eq(Member.deleted, false)),
+        db
+            .select({
+                id: Sound.id,
+                title: Sound.title,
+                date: Sound.date,
+                memberColor: Member.color,
+                showColour: Sound.showColour,
+            })
+            .from(Sound)
+            .innerJoin(Member, eq(Sound.memberDiscord, Member.discord))
+            .where(and(eq(Sound.deleted, false), eq(Member.deleted, false)))
+            .orderBy(desc(Sound.date))
+            .limit(PER_TYPE_LIMIT)
+            .then(thingColourHandler),
+        db
+            .select({
+                id: Motion.id,
+                title: Motion.title,
+                date: Motion.date,
+                memberColor: Member.color,
+                showColour: Motion.showColour,
+            })
+            .from(Motion)
+            .innerJoin(Member, eq(Motion.memberDiscord, Member.discord))
+            .where(and(eq(Motion.deleted, false), eq(Member.deleted, false)))
+            .orderBy(desc(Motion.date))
+            .limit(PER_TYPE_LIMIT)
+            .then(thingColourHandler),
+        db
+            .select({
+                id: Sight.id,
+                title: Sight.title,
+                description: Sight.description,
+                date: Sight.date,
+                memberColor: Member.color,
+                showColour: Sight.showColour,
+            })
+            .from(Sight)
+            .innerJoin(Member, eq(Sight.memberDiscord, Member.discord))
+            .where(and(eq(Sight.deleted, false), eq(Member.deleted, false)))
+            .orderBy(desc(Sight.date))
+            .limit(PER_TYPE_LIMIT)
+            .then(thingColourHandler),
+        db
+            .select({
+                id: Word.id,
+                title: Word.title,
+                date: Word.date,
+                memberColor: Member.color,
+                showColour: Word.showColour,
+            })
+            .from(Word)
+            .innerJoin(Member, eq(Word.memberDiscord, Member.discord))
+            .where(and(eq(Word.deleted, false), eq(Member.deleted, false)))
+            .orderBy(desc(Word.date))
+            .limit(PER_TYPE_LIMIT)
+            .then(thingColourHandler),
+        db
+            .select({
+                id: ActionItem.id,
+                title: ActionItem.title,
+                description: ActionItem.description,
+                url: ActionItem.url,
+                date: ActionItem.date,
+                actionTitle: Action.title,
+                actionUrl: Action.url,
+                memberAlias: Member.alias,
+            })
+            .from(ActionItem)
+            .innerJoin(Action, eq(ActionItem.actionID, Action.id))
+            .innerJoin(Member, eq(Action.memberDiscord, Member.discord))
+            .where(and(eq(Action.deleted, false), eq(Member.deleted, false)))
+            .orderBy(desc(ActionItem.date))
+            .limit(COLLECTIVE_QUERY_LIMIT),
+    ]);
+
+const members = rotateArray(memberRows);
+
+const rawSiteFeed: SiteFeedItem[] = [
+    ...soundRows.map(
+        (row): SiteFeedItem => ({
+            type: "sound",
+            label: "Sound",
+            title: row.title,
+            url: slug("sounds", row.id, row.title),
+            date: row.date,
+            ...(row.memberColor ? { memberColor: row.memberColor } : {}),
+        })
+    ),
+    ...motionRows.map(
+        (row): SiteFeedItem => ({
+            type: "motion",
+            label: "Motion",
+            title: row.title,
+            url: slug("motions", row.id, row.title),
+            date: row.date,
+            ...(row.memberColor ? { memberColor: row.memberColor } : {}),
+        })
+    ),
+    ...sightRows.map(
+        (row): SiteFeedItem => ({
+            type: "sight",
+            label: "Sight",
+            title: row.title,
+            url: slug("sights", row.id, row.title),
+            date: row.date,
+            ...(row.memberColor ? { memberColor: row.memberColor } : {}),
+        })
+    ),
+    ...wordRows.map(
+        (row): SiteFeedItem => ({
+            type: "word",
+            label: "Word",
+            title: row.title,
+            url: `/words/${Math.floor(row.date.getTime() / 1000).toString(10)}`,
+            date: row.date,
+            ...(row.memberColor ? { memberColor: row.memberColor } : {}),
+        })
+    ),
+];
+
+const siteFeed = rawSiteFeed
+    .sort((a, b) => b.date.getTime() - a.date.getTime())
+    .slice(0, HOME_SITE_LIMIT);
+
+const rawCollectiveFeed: ExternalFeedItem[] = actionItemRows.flatMap((item) => {
+    const feedType = detectFeedType(item.actionUrl);
+    if (!ALLOWED_FEED_TYPES.has(feedType)) return [];
+
+    const processedTitle = item.title
+        ? removeTitleDescriptionDuplicates(
+              item.title,
+              item.description,
+              feedType
+          )
+        : item.actionTitle;
+    const plainDescription = summarize(toPlainText(item.description));
+    const summary =
+        plainDescription && plainDescription !== processedTitle
+            ? plainDescription
+            : undefined;
+
+    return [
+        {
+            title: processedTitle,
+            url: linkChanger(item.url, feedType),
+            memberAlias: item.memberAlias,
+            date: item.date,
+            ...(summary ? { summary } : {}),
+            sourceTitle: item.actionTitle,
+            feedType,
+            isExternal: true,
+        } satisfies ExternalFeedItem,
+    ];
+});
+
+const collectiveFeed = rawCollectiveFeed
+    .sort((a, b) => b.date.getTime() - a.date.getTime())
+    .slice(0, HOME_EXTERNAL_LIMIT);
 ---
 
 <Layout header="Yo">
@@ -69,6 +293,99 @@ const members = await db
             }
         </ul>
     </div>
+
+    <div>
+        <h2>Latest activity</h2>
+        <div class="home-feed__columns">
+            <div class="feed-column">
+                <h3>Latest on the site</h3>
+                {
+                    siteFeed.length > 0 ? (
+                        <ul class="feed-list">
+                            {siteFeed.map((item) => (
+                                <li class="feed-item">
+                                    <span class="feed-item__header">
+                                        {item.label}
+                                    </span>
+                                    <time datetime={item.date.toISOString()}>
+                                        {item.date.toLocaleString()}
+                                    </time>
+                                    <a class="feed-item__title" href={item.url}>
+                                        {item.title}
+                                    </a>
+                                    <div
+                                        class="feed-item__byline"
+                                        style={
+                                            item.memberColor
+                                                ? `color: ${item.memberColor}`
+                                                : undefined
+                                        }
+                                        aria-label={
+                                            item.memberColor
+                                                ? `member colour ${item.memberColor}`
+                                                : "anonymous"
+                                        }
+                                    >
+                                        L
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p>No recent site updates.</p>
+                    )
+                }
+            </div>
+            <div class="feed-column">
+                <h3>Latest from the collective</h3>
+                {
+                    collectiveFeed.length > 0 ? (
+                        <ul class="feed-list">
+                            {collectiveFeed.map((item) => (
+                                <li class="feed-item">
+                                    <span class="feed-item__header">
+                                        {item.sourceTitle}
+                                    </span>
+                                    <time datetime={item.date.toISOString()}>
+                                        {item.date.toLocaleString()}
+                                    </time>
+                                    <a
+                                        class="feed-item__title"
+                                        href={item.url}
+                                        target={
+                                            item.isExternal
+                                                ? "_blank"
+                                                : undefined
+                                        }
+                                        rel={
+                                            item.isExternal
+                                                ? "noopener noreferrer"
+                                                : undefined
+                                        }
+                                    >
+                                        {item.title}
+                                    </a>
+                                    <div
+                                        class="feed-item__byline"
+                                        aria-label="member alias"
+                                    >
+                                        by {item.memberAlias}
+                                    </div>
+                                    {item.summary ? (
+                                        <p class="feed-item__summary">
+                                            {item.summary}
+                                        </p>
+                                    ) : undefined}
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p>No recent collective updates.</p>
+                    )
+                }
+            </div>
+        </div>
+    </div>
 </Layout>
 
 <style>
@@ -108,5 +425,66 @@ const members = await db
 
     li::marker {
         white-space: nowrap;
+    }
+
+    .home-feed__columns {
+        display: grid;
+        gap: var(--space-lg, 2lh);
+    }
+
+    @media (min-width: 720px) {
+        .home-feed__columns {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    .feed-column {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-sm, 1lh);
+    }
+
+    .feed-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-sm, 1lh);
+    }
+
+    .feed-item {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-xs, 0.5lh);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        padding: var(--space-sm, 1lh);
+        border: var(--border-thickness, 1px) solid
+            var(--text-color, currentColor);
+    }
+
+    .feed-item__header {
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .feed-item__title {
+        font-weight: 600;
+    }
+
+    .feed-item__summary {
+        margin: 0;
+        font-size: 0.75em;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .feed-item time {
+        white-space: nowrap;
+    }
+
+    .members-section {
+        margin-top: var(--space-lg, 2lh);
     }
 </style>
