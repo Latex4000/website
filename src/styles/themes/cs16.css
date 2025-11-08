@@ -1,7 +1,14 @@
+/* Latex change: Various .cs-* classes repurposed to style the elements they refer to e.g. .cs-btn -> button */
+
 :root {
+    /* Latex change: Set in overrides */
+    /* --bg: #4a5942;
+    --secondary-bg: #3e4637;
     --accent: #c4b550;
     --secondary-accent: #958831;
-    --text-color-3: #a0aa95;
+    --text: #dedfd6;
+    --secondary-text: #d8ded3;
+    --text-3: #a0aa95;
     --border-light: #8c9284;
     --border-dark: #292c21;
     --disabled-text: #292c21;
@@ -9,7 +16,7 @@
     --outline: #000;
     --slider: #7f8c7f;
     --slider-bg: #1f1f1f;
-    --scrollbar-track: #5a6a50;
+    --scrollbar-track: #5a6a50; */
 }
 *,
 :after,
@@ -44,8 +51,8 @@ p {
         format("truetype");
 }
 body {
-    background-color: var(--background-color);
-    color: var(--text-color);
+    background-color: var(--bg);
+    color: var(--text);
     font-family: ArialPixel, system-ui, sans-serif;
     font-weight: 400;
     line-height: 1.5;
@@ -60,7 +67,7 @@ body {
     width: 18px;
 }
 ::-webkit-scrollbar-thumb {
-    background-color: var(--background-color);
+    background-color: var(--bg);
     border: 1px solid;
     border-color: var(--border-light) var(--border-dark) var(--border-dark)
         var(--border-light);
@@ -105,7 +112,7 @@ body {
     background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='16' viewBox='0 0 15 16'%3E%3Cpath fill='%23fff' d='M5 6h1v1H5m6-1h1v1h-1m-1-1h1v1h-1M9 6h1v1H9M8 6h1v1H8M7 6h1v1H7M6 6h1v1H6m0 0h1v1H6m4-1h1v1h-1M9 7h1v1H9M8 7h1v1H8M7 7h1v1H7m0 0h1v1H7m2-1h1v1H9M8 9h1v1H8m0-2h1v1H8'/%3E%3C/svg%3E");
 }
 button {
-    background-color: var(--background-color);
+    background-color: var(--bg);
     border: 1px solid;
     border-color: var(--border-light) var(--border-dark) var(--border-dark)
         var(--border-light);
@@ -170,13 +177,13 @@ input[type="checkbox"] {
         }
     }
     .cs-checkbox__label {
-        color: var(--text-color-alt);
+        color: var(--secondary--text);
         cursor: pointer;
         display: inline-block;
         line-height: 15px;
         user-select: none;
         &:before {
-            background-color: var(--background-color-alt);
+            background-color: var(--secondary-bg);
             border: 1px solid;
             border-color: var(--border-dark) var(--border-light)
                 var(--border-light) var(--border-dark);
@@ -193,11 +200,11 @@ input[type="checkbox"] {
     }
 }
 input {
-    background-color: var(--background-color-alt);
+    background-color: var(--secondary-bg);
     border: 1px solid;
     border-color: var(--border-dark) var(--border-light) var(--border-light)
         var(--border-dark);
-    color: var(--text-color-alt);
+    color: var(--secondary--text);
     font-size: 16px;
     line-height: 17px;
     outline: 0;
@@ -210,8 +217,8 @@ input {
         color: #fff;
     }
     &:disabled {
-        background-color: var(--background-color);
-        color: var(--text-color-3);
+        background-color: var(--bg);
+        color: var(--text-3);
         pointer-events: none;
     }
     &:disabled + .cs-input__label {
@@ -221,12 +228,12 @@ input {
     }
 }
 .cs-input__label {
-    color: var(--text-color-alt);
+    color: var(--secondary--text);
     user-select: none;
 }
 select {
     appearance: none;
-    background-color: var(--background-color-alt);
+    background-color: var(--secondary-bg);
     background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='7' height='4' viewBox='0 0 7 4'%3E%3Cpath fill='%23a0aa95' d='M0 0h1v1H0m1-1h1v1H1m0 0h1v1H1m1-1h1v1H2m0 0h1v1H2m1-1h1v1H3m0 0h1v1H3m0-3h1v1H3M2 0h1v1H2m1-1h1v1H3m1-1h1v1H4m0 1h1v1H4m0-2h1v1H4m1-1h1v1H5m0-2h1v1H5m1-1h1v1H6'/%3E%3C/svg%3E");
     background-position: right 6px top 50%;
     background-repeat: no-repeat;
@@ -235,7 +242,7 @@ select {
     border-color: var(--border-dark) var(--border-light) var(--border-light)
         var(--border-dark);
     border-radius: 0;
-    color: var(--text-color-alt);
+    color: var(--secondary--text);
     line-height: 15px;
     min-width: 150px;
     outline: 0;
@@ -246,22 +253,21 @@ select {
         background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='7' height='4' viewBox='0 0 7 4'%3E%3Cpath fill='%23fff' d='M0 0h1v1H0m1-1h1v1H1m0 0h1v1H1m1-1h1v1H2m0 0h1v1H2m1 0h1v1H3m0-2h1v1H3m0-2h1v1H3M2 0h1v1H2m1-1h1v1H3m1-1h1v1H4m0 1h1v1H4m0-2h1v1H4m1-1h1v1H5m0-2h1v1H5m1-1h1v1H6'/%3E%3C/svg%3E");
     }
     option {
-        background-color: var(--background-color);
-        color: var(--text-color-3);
+        background-color: var(--bg);
+        color: var(--text-3);
     }
 }
 .cs-select__label {
-    color: var(--text-color-alt);
+    color: var(--secondary--text);
     font-size: 16px;
     line-height: 15px;
     user-select: none;
 }
-fieldset,
-legend {
+fieldset {
     border: none;
     user-select: none;
     legend {
-        color: var(--text-color-alt);
+        color: var(--secondary--text);
         margin-bottom: 10px;
     }
     > div {
@@ -284,7 +290,7 @@ legend {
     input[type="radio"] {
         opacity: 0;
         + label {
-            color: var(--text-color-alt);
+            color: var(--secondary--text);
             cursor: pointer;
             font-size: 16px;
             line-height: 15px;
@@ -338,7 +344,7 @@ input[type="range"] {
     input::-webkit-slider-thumb {
         -webkit-appearance: none;
         appearance: none;
-        background: var(--background-color);
+        background: var(--bg);
         border: 1px solid;
         border-color: var(--border-light) var(--border-dark) var(--border-dark)
             var(--border-light);
@@ -351,7 +357,7 @@ input[type="range"] {
     input::-moz-range-thumb {
         -webkit-appearance: none;
         appearance: none;
-        background: var(--background-color);
+        background: var(--bg);
         border: 1px solid;
         border-color: var(--border-light) var(--border-dark) var(--border-dark)
             var(--border-light);
@@ -362,7 +368,7 @@ input[type="range"] {
         width: 8px;
     }
     label {
-        color: var(--text-color-alt);
+        color: var(--secondary--text);
         font-size: 16px;
         line-height: 15px;
         margin-bottom: 12px;
@@ -393,11 +399,11 @@ input[type="range"] {
     }
 }
 dialog {
-    background-color: var(--background-color);
+    background-color: var(--bg);
     border: 1px solid;
     border-color: var(--border-light) var(--border-dark) var(--border-dark)
         var(--border-light);
-    color: var(--text-color);
+    color: var(--text);
     margin: auto;
     max-width: 510px;
     min-width: 350px;
@@ -464,7 +470,7 @@ dialog {
     }
 }
 .cs-progress-bar {
-    background-color: var(--background-color-alt);
+    background-color: var(--secondary-bg);
     border: 1px solid;
     border-color: var(--border-dark) var(--border-light) var(--border-light)
         var(--border-dark);
@@ -491,7 +497,7 @@ dialog {
         position: absolute;
     }
     .label {
-        background-color: var(--background-color);
+        background-color: var(--bg);
         border-bottom: none;
         border-left: 1px solid var(--border-light);
         border-right: 1px solid var(--border-dark);
@@ -509,12 +515,12 @@ dialog {
         z-index: 10;
     }
     .radiotab:checked + .label {
-        background: var(--background-color);
+        background: var(--bg);
         color: var(--accent);
         height: 29px;
         padding: 5px;
         &:before {
-            background-color: var(--background-color);
+            background-color: var(--bg);
             bottom: 0;
             content: "";
             height: 1px;
@@ -524,13 +530,13 @@ dialog {
         }
     }
     .panel {
-        background: var(--background-color);
+        background: var(--bg);
         border-bottom: 1px solid var(--border-dark);
         border-left: 1px solid var(--border-light);
         border-right: 1px solid var(--border-dark);
         border-top: 1px solid var(--border-light);
         bottom: 1px;
-        color: var(--text-color);
+        color: var(--text);
         display: none;
         order: 99;
         padding: 32px 39px 27px;
