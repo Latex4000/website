@@ -3,7 +3,7 @@
 
     const { initialCount }: { initialCount: number | null } = $props();
 
-    let online: number | null = $state(initialCount);
+    let online = $state(initialCount);
 
     async function fetchOnlineCount(): Promise<void> {
         try {
@@ -21,13 +21,10 @@
     }
 
     onMount(() => {
-        if (!online) {
+        if (online == null) {
             fetchOnlineCount();
-            if (!online) {
-                // Well maybe it's all fucked
-                return;
-            }
         }
+
         const interval = setInterval(fetchOnlineCount, 30000);
         return () => clearInterval(interval);
     });
