@@ -123,7 +123,6 @@ const themeGroups: ThemeGroupDefinition[] = [
                 "color-mix(in srgb, var(--text-color) 20%, transparent)",
             "--surface-overlay-strong":
                 "color-mix(in srgb, var(--text-color) 35%, transparent)",
-            "--text-on-overlay": ["#ffffff", "#111111"],
             "--viz-grid":
                 "color-mix(in srgb, var(--text-color) 15%, transparent)",
             "--viz-axis":
@@ -224,7 +223,6 @@ const themeGroups: ThemeGroupDefinition[] = [
                 "color-mix(in srgb, var(--text-color) 20%, transparent)",
             "--surface-overlay-strong":
                 "color-mix(in srgb, var(--text-color) 35%, transparent)",
-            "--text-on-overlay": ["#ffffff", "#111111"],
             "--viz-grid":
                 "color-mix(in srgb, var(--text-color) 15%, transparent)",
             "--viz-axis":
@@ -303,7 +301,6 @@ const themeGroups: ThemeGroupDefinition[] = [
                 "color-mix(in srgb, var(--text-color) 20%, transparent)",
             "--surface-overlay-strong":
                 "color-mix(in srgb, var(--text-color) 35%, transparent)",
-            "--text-on-overlay": "#dedfd6",
             "--viz-grid":
                 "color-mix(in srgb, var(--text-color) 18%, transparent)",
             "--viz-axis":

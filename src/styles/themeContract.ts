@@ -51,7 +51,6 @@ const surfaces = [
     "--border-color-muted",
     "--surface-overlay",
     "--surface-overlay-strong",
-    "--text-on-overlay",
 ] as const;
 
 const viz = [

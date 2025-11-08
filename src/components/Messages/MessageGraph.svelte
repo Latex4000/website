@@ -690,7 +690,7 @@
     .dropdown-content {
         position: absolute;
         background: var(--surface-overlay-strong);
-        color: var(--text-on-overlay);
+        color: var(--text-color);
         padding: var(--space-static-xs);
         display: flex;
         flex-direction: column;
@@ -709,7 +709,7 @@
         position: absolute;
         pointer-events: none;
         background: var(--surface-overlay);
-        color: var(--text-on-overlay);
+        color: var(--text-color);
         padding: var(--space-static-xs);
         font-size: var(--font-size-sm);
         visibility: hidden;

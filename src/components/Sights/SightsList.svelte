@@ -295,7 +295,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        color: var(--text-on-overlay, inherit);
+        color: var(--text-color, inherit);
     }
     .overlay-content {
         background: var(--background-color);
