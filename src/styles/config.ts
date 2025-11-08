@@ -199,7 +199,7 @@ const themeGroups: ThemeGroupDefinition[] = [
             "--font-size-lg": "1.4rem",
             "--border-thickness": "1.36px",
             "--border-thickness-thin": "calc(var(--border-thickness) / 2)",
-            "--border-thickness-thick": "calc(var(--border-thickness) * 1.5)",
+            "--border-thickness-thick": "2.27px",
             "--border-radius-sm": "2px",
             "--border-radius-md": "4px",
             "--background-color": [

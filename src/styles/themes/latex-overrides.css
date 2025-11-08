@@ -1,4 +1,11 @@
+:root {
+    --border-width-thin: var(--border-thickness);
+    --border-width-thick: var(--border-thickness-thick);
+}
+
 body[data-theme="latex"] {
+    --body-color: var(--text-color);
+    --body-bg-color: var(--background-color);
     --link-visited: hsl(0, 100%, 33%);
     --link-focus-outline: hsl(220, 90%, 52%);
     --pre-bg-color: hsl(210, 28%, 93%);
@@ -11,6 +18,8 @@ body[data-theme="latex"] {
 }
 
 body[data-theme="latex-dark"] {
+    --body-color: var(--text-color);
+    --body-bg-color: var(--background-color);
     --link-visited: hsl(196, 80%, 77%);
     --link-focus-outline: hsl(215, 63%, 73%);
     --pre-bg-color: hsl(0, 1%, 25%);

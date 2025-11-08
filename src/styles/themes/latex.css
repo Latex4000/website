@@ -51,7 +51,8 @@
         url("./fonts/LM-bold-italic.ttf") format("truetype");
 }
 
-@font-face {
+/* Latex change: Commented out "Libertinus" font that we don't use */
+/* @font-face {
     font-family: "Libertinus";
     font-style: normal;
     font-weight: normal;
@@ -97,7 +98,7 @@
     font-weight: 600;
     font-display: swap;
     src: url("./fonts/Libertinus-semibold-italic.woff2") format("woff2");
-}
+} */
 
 /* Box sizing rules */
 *,
@@ -107,14 +108,19 @@
 }
 
 :root {
+    /* Latex change: Commented out colors and border widths, set in overrides instead */
+    /* --body-color: hsl(0, 5%, 10%);
+    --body-bg-color: hsl(210, 20%, 98%);
     --link-visited: hsl(0, 100%, 33%);
     --link-focus-outline: hsl(220, 90%, 52%);
     --pre-bg-color: hsl(210, 28%, 93%);
     --kbd-bg-color: hsl(210, 5%, 100%);
     --kbd-border-color: hsl(210, 5%, 70%);
     --table-border-color: black;
+    --border-width-thin: 1.36px;
+    --border-width-thick: 2.27px;
     --sidenote-target-border-color: hsl(55, 55%, 70%);
-    --footnotes-border-color: hsl(0, 0%, 39%);
+    --footnotes-border-color: hsl(0, 0%, 39%); */
     --text-indent-size: 1.463rem; /* In 12pt [Latin Modern font] LaTeX article
   \parindent =~ 17.625pt; taking also into account the ratio
   1pt[LaTeX] = (72 / 72.27) * 1pt[HTML], with default 12pt/1rem LaTeX.css font
@@ -122,7 +128,10 @@
   \parindent =~ 17.625 * (72 / 72.27) / 12 = 1.463rem. */
 }
 
-.latex-dark {
+/* Latex change: Commented out these classes, we don't use them for colors */
+/* .latex-dark {
+    --body-color: hsl(0, 0%, 86%);
+    --body-bg-color: hsl(0, 0%, 16%);
     --link-visited: hsl(196 80% 77%);
     --link-focus-outline: hsl(215, 63%, 73%);
     --pre-bg-color: hsl(0, 1%, 25%);
@@ -136,6 +145,8 @@
 
 @media (prefers-color-scheme: dark) {
     .latex-dark-auto {
+        --body-color: hsl(0, 0%, 86%);
+        --body-bg-color: hsl(0, 0%, 16%);
         --link-visited: hsl(196 80% 77%);
         --link-focus-outline: hsl(215, 63%, 73%);
         --pre-bg-color: hsl(0, 1%, 25%);
@@ -146,7 +157,7 @@
         --footnotes-border-color: hsl(0, 0%, 59%);
         --proof-symbol-filter: invert(80%);
     }
-}
+} */
 
 /* Remove default margin */
 body,
@@ -196,8 +207,8 @@ body {
 
     counter-reset: theorem definition sidenote-counter;
 
-    color: var(--text-color);
-    background-color: var(--background-color);
+    color: var(--body-color);
+    background-color: var(--body-bg-color);
 
     text-rendering: optimizeLegibility;
 
@@ -278,7 +289,7 @@ textarea {
 }
 
 /* Natural flow and rhythm in articles by default */
-/* Too difficult to style around */
+/* Latex change: Commented out because this is too difficult to style around */
 /* article > * + * {
     margin-top: 1em;
 } */
@@ -317,8 +328,8 @@ table:not(.borders-custom) {
     border-spacing: 0;
     width: auto;
     max-width: 100%;
-    border-top: var(--border-thickness-thick) solid var(--table-border-color);
-    border-bottom: var(--border-thickness-thick) solid var(--table-border-color);
+    border-top: var(--border-width-thick) solid var(--table-border-color);
+    border-bottom: var(--border-width-thick) solid var(--table-border-color);
     /* display: block; */
     overflow-x: auto; /* does not work because element is not block */
     /* white-space: nowrap; */
@@ -326,19 +337,19 @@ table:not(.borders-custom) {
 }
 /* add bottom border on column table headings  */
 table:not(.borders-custom) tr > th[scope="col"] {
-    border-bottom: var(--border-thickness-thin) solid var(--table-border-color);
+    border-bottom: var(--border-width-thin) solid var(--table-border-color);
 }
 /* add right border on row table headings  */
 table:not(.borders-custom) tr > th[scope="row"] {
-    border-right: var(--border-thickness-thin) solid var(--table-border-color);
+    border-right: var(--border-width-thin) solid var(--table-border-color);
 }
 table:not(.borders-custom) > tbody > tr:first-child > td,
 table:not(.borders-custom) > tbody > tr:first-child > th {
-    border-top: var(--border-thickness-thin) solid var(--table-border-color);
+    border-top: var(--border-width-thin) solid var(--table-border-color);
 }
 table:not(.borders-custom) > tbody > tr:last-child > td,
 table:not(.borders-custom) > tbody > tr:last-child > th {
-    border-bottom: var(--border-thickness-thin) solid var(--table-border-color);
+    border-bottom: var(--border-width-thin) solid var(--table-border-color);
 }
 
 th,
@@ -384,29 +395,29 @@ table.borders-custom {
 }
 
 .border-top-thick {
-    border-top: var(--border-thickness-thick) solid var(--table-border-color);
+    border-top: var(--border-width-thick) solid var(--table-border-color);
 }
 .border-right-thick {
-    border-right: var(--border-thickness-thick) solid var(--table-border-color);
+    border-right: var(--border-width-thick) solid var(--table-border-color);
 }
 .border-bottom-thick {
-    border-bottom: var(--border-thickness-thick) solid var(--table-border-color);
+    border-bottom: var(--border-width-thick) solid var(--table-border-color);
 }
 .border-left-thick {
-    border-left: var(--border-thickness-thick) solid var(--table-border-color);
+    border-left: var(--border-width-thick) solid var(--table-border-color);
 }
 
 .border-top-thin {
-    border-top: var(--border-thickness-thin) solid var(--table-border-color);
+    border-top: var(--border-width-thin) solid var(--table-border-color);
 }
 .border-right-thin {
-    border-right: var(--border-thickness-thin) solid var(--table-border-color);
+    border-right: var(--border-width-thin) solid var(--table-border-color);
 }
 .border-bottom-thin {
-    border-bottom: var(--border-thickness-thin) solid var(--table-border-color);
+    border-bottom: var(--border-width-thin) solid var(--table-border-color);
 }
 .border-left-thin {
-    border-left: var(--border-thickness-thin) solid var(--table-border-color);
+    border-left: var(--border-width-thin) solid var(--table-border-color);
 }
 
 /* Table column alignment */
