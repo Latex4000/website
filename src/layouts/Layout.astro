@@ -86,10 +86,10 @@ const onlineCount = await getOnlineVisitorCount(Astro);
                         >L<span>a</span>T<span>e</span>X 4000 / L4K</a
                     >
                 </h1>
-                <div class="title-bar__right">
+                <a class="title-bar__right" href="/watcher">
                     <OnlineCounter client:load initialCount={onlineCount} />
                     <ThemeSelector client:load />
-                </div>
+                </a>
             </div>
             <nav>
                 <div class="ch">
