@@ -38,18 +38,6 @@ a:visited {
     text-decoration: underline;
 }
 
-a {
-    color: var(--link-color, inherit);
-}
-
-a:visited {
-    color: var(--link-visited, currentColor);
-}
-
-a:focus {
-    outline-color: var(--link-focus-outline, currentColor);
-}
-
 button,
 input,
 textarea,
