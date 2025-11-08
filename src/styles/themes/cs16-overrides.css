@@ -24,3 +24,7 @@ h2,
 nav {
     font-size: 24px;
 }
+
+a {
+    color: inherit;
+}
