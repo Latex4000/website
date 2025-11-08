@@ -40,3 +40,9 @@ nav {
 p {
     text-align: justify;
 }
+
+button,
+select,
+input {
+    background-color: var(--background-color-alt);
+}
