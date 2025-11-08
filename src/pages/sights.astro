@@ -70,3 +70,11 @@ for (const path of filenames) {
         client:visible
     />
 </Layout>
+
+<script is:inline define:vars={{ sightId: Astro.locals.sightId }}>
+    if (sightId != null) {
+        document
+            .querySelector(`.sight[data-sight-id="${sightId}"]`)
+            ?.scrollIntoView();
+    }
+</script>

@@ -29,7 +29,7 @@ const motions = await db
     <div class="motions">
         {
             motions.map((motion) => (
-                <div class="motion">
+                <div class="motion" data-motion-id={motion.id}>
                     <iframe
                         src={motion.youtubeUrl.replace(/watch\?v=/, "embed/")}
                         style={{
@@ -45,7 +45,13 @@ const motions = await db
                         allowfullscreen
                     />
                     <div class="details">
-                        <h2>{motion.title}</h2>
+                        <h2>
+                            <a
+                                href={`/motions/${motion.id}-${motion.title.toLowerCase().replaceAll(/[\s_-]+/g, "-")}`}
+                            >
+                                {motion.title}
+                            </a>
+                        </h2>
                         {/* prettier-ignore */}
                         <div>
                             <a href={motion.youtubeUrl}>{/* prettier-ignore */}<span class="y">You</span><span class="t">Tube</span></a>
@@ -64,6 +70,14 @@ const motions = await db
     </div>
 </Layout>
 
+<script is:inline define:vars={{ motionId: Astro.locals.motionId }}>
+    if (motionId != null) {
+        document
+            .querySelector(`.motion[data-motion-id="${motionId}"]`)
+            ?.scrollIntoView();
+    }
+</script>
+
 <style>
     /* This is straightup copypasted and barely edited from sounds.astro... probably should just make a component that works for both */
     .motions {
@@ -79,6 +93,7 @@ const motions = await db
         flex: 0 0 var(--media-cover-size-lg, 11lh);
         flex: 0 0 round(var(--media-cover-size-lg, 11lh), 1ch);
         line-height: 1;
+        scroll-margin-top: var(--space-lg, 2lh);
     }
 
     .details {
