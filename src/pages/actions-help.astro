@@ -1,0 +1,12 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { Content, frontmatter } from "./_actions-help.md";
+---
+
+<Layout
+    header={frontmatter.title}
+    title={frontmatter.title}
+    description={frontmatter.description}
+>
+    <Content />
+</Layout>
