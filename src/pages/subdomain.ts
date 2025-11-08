@@ -30,5 +30,6 @@ export const GET: APIRoute = async (context) => {
         }
     }
 
+    context.locals.skipRecordPageView = true;
     return new Response(null, { status: 404 });
 };
