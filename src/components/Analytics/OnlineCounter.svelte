@@ -40,7 +40,6 @@
 
 <style>
     .online-counter {
-        font-size: 0.9em;
         color: var(--text-color-alt);
         white-space: nowrap;
     }

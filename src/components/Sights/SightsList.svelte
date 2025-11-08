@@ -117,7 +117,9 @@
                             ? 'block'
                             : 'none'}"
                     >
-                        {#each thumbFilenamesById[sight.id]?.slice(0, 3).reverse() ?? [] as filename}
+                        {#each thumbFilenamesById[sight.id]
+                            ?.slice(0, 3)
+                            .reverse() ?? [] as filename}
                             {@const thumbsDir =
                                 quality === "high" ? "thumbs" : "thumbs-evil"}
                             <img
@@ -230,7 +232,8 @@
     .sights-grid {
         display: grid;
         grid-template-columns: 1fr;
-        gap: 2lh 2ch;
+        gap: var(--space-lg) var(--space-inline-md);
+        margin-top: var(--sights-grid-margin-block-start, 0);
     }
     @media (min-width: 600px) {
         .sights-grid {
@@ -249,22 +252,22 @@
         display: block;
         object-fit: contain;
         position: absolute;
-        width: calc(100% - 2ch * (min(var(--count), 3) - 1));
+        width: calc(100% - var(--space-inline-md) * (min(var(--count), 3) - 1));
     }
     .sight__images img:nth-child(1) {
         top: 0;
         left: 0;
     }
     .sight__images img:nth-child(2) {
-        top: calc(2ch * 3 / 4);
-        left: 2ch;
+        top: calc(var(--space-inline-md) * 3 / 4);
+        left: var(--space-inline-md);
     }
     .sight__images img:nth-child(3) {
-        top: calc(4ch * 3 / 4);
-        left: 4ch;
+        top: calc(var(--space-inline-md) * 3 / 2);
+        left: calc(var(--space-inline-md) * 2);
     }
     .sight h3 {
-        margin: 1lh 0 0 0;
+        margin: var(--space-sm) 0 0 0;
         text-align: center;
     }
     .sight__date {
@@ -288,14 +291,15 @@
     .overlay {
         position: fixed;
         inset: 0;
-        background-color: #222c;
+        background-color: var(--surface-overlay-strong, rgba(0, 0, 0, 0.35));
         display: flex;
         align-items: center;
         justify-content: center;
+        color: var(--text-color, inherit);
     }
     .overlay-content {
         background: var(--background-color);
-        padding: 1rem;
+        padding: var(--space-static-md);
         max-height: 100%;
         overflow: auto;
         scrollbar-width: none;
@@ -303,14 +307,15 @@
     .overlay-nav {
         font-size: 10vw;
         margin: auto;
-        padding: 1rem;
+        padding: var(--space-static-md);
         cursor: pointer;
+        color: inherit;
     }
     .overlay-header {
-        top: 3rem;
+        top: calc(var(--space-static-md) * 3);
         width: fit-content;
-        padding: 1rem;
-        margin-bottom: 1rem;
+        padding: var(--space-static-md);
+        margin-bottom: var(--space-static-md);
         background: var(--background-color);
     }
     .overlay-header h3 {
@@ -326,14 +331,14 @@
     }
     .overlay-tags {
         display: flex;
-        gap: 2ch;
+        gap: var(--space-inline-md);
         overflow-x: auto;
-        margin: 1rem 0;
+        margin: var(--space-static-md) 0;
     }
     .overlay-tags > span {
         border: var(--border-thickness) solid var(--text-color);
-        padding: calc(0.5lh - var(--border-thickness))
-            calc(2ch - var(--border-thickness));
+        padding: calc(var(--space-xs) - var(--border-thickness))
+            calc(var(--space-inline-md) - var(--border-thickness));
         white-space: nowrap;
     }
     .overlay-images {

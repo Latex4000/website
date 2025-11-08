@@ -1,3 +1,10 @@
+/* Add standard appearance property where only a prefixed one was given */
+input,
+button,
+textarea {
+    appearance: none;
+}
+
 /* Style <select> the same way as <input> */
 select {
     border: var(--border-thickness) solid var(--text-color);

@@ -1,9 +1,11 @@
 ---
-import ThemeInit from "../styles/ThemeInit.astro";
-import { defaultTheme } from "../styles/themes";
-import ThemeSelector from "../styles/ThemeSelector.svelte";
 import OnlineCounter from "../components/Analytics/OnlineCounter.svelte";
 import { getOnlineVisitorCount } from "../server/analytics";
+import ThemeInit from "../styles/ThemeInit.astro";
+import { defaultTheme } from "../styles/config";
+import ThemeSelector from "../styles/ThemeSelector.svelte";
+import baseStylesUrl from "../styles/base.css?url";
+import resetStylesUrl from "../styles/reset.css?url";
 
 const { header, title, description, colour } = Astro.props;
 const keywords =
@@ -45,7 +47,10 @@ const onlineCount = await getOnlineVisitorCount(Astro);
         />
         <meta name="author" content="LaTeX 4000" />
         <meta name="keywords" content={keywords} />
-        <meta name="theme-color" content={colour || "#111111"} />
+        <meta
+            name="theme-color"
+            content={colour ?? defaultTheme.values["--background-color"]}
+        />
 
         <meta name="twitter:card" content="summary" />
         <meta name="twitter:site" content="@Latex4000" />
@@ -69,6 +74,8 @@ const onlineCount = await getOnlineVisitorCount(Astro);
 
         <script is:inline type="application/ld+json" set:html={schema} />
 
+        <link data-reset-styles href={resetStylesUrl} rel="stylesheet" />
+        <link data-base-styles href={baseStylesUrl} rel="stylesheet" />
         <ThemeInit />
     </head>
     <body data-theme={defaultTheme.slug}>
@@ -79,7 +86,10 @@ const onlineCount = await getOnlineVisitorCount(Astro);
                         >L<span>a</span>T<span>e</span>X 4000 / L4K</a
                     >
                 </h1>
-                <ThemeSelector client:load />
+                <div class="title-bar__right">
+                    <OnlineCounter client:load initialCount={onlineCount} />
+                    <ThemeSelector client:load />
+                </div>
             </div>
             <nav>
                 <div class="ch">
@@ -110,9 +120,6 @@ const onlineCount = await getOnlineVisitorCount(Astro);
                 |
                 <a href="/things">Things</a>
             </nav>
-            <div class="online-indicator">
-                <OnlineCounter client:load initialCount={onlineCount} />
-            </div>
             <h2>{header}</h2>
         </header>
         <main>
@@ -158,6 +165,10 @@ const onlineCount = await getOnlineVisitorCount(Astro);
 </html>
 
 <style>
+    header {
+        margin-block: var(--layout-header-margin-block, 1lh);
+    }
+
     header h1 {
         margin: 0;
     }
@@ -166,8 +177,19 @@ const onlineCount = await getOnlineVisitorCount(Astro);
         text-decoration: none;
     }
 
-    :global(body:not([data-theme^="latex"])) header {
-        margin: 1lh 0;
+    nav {
+        margin-block: var(--space-sm);
+        position: relative;
+    }
+
+    main {
+        /* For slotted components that need to use absolute positioning */
+        position: relative;
+    }
+
+    footer {
+        margin-block: var(--space-lg);
+        font-size: var(--layout-footer-font-scale, 0.8em);
     }
 
     .title-bar {
@@ -176,14 +198,11 @@ const onlineCount = await getOnlineVisitorCount(Astro);
         align-items: center;
     }
 
-    nav {
-        margin: 1lh 0;
-        position: relative;
-    }
-
-    .online-indicator {
-        margin-bottom: 1lh;
-        text-align: right;
+    .title-bar__right {
+        display: flex;
+        align-items: center;
+        gap: var(--space-inline-sm);
+        margin-left: var(--space-inline-sm);
     }
 
     .ch {
@@ -235,38 +254,17 @@ const onlineCount = await getOnlineVisitorCount(Astro);
         }
     }
 
-    main {
-        /* For slotted components that need to use absolute positioning */
-        position: relative;
-    }
-
-    footer {
-        margin-block: 2lh;
-    }
-
-    :global(body:not([data-theme^="mono"])) footer {
-        font-size: 0.8em;
-    }
-
     .webring {
-        margin-bottom: 1lh;
+        margin-bottom: var(--space-sm);
         text-align: center;
     }
 
     .webring__prev::after {
-        content: "<--";
-    }
-
-    :global(body[data-theme^="latex"]) .webring__prev::after {
-        content: "←";
+        content: var(--webring-prev-icon, "<--");
     }
 
     .webring__next::after {
-        content: "-->";
-    }
-
-    :global(body[data-theme^="latex"]) .webring__next::after {
-        content: "→";
+        content: var(--webring-next-icon, "-->");
     }
 
     .footer-row {
@@ -282,26 +280,16 @@ const onlineCount = await getOnlineVisitorCount(Astro);
     @media only screen and (max-width: 767px) {
         .footer-info {
             flex-direction: column;
-            gap: 1lh;
+            gap: var(--space-sm);
             text-align: center;
         }
     }
 
     @media only screen and (max-width: 600px) {
-        header {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .header-nav {
-            justify-content: center;
-            align-items: center;
-        }
-
-        .online-indicator {
-            text-align: center;
+        .title-bar__right {
+            flex-direction: column-reverse;
+            align-items: end;
+            gap: var(--space-xs);
         }
     }
 </style>

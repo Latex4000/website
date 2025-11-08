@@ -1,10 +1,22 @@
+/**
+ * By Oskar Wickström
+ * Licensed under the MIT License (https://github.com/owickstrom/the-monospace-web/blob/main/LICENSE.md)
+ **/
+
 /* Source: https://github.com/owickstrom/the-monospace-web */
-/* Unmerged updates from source: https://github.com/owickstrom/the-monospace-web/compare/c0d05c9f4dc113ef0fc8fe5e18b4bc6c5522fee4...main */
+/* Unmerged updates from source: https://github.com/owickstrom/the-monospace-web/compare/6992b7c1a9051bbf969fc491c1af775a36d59449...main */
 
 @import url("https://fonts.cdnfonts.com/css/jetbrains-mono-2");
 
 :root {
     --font-family: "JetBrains Mono", monospace;
+    /* Latex change: Set as variables in theme definition */
+    /* --line-height: 1.2rem;
+    --border-thickness: 2px;
+    --text-color: #000;
+    --text-color-alt: #666;
+    --background-color: #fff;
+    --background-color-alt: #eee; */
 
     --font-weight-normal: 500;
     --font-weight-medium: 600;
@@ -18,9 +30,24 @@
     font-size: 16px;
 }
 
+/* Latex change: Set as variables in theme definition */
+/* @media (prefers-color-scheme: dark) {
+    :root {
+        --text-color: #fff;
+        --text-color-alt: #aaa;
+        --background-color: #000;
+        --background-color-alt: #111;
+    }
+} */
+
 * {
     box-sizing: border-box;
 }
+
+/* Latex change: Commented out because this is too difficult to style around */
+/* * + * {
+    margin-top: var(--line-height);
+} */
 
 html {
     display: flex;
@@ -300,7 +327,6 @@ textarea {
     -webkit-font-smoothing: inherit;
     -moz-osx-font-smoothing: inherit;
     -webkit-appearance: none;
-    appearance: none;
 }
 
 input[type="checkbox"],

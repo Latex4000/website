@@ -1,7 +1,30 @@
-/* Centered layout */
-body {
-    margin: 0 auto;
-    padding: var(--line-height) 2ch;
-    max-width: 80ch;
-    line-height: var(--line-height);
+:root {
+    --bg: var(--background-color);
+    --secondary-bg: var(--background-color-alt);
+    --accent: #c4b550;
+    --secondary-accent: #958831;
+    --text: var(--text-color);
+    --secondary-text: var(--text-color-alt);
+    --text-3: #a0aa95;
+    --border-light: #8c9284;
+    --border-dark: #292c21;
+    --disabled-text: #292c21;
+    --disabled-text-shadow: #75806f;
+    --outline: #000;
+    --slider: #7f8c7f;
+    --slider-bg: #1f1f1f;
+    --scrollbar-track: #5a6a50;
+}
+
+h1 {
+    font-size: 50px;
+}
+
+h2,
+nav {
+    font-size: 24px;
+}
+
+a {
+    color: inherit;
 }

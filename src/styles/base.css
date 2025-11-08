@@ -1,0 +1,92 @@
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    min-height: 100%;
+}
+
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    line-height: var(--line-height);
+    margin: 0;
+    min-height: 100vh;
+    max-width: var(--layout-max-width);
+    margin-inline: auto;
+    padding-inline: var(--layout-padding-inline);
+}
+
+h1, h2, h3, h4, h5, h6 {
+    margin-block: var(--space-sm);
+    line-height: var(--line-height);
+    font-weight: inherit;
+}
+
+h1 {
+    margin-block: var(--space-md) var(--space-sm);
+}
+
+p, figure, dl, dd {
+    margin-block: var(--space-sm);
+}
+
+a:link,
+a:visited {
+    text-decoration: underline;
+}
+
+button,
+input,
+textarea,
+select {
+    color: inherit;
+}
+
+ol, ul {
+    list-style-position: outside;
+    padding-inline-start: var(--space-inline-md);
+    margin-block: var(--space-sm);
+}
+
+blockquote, q {
+    quotes: none;
+    margin-block: var(--space-sm);
+}
+
+blockquote::before, blockquote::after, q::before, q::after {
+    content: "";
+}
+
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+img,
+picture,
+video,
+canvas,
+svg {
+    display: block;
+    max-width: 100%;
+}
+
+tbody,
+tfoot,
+thead,
+tr {
+    border-color: inherit;
+}
+
+hr,
+pre,
+code,
+textarea,
+input,
+button,
+select {
+    border-color: var(--border-color-muted);
+}

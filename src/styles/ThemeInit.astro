@@ -1,11 +1,12 @@
 ---
-import { defaultDarkTheme, defaultTheme, ssrStyle, themes } from "./themes";
+import { defaultDarkTheme, defaultTheme, themes } from "./config";
+import { noScriptStyle } from "./themeClient";
 
 const initJson = JSON.stringify({ defaultDarkTheme, defaultTheme, themes });
 ---
 
 {/* Initial default theme styles for noscript */}
-<style is:inline set:html={ssrStyle()} data-theme></style>
+<style is:inline set:html={noScriptStyle} data-theme></style>
 {
     // Assumes defaultDarkTheme has the same cssUrls
     defaultTheme.cssUrls.map((cssUrl) => (
@@ -23,7 +24,7 @@ const initJson = JSON.stringify({ defaultDarkTheme, defaultTheme, themes });
     // script is not a module. So no imports allowed, and data is passed in via
     // the DOM
 
-    import type { Theme } from "./createThemes";
+    import type { Theme } from "./config";
 
     const { defaultDarkTheme, defaultTheme, themes } = JSON.parse(
         document.querySelector("script[data-theme-init]")?.textContent!
@@ -39,28 +40,22 @@ const initJson = JSON.stringify({ defaultDarkTheme, defaultTheme, themes });
             .join("");
     }
 
-    function getInitialTheme(): string {
+    function getInitialTheme(): Theme {
         const themeSlug = window.localStorage.getItem("theme-slug");
+        const theme =
+            themeSlug != null && themes.find(({ slug }) => slug === themeSlug);
 
-        if (
-            themeSlug != null &&
-            themes.some(({ slug }) => slug === themeSlug)
-        ) {
-            return themeSlug;
+        if (theme) {
+            return theme;
         }
 
         return window.matchMedia("(prefers-color-scheme: dark)").matches
-            ? defaultDarkTheme.slug
-            : defaultTheme.slug;
+            ? defaultDarkTheme
+            : defaultTheme;
     }
 
-    function applyTheme(themeSlug: string): void {
-        const theme = themes.find(({ slug }) => slug === themeSlug);
-
-        if (theme == null) {
-            return;
-        }
-
+    // Keep in sync with themeClient applyTheme
+    function applyTheme(theme: Theme): void {
         // Query previous theme elements in <head>
         const prevHeadChildren = document.head.querySelectorAll("[data-theme]");
 
@@ -94,15 +89,17 @@ const initJson = JSON.stringify({ defaultDarkTheme, defaultTheme, themes });
         // Set new style source link and text
         const styleSource = document.getElementById(
             "style-source"
-        ) as HTMLAnchorElement;
-        styleSource.href = theme.values["--srclink"];
-        styleSource.textContent = theme.values["--srctext"];
+        ) as HTMLAnchorElement | null;
+        if (styleSource != null) {
+            styleSource.href = theme.values["--srclink"];
+            styleSource.textContent = theme.values["--srctext"];
+        }
+
+        // Send event for pages that use JS to compute style-dependent features
+        window.dispatchEvent(
+            new CustomEvent("themechange", { detail: { slug: theme.slug } })
+        );
     }
 
     applyTheme(getInitialTheme());
-
-    // Remove old unused storage
-    window.localStorage.removeItem("nottheme-color-scheme");
-    window.localStorage.removeItem("nottheme-style");
-    window.localStorage.removeItem("nottheme-themes");
 </script>

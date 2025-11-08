@@ -166,12 +166,12 @@
 
 <style>
     .calendar {
-        padding: 1rem;
+        padding: var(--space-static-md);
     }
     .weekday-headers {
         display: grid;
         grid-template-columns: repeat(7, 1fr);
-        margin-bottom: 0.5rem;
+        margin-bottom: var(--space-static-xs);
     }
     .weekday {
         text-align: center;
@@ -180,23 +180,23 @@
     .grid {
         display: grid;
         grid-template-columns: repeat(7, 1fr);
-        gap: 0.5rem;
+        gap: var(--space-static-xs);
     }
     .day {
-        border: var(--border-thickness) solid #ccc;
-        padding: 0.5rem;
+        border: var(--border-thickness) solid var(--border-color-muted);
+        padding: var(--space-static-xs);
         text-align: center;
         cursor: pointer;
         position: relative;
     }
     .badge {
         position: absolute;
-        top: 2px;
-        right: 2px;
+        top: calc(var(--border-thickness) * 2);
+        right: calc(var(--border-thickness) * 2);
         color: white;
         border-radius: 50%;
-        font-size: 0.5rem;
-        width: 1rem;
-        height: 1rem;
+        font-size: calc(var(--font-size-sm) * 2 / 3);
+        width: var(--space-static-md);
+        height: var(--space-static-md);
     }
 </style>

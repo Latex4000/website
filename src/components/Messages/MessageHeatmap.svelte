@@ -4,6 +4,35 @@
     import dataFile from "../../data/messageData.json";
     import { type MessageData } from "../../typing/messageData";
 
+    const fallbackSequentialRamp = Array.from({ length: 6 }, (_, index) =>
+        d3.interpolateInferno(index / 5),
+    );
+
+    const fallbackAxisColor = "#ffffff";
+    const fallbackFocusColor = "#ffffff";
+
+    function readCssVar(
+        style: CSSStyleDeclaration | null,
+        name: string,
+    ): string {
+        if (!style) return "";
+        return style.getPropertyValue(name).trim();
+    }
+
+    function parseSequentialRamp(raw: string): string[] {
+        const byDelimiter = raw
+            .split(/[|,]/)
+            .map((token) => token.trim())
+            .filter(Boolean);
+        if (byDelimiter.length) return byDelimiter;
+
+        const byWhitespace = raw
+            .split(/\s+/)
+            .map((token) => token.trim())
+            .filter(Boolean);
+        return byWhitespace.length ? byWhitespace : fallbackSequentialRamp;
+    }
+
     let includeBotMessages = $state(true);
 
     let rawData: MessageData[] = dataFile
@@ -47,7 +76,10 @@
 
     let allYears: number[] = [];
 
-    let colorScale: d3.ScaleSequential<string>;
+    let colorScale: (value: number) => string = () =>
+        fallbackSequentialRamp[0]!;
+    let axisColor = fallbackAxisColor;
+    let focusColor = fallbackFocusColor;
 
     function toggleChannelMenu() {
         channelMenuVisible = !channelMenuVisible;
@@ -102,10 +134,20 @@
         context = canvasRef.getContext("2d")!;
         context.clearRect(0, 0, width, height);
 
+        const style =
+            typeof document !== "undefined" && document.body
+                ? getComputedStyle(document.body)
+                : null;
+        axisColor = readCssVar(style, "--viz-axis") || fallbackAxisColor;
+        focusColor = readCssVar(style, "--viz-focus") || fallbackFocusColor;
+        const rawRampValue = readCssVar(style, "--viz-sequential-ramp");
+        const ramp = parseSequentialRamp(rawRampValue);
+        const hasCustomRamp = rawRampValue.trim().length > 0;
+
         const yearCount = allYears.length;
         if (yearCount === 0) {
             // No data
-            context.fillStyle = "#fff";
+            context.fillStyle = axisColor;
             context.fillText(
                 "No data for selected channels",
                 width / 2,
@@ -128,10 +170,26 @@
             if (localMax > maxCount) maxCount = localMax;
         }
 
-        colorScale = d3
-            .scaleSequential<string>()
-            .domain([0, maxCount])
-            .interpolator(d3.interpolateInferno);
+        const domainSteps = ramp.length - 1;
+
+        if (hasCustomRamp && domainSteps >= 1) {
+            const rampDomain = ramp.map((_, index) => index / domainSteps);
+            const sequentialScale = d3
+                .scaleLinear<string>()
+                .domain(rampDomain)
+                .range(ramp);
+            colorScale = (value: number) => {
+                if (maxCount <= 0) return sequentialScale(0);
+                const normalized = Math.min(Math.max(value / maxCount, 0), 1);
+                return sequentialScale(normalized);
+            };
+        } else {
+            colorScale = (value: number) => {
+                if (maxCount <= 0) return d3.interpolateInferno(0);
+                const normalized = Math.min(Math.max(value / maxCount, 0), 1);
+                return d3.interpolateInferno(normalized);
+            };
+        }
 
         allYears.forEach((year, i) => {
             const offsetY = margin.top + i * subHeight;
@@ -154,7 +212,7 @@
 
             // Draw the label for the year
             context!.save();
-            context!.fillStyle = "#fff";
+            context!.fillStyle = axisColor;
             context!.textAlign = "center";
             context!.textBaseline = "top";
             context!.fillText(`${year}`, margin.left / 2, offsetY);
@@ -228,7 +286,7 @@
         context.clearRect(0, 0, width, height);
         drawHeatmap();
         context.save();
-        context.strokeStyle = "#fff";
+        context.strokeStyle = focusColor;
         context.lineWidth = 2;
         context.strokeRect(xPos, yPos, cellSize - 1, cellSize - 1);
         context.restore();
@@ -243,10 +301,15 @@
         drawHeatmap();
     }
 
+    function handleThemeChange() {
+        updateHeatmap();
+    }
+
     onMount(() => {
         // Get context
         updateHeatmap();
         window.addEventListener("resize", updateHeatmap);
+        window.addEventListener("themechange", handleThemeChange);
     });
 
     // re-runs whenever props change
@@ -335,9 +398,9 @@
 
     .dropdown-content {
         position: absolute;
-        background: rgba(0, 0, 0, 0.85);
-        color: #fff;
-        padding: 0.5rem;
+        background: var(--surface-overlay-strong);
+        color: var(--text-color);
+        padding: var(--space-static-xs);
         display: flex;
         flex-direction: column;
         gap: var(--line-height);
@@ -348,16 +411,16 @@
         position: relative;
         display: flex;
         flex-direction: column;
-        gap: 1rem;
+        gap: var(--space-static-md);
     }
 
     #tooltip {
         position: fixed;
         pointer-events: none;
-        background: rgba(0, 0, 0, 0.8);
-        color: #fff;
-        padding: 0.5rem;
-        font-size: 0.75rem;
+        background: var(--surface-overlay);
+        color: var(--text-color);
+        padding: var(--space-static-xs);
+        font-size: var(--font-size-sm);
         visibility: hidden;
         z-index: 999;
     }

@@ -5,7 +5,7 @@
  * Licensed under MIT (https://github.com/vincentdoerig/latex-css/blob/master/LICENSE)
 */
 
-/* Unmerged updates from source: https://github.com/vincentdoerig/latex-css/compare/15a7ee272d8951ffe95f3f08e09405c6165aefdf...master */
+/* Unmerged updates from source: https://github.com/vincentdoerig/latex-css/compare/74383e1e4fba37750cff0e78580376ce98a56b44...master */
 
 @font-face {
     font-family: "Latin Modern";
@@ -51,6 +51,55 @@
         url("./fonts/LM-bold-italic.ttf") format("truetype");
 }
 
+/* Latex change: Commented out "Libertinus" font that we don't use */
+/* @font-face {
+    font-family: "Libertinus";
+    font-style: normal;
+    font-weight: normal;
+    font-display: swap;
+    src: url("./fonts/Libertinus-regular.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "Libertinus";
+    font-style: italic;
+    font-weight: normal;
+    font-display: swap;
+    src: url("./fonts/Libertinus-italic.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "Libertinus";
+    font-style: normal;
+    font-weight: bold;
+    font-display: swap;
+    src: url("./fonts/Libertinus-bold.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "Libertinus";
+    font-style: italic;
+    font-weight: bold;
+    font-display: swap;
+    src: url("./fonts/Libertinus-bold-italic.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "Libertinus";
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url("./fonts/Libertinus-semibold.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "Libertinus";
+    font-style: italic;
+    font-weight: 600;
+    font-display: swap;
+    src: url("./fonts/Libertinus-semibold-italic.woff2") format("woff2");
+} */
+
 /* Box sizing rules */
 *,
 *::before,
@@ -59,14 +108,56 @@
 }
 
 :root {
+    /* Latex change: Commented out colors and border widths, set in overrides instead */
+    /* --body-color: hsl(0, 5%, 10%);
+    --body-bg-color: hsl(210, 20%, 98%);
+    --link-visited: hsl(0, 100%, 33%);
+    --link-focus-outline: hsl(220, 90%, 52%);
+    --pre-bg-color: hsl(210, 28%, 93%);
+    --kbd-bg-color: hsl(210, 5%, 100%);
+    --kbd-border-color: hsl(210, 5%, 70%);
+    --table-border-color: black;
     --border-width-thin: 1.36px;
     --border-width-thick: 2.27px;
+    --sidenote-target-border-color: hsl(55, 55%, 70%);
+    --footnotes-border-color: hsl(0, 0%, 39%); */
     --text-indent-size: 1.463rem; /* In 12pt [Latin Modern font] LaTeX article
-    \parindent =~ 17.625pt; taking also into account the ratio
-    1pt[LaTeX] = (72 / 72.27) * 1pt[HTML], with default 12pt/1rem LaTeX.css font
-    size, the identation value in rem CSS units is:
-    \parindent =~ 17.625 * (72 / 72.27) / 12 = 1.463rem. */
+  \parindent =~ 17.625pt; taking also into account the ratio
+  1pt[LaTeX] = (72 / 72.27) * 1pt[HTML], with default 12pt/1rem LaTeX.css font
+  size, the identation value in rem CSS units is:
+  \parindent =~ 17.625 * (72 / 72.27) / 12 = 1.463rem. */
 }
+
+/* Latex change: Commented out these classes, we don't use them for colors */
+/* .latex-dark {
+    --body-color: hsl(0, 0%, 86%);
+    --body-bg-color: hsl(0, 0%, 16%);
+    --link-visited: hsl(196 80% 77%);
+    --link-focus-outline: hsl(215, 63%, 73%);
+    --pre-bg-color: hsl(0, 1%, 25%);
+    --kbd-bg-color: hsl(0, 0%, 16%);
+    --kbd-border-color: hsl(210, 5%, 70%);
+    --table-border-color: white;
+    --sidenote-target-border-color: hsl(0, 0%, 59%);
+    --footnotes-border-color: hsl(0, 0%, 59%);
+    --proof-symbol-filter: invert(80%);
+}
+
+@media (prefers-color-scheme: dark) {
+    .latex-dark-auto {
+        --body-color: hsl(0, 0%, 86%);
+        --body-bg-color: hsl(0, 0%, 16%);
+        --link-visited: hsl(196 80% 77%);
+        --link-focus-outline: hsl(215, 63%, 73%);
+        --pre-bg-color: hsl(0, 1%, 25%);
+        --kbd-bg-color: hsl(0, 0%, 16%);
+        --kbd-border-color: hsl(210, 5%, 70%);
+        --table-border-color: white;
+        --sidenote-target-border-color: hsl(0, 0%, 59%);
+        --footnotes-border-color: hsl(0, 0%, 59%);
+        --proof-symbol-filter: invert(80%);
+    }
+} */
 
 /* Remove default margin */
 body,
@@ -95,6 +186,10 @@ html {
     }
 }
 
+body.libertinus {
+    font-family: "Libertinus", Georgia, Cambria, "Times New Roman", Times, serif;
+}
+
 .text-justify {
     text-align: justify;
 }
@@ -112,8 +207,8 @@ body {
 
     counter-reset: theorem definition sidenote-counter;
 
-    color: var(--text-color);
-    background-color: var(--background-color);
+    color: var(--body-color);
+    background-color: var(--body-bg-color);
 
     text-rendering: optimizeLegibility;
 
@@ -167,9 +262,9 @@ a:focus {
 /* Allow line breaks between any two characters */
 .break-all {
     /*
-        NOTE: Whith `break-all` value no hyphens are shown, even if the word breaks
-        at a hyphenation point
-    */
+    NOTE: Whith `break-all` value no hyphens are shown, even if the word breaks
+    at a hyphenation point
+  */
     word-break: break-all;
 }
 
@@ -194,9 +289,10 @@ textarea {
 }
 
 /* Natural flow and rhythm in articles by default */
-article > * + * {
+/* Latex change: Commented out because this is too difficult to style around */
+/* article > * + * {
     margin-top: 1em;
-}
+} */
 
 /* Styles for inline code or code snippets */
 code,
@@ -283,7 +379,7 @@ caption::before {
 }
 
 /* if a table is wrapped in a scroll wrapper,
-    the table cells shouldn't wrap */
+  the table cells shouldn't wrap */
 .scroll-wrapper > table td {
     white-space: nowrap;
 }
