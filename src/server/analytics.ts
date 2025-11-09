@@ -1,8 +1,75 @@
 import type { AstroSharedContext } from "astro";
 import { createHash } from "node:crypto";
 import db, { retryIfDbBusy } from "../database/db";
-import { PageView } from "../database/schema";
 import isCrawlerUserAgent from "./isCrawlerUserAgent";
+import {
+    Action,
+    Member,
+    Motion,
+    PageView,
+    Sight,
+    Sound,
+    Word,
+} from "../database/schema";
+import {
+    and,
+    desc,
+    eq,
+    gte,
+    inArray,
+    isNotNull,
+    like,
+    lte,
+    ne,
+    sql,
+    type SQL,
+} from "drizzle-orm";
+
+export interface PageViewFilters {
+    from?: Date;
+    to?: Date;
+    pagePath?: string | null;
+    statusCodes?: number[];
+    referrerQuery?: string | null;
+    includeEmptyPath?: boolean;
+}
+
+export interface PaginationOptions {
+    limit?: number;
+    offset?: number;
+}
+
+export interface PaginatedResult<T> {
+    rows: T[];
+    total: number;
+    limit: number;
+    offset: number;
+}
+
+export interface TotalsResult {
+    overall: number;
+    filtered: number;
+    comparisons: Record<string, number>;
+}
+
+export interface ContentCounts {
+    members: number;
+    actions: number;
+    sounds: number;
+    motions: number;
+    sights: number;
+    words: number;
+}
+
+export interface LatestPageViewRow {
+    path: string;
+    status: number;
+    referrer: string | null;
+    createdAt: Date;
+}
+
+const DEFAULT_PAGE_LIMIT = 25;
+const MAX_PAGE_LIMIT = 200;
 
 const fingerprintWindowMs = 30 * 1000;
 const fingerprints = new Map<string, number>();
@@ -12,6 +79,95 @@ declare global {
         interface Locals {
             /** Don't record this request as a page view for analytics */
             skipRecordPageView?: true;
+        }
+    }
+}
+
+function combineConditions(...conditions: (SQL | undefined)[]): SQL | undefined {
+    const filtered = conditions.filter(Boolean) as SQL[];
+    if (!filtered.length) return undefined;
+    if (filtered.length === 1) return filtered[0]!;
+    return and(...filtered);
+}
+
+function normalizePagination(options: PaginationOptions = {}): { limit: number; offset: number } {
+    const limit = Math.min(Math.max(options.limit ?? DEFAULT_PAGE_LIMIT, 1), MAX_PAGE_LIMIT);
+    const offset = Math.max(options.offset ?? 0, 0);
+    return { limit, offset };
+}
+
+function buildPageViewWhereClause(filters: PageViewFilters = {}): SQL | undefined {
+    const includeEmptyPath = filters.includeEmptyPath ?? false;
+    const conditions: (SQL | undefined)[] = [];
+
+    if (!includeEmptyPath) {
+        conditions.push(ne(PageView.path, ""));
+    }
+
+    if (filters.from) {
+        conditions.push(gte(PageView.createdAt, filters.from));
+    }
+
+    if (filters.to) {
+        conditions.push(lte(PageView.createdAt, filters.to));
+    }
+
+    if (filters.pagePath && filters.pagePath.trim()) {
+        const trimmed = filters.pagePath.trim();
+        const hasWildcard = /[%_*]/.test(trimmed);
+        conditions.push(hasWildcard ? like(PageView.path, trimmed) : eq(PageView.path, trimmed));
+    }
+
+    if (filters.statusCodes && filters.statusCodes.length) {
+        const uniqueStatusCodes = Array.from(new Set(filters.statusCodes));
+        conditions.push(inArray(PageView.status, uniqueStatusCodes));
+    }
+
+    if (filters.referrerQuery && filters.referrerQuery.trim()) {
+        const pattern = `%${filters.referrerQuery.trim()}%`;
+        conditions.push(like(PageView.referrer, pattern));
+    }
+
+    return combineConditions(...conditions);
+}
+
+async function countPageViews(filters: PageViewFilters = {}): Promise<number> {
+    const condition = buildPageViewWhereClause(filters);
+    const query = db.select({ count: sql<number>`count(*)` }).from(PageView);
+    const row = await (condition ? query.where(condition) : query).get();
+    return row?.count ?? 0;
+}
+
+async function countDistinctPaths(filters: PageViewFilters = {}): Promise<number> {
+    const condition = buildPageViewWhereClause(filters);
+    const query = db.select({ count: sql<number>`count(DISTINCT ${PageView.path})` }).from(PageView);
+    const row = await (condition ? query.where(condition) : query).get();
+    return row?.count ?? 0;
+}
+
+async function countDistinctReferrers(filters: PageViewFilters = {}): Promise<number> {
+    const condition = combineConditions(
+        buildPageViewWhereClause(filters),
+        isNotNull(PageView.referrer),
+        ne(PageView.referrer, ""),
+    );
+    const query = db.select({ count: sql<number>`count(DISTINCT ${PageView.referrer})` }).from(PageView);
+    const row = await (condition ? query.where(condition) : query).get();
+    return row?.count ?? 0;
+}
+
+async function countDistinctStatuses(filters: PageViewFilters = {}): Promise<number> {
+    const condition = buildPageViewWhereClause(filters);
+    const query = db.select({ count: sql<number>`count(DISTINCT ${PageView.status})` }).from(PageView);
+    const row = await (condition ? query.where(condition) : query).get();
+    return row?.count ?? 0;
+}
+
+function pruneFingerprints(now: number, windowMs: number): void {
+    const cutoff = now - windowMs;
+    for (const [storedFingerprint, lastSeen] of fingerprints) {
+        if (lastSeen < cutoff) {
+            fingerprints.delete(storedFingerprint);
         }
     }
 }
@@ -47,14 +203,301 @@ export async function recordPageView(context: AstroSharedContext, response: Resp
         return;
     }
 
+    const fields = {
+        path: context.url.pathname,
+        status: response.status,
+        referrer: context.request.headers.get("Referer"),
+    };
+
+    if (!context.isPrerendered) {
+        const fingerprint = makeFingerprint(context);
+        const nowStamp = Date.now();
+        fingerprints.set(fingerprint, nowStamp);
+        pruneFingerprints(nowStamp, fingerprintWindowMs);
+    }
+
     await retryIfDbBusy(() =>
-        db.insert(PageView).values({
-            path: context.url.pathname,
-            status: response.status,
-            referrer: context.request.headers.get("Referer"),
-        }),
+        db.insert(PageView).values(fields),
     );
 }
+
+export async function getPageViewTotals(
+    filters: PageViewFilters = {},
+    presetDurations: Record<string, number> = {
+        last24Hours: 24 * 60 * 60 * 1000,
+        last7Days: 7 * 24 * 60 * 60 * 1000,
+        last30Days: 30 * 24 * 60 * 60 * 1000,
+    },
+): Promise<TotalsResult> {
+    const overall = await countPageViews();
+    const filtered = await countPageViews(filters);
+
+    const comparisonsEntries = await Promise.all(
+        Object.entries(presetDurations).map(async ([label, duration]) => {
+            const to = filters.to ? new Date(filters.to) : new Date();
+            const from = new Date(to.getTime() - duration);
+            const value = await countPageViews({ ...filters, from });
+            return [label, value] as const;
+        }),
+    );
+
+    return {
+        overall,
+        filtered,
+        comparisons: Object.fromEntries(comparisonsEntries),
+    };
+}
+
+export async function getContentCounts(): Promise<ContentCounts> {
+    const [members, actions, sounds, motions, sights, words] = await Promise.all([
+        db
+            .select({ count: sql<number>`count(*)` })
+            .from(Member)
+            .where(eq(Member.deleted, false))
+            .get(),
+        db
+            .select({ count: sql<number>`count(*)` })
+            .from(Action)
+            .where(eq(Action.deleted, false))
+            .get(),
+        db
+            .select({ count: sql<number>`count(*)` })
+            .from(Sound)
+            .where(eq(Sound.deleted, false))
+            .get(),
+        db
+            .select({ count: sql<number>`count(*)` })
+            .from(Motion)
+            .where(eq(Motion.deleted, false))
+            .get(),
+        db
+            .select({ count: sql<number>`count(*)` })
+            .from(Sight)
+            .where(eq(Sight.deleted, false))
+            .get(),
+        db
+            .select({ count: sql<number>`count(*)` })
+            .from(Word)
+            .where(eq(Word.deleted, false))
+            .get(),
+    ]);
+
+    return {
+        members: members?.count ?? 0,
+        actions: actions?.count ?? 0,
+        sounds: sounds?.count ?? 0,
+        motions: motions?.count ?? 0,
+        sights: sights?.count ?? 0,
+        words: words?.count ?? 0,
+    };
+}
+
+export async function getTopPages(
+    filters: PageViewFilters = {},
+    pagination: PaginationOptions = {},
+): Promise<PaginatedResult<{ path: string; views: number }>> {
+    const { limit, offset } = normalizePagination(pagination);
+    const condition = buildPageViewWhereClause(filters);
+    const countExpr = sql<number>`count(*)`;
+
+    const baseQuery = db
+        .select({
+            path: PageView.path,
+            views: countExpr,
+        })
+        .from(PageView);
+
+    const rows = await (condition ? baseQuery.where(condition) : baseQuery)
+        .groupBy(PageView.path)
+        .orderBy(desc(countExpr))
+        .limit(limit)
+        .offset(offset);
+
+    const total = await countDistinctPaths(filters);
+
+    return {
+        rows,
+        total,
+        limit,
+        offset,
+    };
+}
+
+export async function getLatestPageViews(
+    filters: PageViewFilters = {},
+    pagination: PaginationOptions = {},
+): Promise<PaginatedResult<LatestPageViewRow>> {
+    const { limit, offset } = normalizePagination(pagination);
+    const condition = buildPageViewWhereClause(filters);
+
+    const baseQuery = db
+        .select({
+            path: PageView.path,
+            status: PageView.status,
+            referrer: PageView.referrer,
+            createdAt: PageView.createdAt,
+        })
+        .from(PageView);
+
+    const rows = await (condition ? baseQuery.where(condition) : baseQuery)
+        .orderBy(desc(PageView.createdAt))
+        .limit(limit)
+        .offset(offset);
+
+    const total = await countPageViews(filters);
+
+    return {
+        rows,
+        total,
+        limit,
+        offset,
+    };
+}
+
+export async function getDailyViews(
+    filters: PageViewFilters = {},
+): Promise<Array<{ date: Date; views: number }>> {
+    const condition = buildPageViewWhereClause(filters);
+    const bucketExpr = sql<string>`strftime('%Y-%m-%d', ${PageView.createdAt})`;
+    const countExpr = sql<number>`count(*)`;
+
+    const baseQuery = db
+        .select({
+            bucket: bucketExpr,
+            views: countExpr,
+        })
+        .from(PageView);
+
+    const rows = await (condition ? baseQuery.where(condition) : baseQuery)
+        .groupBy(bucketExpr)
+        .orderBy(bucketExpr);
+
+    return rows
+        .map((row) => ({
+            date: new Date(`${row.bucket}T00:00:00Z`),
+            views: row.views,
+        }))
+        .sort((a, b) => a.date.getTime() - b.date.getTime());
+}
+
+export async function getTopReferrers(
+    filters: PageViewFilters = {},
+    pagination: PaginationOptions = {},
+): Promise<PaginatedResult<{ referrer: string; views: number }>> {
+    const { limit, offset } = normalizePagination(pagination);
+    const condition = combineConditions(
+        buildPageViewWhereClause(filters),
+        isNotNull(PageView.referrer),
+        ne(PageView.referrer, ""),
+    );
+    const countExpr = sql<number>`count(*)`;
+
+    const baseQuery = db
+        .select({
+            referrer: PageView.referrer,
+            views: countExpr,
+        })
+        .from(PageView);
+
+    const rows = await (condition ? baseQuery.where(condition) : baseQuery)
+        .groupBy(PageView.referrer)
+        .orderBy(desc(countExpr))
+        .limit(limit)
+        .offset(offset);
+
+    const total = await countDistinctReferrers(filters);
+
+    return {
+        rows: rows.map((row) => ({
+            referrer: row.referrer ?? "",
+            views: row.views,
+        })),
+        total,
+        limit,
+        offset,
+    };
+}
+
+export async function getStatusBreakdown(
+    filters: PageViewFilters = {},
+    pagination: PaginationOptions = {},
+): Promise<PaginatedResult<{ status: number; views: number }>> {
+    const { limit, offset } = normalizePagination(pagination);
+    const condition = buildPageViewWhereClause(filters);
+    const countExpr = sql<number>`count(*)`;
+
+    const baseQuery = db
+        .select({
+            status: PageView.status,
+            views: countExpr,
+        })
+        .from(PageView);
+
+    const rows = await (condition ? baseQuery.where(condition) : baseQuery)
+        .groupBy(PageView.status)
+        .orderBy(desc(countExpr))
+        .limit(limit)
+        .offset(offset);
+
+    const total = await countDistinctStatuses(filters);
+
+    return {
+        rows,
+        total,
+        limit,
+        offset,
+    };
+}
+
+export function serializeDailyViews(
+    points: Array<{ date: Date; views: number }>,
+) {
+    return points.map((point) => ({
+        date: point.date.toISOString(),
+        views: point.views,
+    }));
+}
+
+export function serializeLatestPageViews(
+    result: PaginatedResult<LatestPageViewRow>,
+) {
+    return {
+        ...result,
+        rows: result.rows.map((row) => ({
+            ...row,
+            createdAt: row.createdAt.toISOString(),
+        })),
+    };
+}
+
+export type WatcherDailyViews = ReturnType<typeof serializeDailyViews>;
+export type WatcherLatestPageViews = ReturnType<typeof serializeLatestPageViews>;
+
+export type WatcherApiResponse = {
+    serverNow: string;
+    filters: {
+        from: string | null;
+        to: string | null;
+        pagePath: string | null;
+        statusCodes: number[];
+        referrerQuery: string | null;
+        includeEmptyPath: boolean;
+        timezoneOffsetMinutes: number | null;
+    };
+    results: {
+        totals: TotalsResult;
+        contentCounts: ContentCounts;
+        dailyViews: WatcherDailyViews;
+        topPages: PaginatedResult<{ path: string; views: number }>;
+        latestPageViews: WatcherLatestPageViews;
+        topReferrers: PaginatedResult<{ referrer: string; views: number }>;
+        statusBreakdown: PaginatedResult<{ status: number; views: number }>;
+    };
+    pagination: Record<
+        "topPages" | "latest" | "referrers" | "status",
+        PaginationOptions
+    >;
+};
 
 // NOTE: If we ever move from single process to multi process then we gotta change this shit
 export async function getOnlineVisitorCount(context: AstroSharedContext): Promise<number | null> {

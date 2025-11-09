@@ -1,381 +1,124 @@
 ---
-import { and, desc, eq, gt, ne, sql } from "drizzle-orm";
 import Layout from "../layouts/Layout.astro";
-import db from "../database/db";
+import WatcherDashboard from "../components/Watcher/WatcherDashboard.svelte";
 import {
-    PageView,
-    Member,
-    Action,
-    Sound,
-    Motion,
-    Sight,
-    Word,
-} from "../database/schema";
+    getContentCounts,
+    getDailyViews,
+    getLatestPageViews,
+    getPageViewTotals,
+    getStatusBreakdown,
+    getTopPages,
+    getTopReferrers,
+    serializeDailyViews,
+    serializeLatestPageViews,
+    type PageViewFilters,
+    type PaginationOptions,
+    type WatcherApiResponse,
+} from "../server/analytics";
 
 export const prerender = false;
 
-const now = Date.now();
-const dayAgo = new Date(now - 24 * 60 * 60 * 1000);
-const weekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
-
-const pageViewFilter = ne(PageView.path, "");
-
+const defaultFilters: PageViewFilters = { includeEmptyPath: false };
+const defaultPagination: Record<
+    "topPages" | "latest" | "referrers" | "status",
+    PaginationOptions
+> = {
+    topPages: { limit: 10, offset: 0 },
+    latest: { limit: 20, offset: 0 },
+    referrers: { limit: 10, offset: 0 },
+    status: { limit: 10, offset: 0 },
+};
 const [
-    totalsRow,
-    lastDayRow,
-    lastWeekRow,
-    topPagesOverall,
-    topPagesWeek,
+    totals,
+    contentCounts,
+    dailyViews,
+    topPages,
     latestPageViews,
+    topReferrers,
+    statusBreakdown,
 ] = await Promise.all([
-    db
-        .select({
-            views: sql<number>`count(*)`,
-        })
-        .from(PageView)
-        .where(pageViewFilter)
-        .get(),
-    db
-        .select({
-            views: sql<number>`count(*)`,
-        })
-        .from(PageView)
-        .where(and(pageViewFilter, gt(PageView.createdAt, dayAgo)))
-        .get(),
-    db
-        .select({
-            views: sql<number>`count(*)`,
-        })
-        .from(PageView)
-        .where(and(pageViewFilter, gt(PageView.createdAt, weekAgo)))
-        .get(),
-    db
-        .select({
-            path: PageView.path,
-            views: sql<number>`count(*)`,
-        })
-        .from(PageView)
-        .where(pageViewFilter)
-        .groupBy(PageView.path)
-        .orderBy(sql`count(*) DESC`)
-        .limit(10),
-    db
-        .select({
-            path: PageView.path,
-            views: sql<number>`count(*)`,
-        })
-        .from(PageView)
-        .where(and(pageViewFilter, gt(PageView.createdAt, weekAgo)))
-        .groupBy(PageView.path)
-        .orderBy(sql`count(*) DESC`)
-        .limit(10),
-    db
-        .select({
-            path: PageView.path,
-            createdAt: PageView.createdAt,
-            status: PageView.status,
-            referrer: PageView.referrer,
-        })
-        .from(PageView)
-        .where(pageViewFilter)
-        .orderBy(desc(PageView.createdAt))
-        .limit(20),
+    getPageViewTotals(defaultFilters),
+    getContentCounts(),
+    getDailyViews(defaultFilters),
+    getTopPages(defaultFilters, defaultPagination.topPages),
+    getLatestPageViews(defaultFilters, defaultPagination.latest),
+    getTopReferrers(defaultFilters, defaultPagination.referrers),
+    getStatusBreakdown(defaultFilters, defaultPagination.status),
 ]);
 
-const totals = {
-    views: totalsRow?.views ?? 0,
-    viewsDay: lastDayRow?.views ?? 0,
-    viewsWeek: lastWeekRow?.views ?? 0,
-};
+const serializedDailyViews = serializeDailyViews(dailyViews);
+const serializedLatestPageViews = serializeLatestPageViews(latestPageViews);
 
-const [membersRow, actionsRow, soundsRow, motionsRow, sightsRow, wordsRow] =
-    await Promise.all([
-        db
-            .select({ count: sql<number>`count(*)` })
-            .from(Member)
-            .where(eq(Member.deleted, false))
-            .get(),
-        db
-            .select({ count: sql<number>`count(*)` })
-            .from(Action)
-            .where(eq(Action.deleted, false))
-            .get(),
-        db
-            .select({ count: sql<number>`count(*)` })
-            .from(Sound)
-            .where(eq(Sound.deleted, false))
-            .get(),
-        db
-            .select({ count: sql<number>`count(*)` })
-            .from(Motion)
-            .where(eq(Motion.deleted, false))
-            .get(),
-        db
-            .select({ count: sql<number>`count(*)` })
-            .from(Sight)
-            .where(eq(Sight.deleted, false))
-            .get(),
-        db
-            .select({ count: sql<number>`count(*)` })
-            .from(Word)
-            .where(eq(Word.deleted, false))
-            .get(),
-    ]);
-
-const contentTotals = {
-    members: membersRow?.count ?? 0,
-    actions: actionsRow?.count ?? 0,
-    sounds: soundsRow?.count ?? 0,
-    motions: motionsRow?.count ?? 0,
-    sights: sightsRow?.count ?? 0,
-    words: wordsRow?.count ?? 0,
+const initialPayload: WatcherApiResponse = {
+    serverNow: new Date().toISOString(),
+    filters: {
+        from: null,
+        to: null,
+        pagePath: null,
+        statusCodes: [],
+        referrerQuery: null,
+        includeEmptyPath: defaultFilters.includeEmptyPath ?? false,
+        timezoneOffsetMinutes: null,
+    },
+    results: {
+        totals,
+        contentCounts,
+        dailyViews: serializedDailyViews,
+        topPages,
+        latestPageViews: serializedLatestPageViews,
+        topReferrers,
+        statusBreakdown,
+    },
+    pagination: defaultPagination,
 };
 ---
 
 <Layout header="Watcher" title="Watcher" description="Let's Have A Watch">
-    <p>
-        Analytics since ~Nov 8 UTC. For anyone interested you can see the code
-        of how it works <a
-            href="https://github.com/Latex4000/website/blob/main/src/server/analytics.ts"
-            >here</a
-        >.
-    </p>
-    {
-        totals.views === 0 ? (
+    <section class="context">
+        <details>
+            <summary>What you are looking at</summary>
+            <a class="watching" href="https://tenor.com/srIBhS4OjXr.gif">
+                Lets have a watch <span class="massive_eyes">👀</span>
+            </a>
             <p>
-                No page view data yet. Traffic will begin to appear here once
-                the site receives requests.
+                This page shows view analytics from the database. Use the
+                controls to slice by date range, status, referrer, or path. Data
+                updates automatically when you change filters and includes
+                content totals from the other catalog tables.
             </p>
-        ) : (
-            <section class="summary">
-                <div>
-                    <h3>Total</h3>
-                    <p>{totals.views.toLocaleString()} page views</p>
-                </div>
-                <div>
-                    <h3>Last 7 days</h3>
-                    <p>{totals.viewsWeek.toLocaleString()} page views</p>
-                </div>
-                <div>
-                    <h3>Last 24 hours</h3>
-                    <p>{totals.viewsDay.toLocaleString()} page views</p>
-                </div>
-            </section>
-        )
-    }
+            <p>
+                The API driving this view lives in
+                <a href="/api/analytics" rel="external" target="_blank"
+                    >/api/analytics</a
+                > and its functionality is primarily in
+                <a
+                    href="https://github.com/Latex4000/website/blob/main/src/server/analytics.ts"
+                    rel="external"
+                    target="_blank">src/server/analytics.ts</a
+                >.
+            </p>
+        </details>
+    </section>
 
-    {
-        contentTotals.members +
-            contentTotals.actions +
-            contentTotals.sounds +
-            contentTotals.motions +
-            contentTotals.sights +
-            contentTotals.words >
-            0 && (
-            <section>
-                <h3>Content overview</h3>
-                <div class="content-grid">
-                    <div class="content-card">
-                        <h4>Members</h4>
-                        <p>{contentTotals.members.toLocaleString()}</p>
-                    </div>
-                    <div class="content-card">
-                        <h4>Actions</h4>
-                        <p>{contentTotals.actions.toLocaleString()}</p>
-                    </div>
-                    <div class="content-card">
-                        <h4>Sounds</h4>
-                        <p>{contentTotals.sounds.toLocaleString()}</p>
-                    </div>
-                    <div class="content-card">
-                        <h4>Motions</h4>
-                        <p>{contentTotals.motions.toLocaleString()}</p>
-                    </div>
-                    <div class="content-card">
-                        <h4>Sights</h4>
-                        <p>{contentTotals.sights.toLocaleString()}</p>
-                    </div>
-                    <div class="content-card">
-                        <h4>Words</h4>
-                        <p>{contentTotals.words.toLocaleString()}</p>
-                    </div>
-                </div>
-            </section>
-        )
-    }
-
-    {
-        topPagesOverall.length > 0 && (
-            <section>
-                <h3>Top pages overall</h3>
-                <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th scope="col">Path</th>
-                                <th scope="col">Views</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {topPagesOverall.map((entry) => (
-                                <tr>
-                                    <td>{entry.path}</td>
-                                    <td>{entry.views.toLocaleString()}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-        )
-    }
-
-    {
-        topPagesWeek.length > 0 && (
-            <section>
-                <h3>Top pages this week</h3>
-                <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th scope="col">Path</th>
-                                <th scope="col">Views</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {topPagesWeek.map((entry) => (
-                                <tr>
-                                    <td>{entry.path}</td>
-                                    <td>{entry.views.toLocaleString()}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-        )
-    }
-
-    {
-        latestPageViews.length > 0 && (
-            <section>
-                <h3>Latest page views</h3>
-                <div class="table-wrapper">
-                    <table class="wide-table">
-                        <thead>
-                            <tr>
-                                <th scope="col">Time</th>
-                                <th scope="col">Path</th>
-                                <th scope="col" class="nowrap">
-                                    Status
-                                </th>
-                                <th scope="col">Referrer</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {latestPageViews.map((entry) => (
-                                <tr>
-                                    <td>{entry.createdAt.toLocaleString()}</td>
-                                    <td>{entry.path}</td>
-                                    <td>{entry.status}</td>
-                                    <td>{entry.referrer ?? ""}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-        )
-    }
+    <WatcherDashboard client:load data={initialPayload} />
 </Layout>
 
 <style>
-    section {
-        display: flex;
-        flex-direction: column;
-        gap: 1lh;
+    .context {
+        margin-bottom: 2lh;
     }
 
-    .table-wrapper {
-        overflow-x: auto;
+    .context summary:focus-visible {
+        outline: 2px solid var(--text-color);
+        outline-offset: 2px;
     }
 
-    .summary {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(16ch, 1fr));
-        gap: 2ch;
+    .watching {
+        line-height: 1;
     }
 
-    table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    th,
-    td {
-        padding: calc(0.5lh - var(--border-thickness))
-            calc(1ch - var(--border-thickness));
-        border: var(--border-thickness) solid var(--text-color);
-        text-align: left;
-        overflow-wrap: anywhere;
-    }
-
-    th {
-        text-transform: uppercase;
-        font-size: 0.8em;
-
-        &.nowrap {
-            overflow-wrap: normal;
-        }
-    }
-
-    tbody tr:nth-child(even) {
-        background-color: color-mix(
-            in srgb,
-            var(--background-color) 80%,
-            var(--text-color) 20%
-        );
-    }
-
-    .content-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(14ch, 1fr));
-        gap: 1ch;
-    }
-
-    .content-card {
-        border: var(--border-thickness) solid var(--text-color);
-        padding: calc(1lh - var(--border-thickness));
-    }
-
-    .content-card h4 {
-        margin: 0 0 0.25lh;
-        text-transform: uppercase;
-        font-size: 0.8em;
-    }
-
-    .content-card p {
-        margin: 0;
-    }
-
-    .wide-table {
-        min-width: 60ch;
-    }
-
-    @media (max-width: 700px) {
-        table {
-            font-size: 0.9em;
-        }
-
-        th,
-        td {
-            white-space: nowrap;
-        }
-
-        td:nth-child(2),
-        td:nth-child(5) {
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+    .massive_eyes {
+        font-size: 20em;
+        vertical-align: middle;
     }
 </style>
