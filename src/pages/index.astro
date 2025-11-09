@@ -11,12 +11,7 @@ import {
     Word,
 } from "../database/schema";
 import { and, desc, eq } from "drizzle-orm";
-import {
-    FEED_TYPE,
-    detectFeedType,
-    linkChanger,
-    removeTitleDescriptionDuplicates,
-} from "../server/rss";
+import { FEED_TYPE, detectFeedType, linkChanger } from "../server/rss";
 import type { FeedType } from "../server/rss";
 import { thingColourHandler } from "../server/thingUtils";
 
@@ -72,7 +67,6 @@ type ExternalFeedItem = {
     summary?: string;
     sourceTitle: string;
     feedType: string;
-    isExternal: boolean;
 };
 
 const [memberRows, soundRows, motionRows, sightRows, wordRows, actionItemRows] =
@@ -210,13 +204,7 @@ const rawCollectiveFeed: ExternalFeedItem[] = actionItemRows.flatMap((item) => {
     const feedType = detectFeedType(item.actionUrl);
     if (!ALLOWED_FEED_TYPES.has(feedType)) return [];
 
-    const processedTitle = item.title
-        ? removeTitleDescriptionDuplicates(
-              item.title,
-              item.description,
-              feedType
-          )
-        : item.actionTitle;
+    const processedTitle = item.title ?? item.actionTitle;
     const plainDescription = summarize(toPlainText(item.description));
     const summary =
         plainDescription && plainDescription !== processedTitle
@@ -232,7 +220,6 @@ const rawCollectiveFeed: ExternalFeedItem[] = actionItemRows.flatMap((item) => {
             ...(summary ? { summary } : {}),
             sourceTitle: item.actionTitle,
             feedType,
-            isExternal: true,
         } satisfies ExternalFeedItem,
     ];
 });
@@ -332,7 +319,10 @@ const collectiveFeed = rawCollectiveFeed
                     )
                 }
             </div>
-            <div class="feed-column">
+            <div
+                class="feed-column"
+                data-collective={JSON.stringify(collectiveFeed)}
+            >
                 <h3>Latest from the collective</h3>
                 {
                     collectiveFeed.length > 0 ? (
@@ -340,7 +330,7 @@ const collectiveFeed = rawCollectiveFeed
                             {collectiveFeed.map((item) => (
                                 <li class="feed-item">
                                     <span class="feed-item__header">
-                                        {item.sourceTitle}
+                                        {item.feedType}
                                     </span>
                                     <time datetime={item.date.toISOString()}>
                                         {item.date.toLocaleString()}
@@ -348,16 +338,8 @@ const collectiveFeed = rawCollectiveFeed
                                     <a
                                         class="feed-item__title"
                                         href={item.url}
-                                        target={
-                                            item.isExternal
-                                                ? "_blank"
-                                                : undefined
-                                        }
-                                        rel={
-                                            item.isExternal
-                                                ? "noopener noreferrer"
-                                                : undefined
-                                        }
+                                        target="_blank"
+                                        rel="noopener noreferrer"
                                     >
                                         {item.title}
                                     </a>
@@ -467,6 +449,8 @@ const collectiveFeed = rawCollectiveFeed
 
     .feed-item__title {
         font-weight: 600;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .feed-item__summary {
