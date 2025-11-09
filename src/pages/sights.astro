@@ -63,10 +63,13 @@ for (const path of filenames) {
     <noscript>
         <p>JavaScript is required to view the full-size images</p>
     </noscript>
-    <SightsList
-        {sights}
-        {thumbFilenamesById}
-        {fullFilenamesById}
-        client:visible
-    />
+    <SightsList {sights} {thumbFilenamesById} {fullFilenamesById} client:load />
 </Layout>
+
+<script is:inline define:vars={{ sightId: Astro.locals.sightId }}>
+    if (sightId != null) {
+        document
+            .querySelector(`.sight[data-sight-id="${sightId}"]`)
+            ?.scrollIntoView();
+    }
+</script>

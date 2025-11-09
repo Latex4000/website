@@ -101,6 +101,7 @@
     <div class="sights-grid">
         {#each sights as sight}
             <div
+                data-sight-id={sight.id}
                 class="sight"
                 tabindex="0"
                 role="button"
@@ -242,6 +243,7 @@
     }
     .sight {
         cursor: pointer;
+        scroll-margin-top: var(--space-lg, 2lh);
     }
     .sight__images {
         aspect-ratio: 4 / 3;
