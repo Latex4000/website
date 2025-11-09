@@ -11,7 +11,7 @@ import {
     Word,
 } from "../database/schema";
 import { and, desc, eq } from "drizzle-orm";
-import { FEED_TYPE, detectFeedType, linkChanger } from "../server/rss";
+import { detectFeedType, linkChanger } from "../server/rss";
 import type { FeedType } from "../server/rss";
 import { thingColourHandler } from "../server/thingUtils";
 
@@ -27,10 +27,10 @@ const HOME_SITE_LIMIT = 15;
 const HOME_EXTERNAL_LIMIT = 10;
 const COLLECTIVE_QUERY_LIMIT = HOME_EXTERNAL_LIMIT * 10;
 const ALLOWED_FEED_TYPES = new Set<FeedType>([
-    FEED_TYPE[2],
-    FEED_TYPE[3],
-    FEED_TYPE[7],
-    FEED_TYPE[12],
+    "soundcloud",
+    "youtube",
+    "bearblog",
+    "other",
 ]);
 
 function toPlainText(html: string): string {
