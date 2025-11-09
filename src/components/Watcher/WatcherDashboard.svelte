@@ -211,9 +211,300 @@
     let dailyViews = $state<{ date: Date; views: number }[]>([]);
 
     let chartContainer = $state<HTMLDivElement | null>(null);
-    let svgElement = $state<SVGSVGElement | null>(null);
+    let canvasElement = $state<HTMLCanvasElement | null>(null);
+    let tooltipElement = $state<HTMLDivElement | null>(null);
     let resizeObserver: ResizeObserver | null = null;
     let observedContainer: HTMLDivElement | null = null;
+    let canvasContext: CanvasRenderingContext2D | null = null;
+    let chartWidth = 0;
+    let chartHeight = 0;
+    let hoverPoint: { date: Date; views: number } | null = null;
+    let xScale: d3.ScaleTime<number, number> | null = null;
+    let yScale: d3.ScaleLinear<number, number> | null = null;
+
+    const chartMargin = { top: 16, right: 24, bottom: 48, left: 56 };
+
+    function ensureCanvasMetrics() {
+        const container = chartContainer;
+        const canvasNode = canvasElement;
+        if (!container || !canvasNode) {
+            canvasContext = null;
+            return;
+        }
+
+        const rect = container.getBoundingClientRect();
+        const deviceRatio =
+            typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1;
+        const nextWidth = Math.max(240, Math.floor(rect.width));
+        const nextHeight = Math.max(200, Math.floor(nextWidth * 0.5));
+
+        if (
+            chartWidth !== nextWidth ||
+            chartHeight !== nextHeight ||
+            !canvasContext
+        ) {
+            chartWidth = nextWidth;
+            chartHeight = nextHeight;
+            canvasNode.width = Math.floor(chartWidth * deviceRatio);
+            canvasNode.height = Math.floor(chartHeight * deviceRatio);
+            canvasNode.style.width = `${chartWidth}px`;
+            canvasNode.style.height = `${chartHeight}px`;
+
+            canvasContext = canvasNode.getContext("2d");
+            if (canvasContext) {
+                canvasContext.setTransform(
+                    deviceRatio,
+                    0,
+                    0,
+                    deviceRatio,
+                    0,
+                    0,
+                );
+                canvasContext.imageSmoothingEnabled = true;
+            }
+        }
+    }
+
+    function updateTooltip(point: { date: Date; views: number } | null) {
+        const tooltipNode = tooltipElement;
+        if (!tooltipNode) return;
+
+        if (!point || !xScale || !yScale) {
+            tooltipNode.style.opacity = "0";
+            return;
+        }
+
+        const x = xScale(point.date);
+        const y = yScale(point.views);
+        if (!Number.isFinite(x) || !Number.isFinite(y)) {
+            tooltipNode.style.opacity = "0";
+            return;
+        }
+
+        tooltipNode.style.left = `${x}px`;
+        tooltipNode.style.top = `${y}px`;
+        tooltipNode.textContent = `${shortDateFormatter.format(point.date)} · ${numberFormatter.format(point.views)}`;
+        tooltipNode.style.opacity = "1";
+    }
+
+    function drawChart() {
+        const context = canvasContext;
+        if (!context) return;
+
+        context.clearRect(0, 0, chartWidth, chartHeight);
+
+        if (!dailyViews.length) {
+            xScale = null;
+            yScale = null;
+            return;
+        }
+
+        const data = dailyViews;
+        const extent = d3.extent(data, (d) => d.date) as [Date, Date];
+        const yMax = d3.max(data, (d) => d.views) ?? 0;
+
+        xScale = d3
+            .scaleTime()
+            .domain(extent)
+            .range([chartMargin.left, chartWidth - chartMargin.right]);
+        yScale = d3
+            .scaleLinear()
+            .domain([0, yMax === 0 ? 1 : yMax])
+            .nice()
+            .range([chartHeight - chartMargin.bottom, chartMargin.top]);
+
+        const style =
+            typeof window !== "undefined" &&
+            typeof document !== "undefined" &&
+            document.body
+                ? getComputedStyle(document.body)
+                : null;
+        const textColor =
+            style?.getPropertyValue("--text-color").trim() || "#ffffff";
+        const axisColor =
+            style?.getPropertyValue("--viz-axis").trim() || textColor;
+        const gridColor =
+            style?.getPropertyValue("--viz-grid").trim() ||
+            "rgba(255,255,255,0.25)";
+        const lineColor =
+            style?.getPropertyValue("--viz-line").trim() || textColor;
+        const focusColor =
+            style?.getPropertyValue("--viz-focus").trim() || textColor;
+
+        const baseFontSize = style ? Number.parseFloat(style.fontSize) : 16;
+        context.font = `${Math.max(10, baseFontSize * 0.75)}px ${style?.fontFamily ?? "sans-serif"}`;
+
+        // Horizontal grid lines
+        const yTicks = yScale.ticks(6);
+        context.save();
+        context.strokeStyle = gridColor;
+        context.lineWidth = 1;
+        context.globalAlpha = 0.6;
+        for (const tick of yTicks) {
+            const y = yScale(tick);
+            context.beginPath();
+            context.moveTo(chartMargin.left, y);
+            context.lineTo(chartWidth - chartMargin.right, y);
+            context.stroke();
+        }
+        context.restore();
+
+        // Axes
+        context.save();
+        context.strokeStyle = axisColor;
+        context.lineWidth = 1;
+        context.beginPath();
+        context.moveTo(chartMargin.left, chartHeight - chartMargin.bottom);
+        context.lineTo(
+            chartWidth - chartMargin.right,
+            chartHeight - chartMargin.bottom,
+        );
+        context.stroke();
+        context.beginPath();
+        context.moveTo(chartMargin.left, chartMargin.top);
+        context.lineTo(chartMargin.left, chartHeight - chartMargin.bottom);
+        context.stroke();
+        context.restore();
+
+        // Y-axis labels
+        context.save();
+        context.fillStyle = axisColor;
+        context.textAlign = "right";
+        context.textBaseline = "middle";
+        for (const tick of yTicks) {
+            const y = yScale(tick);
+            context.fillText(
+                numberFormatter.format(tick),
+                chartMargin.left - 8,
+                y,
+            );
+        }
+        context.restore();
+
+        // X-axis ticks / labels with unique days
+        const domainStart = d3.timeDay.floor(xScale.domain()[0]!);
+        const domainEnd = d3.timeDay.ceil(xScale.domain()[1]!);
+        const totalDays = Math.max(
+            1,
+            d3.timeDay.count(domainStart, domainEnd) || 1,
+        );
+        const targetTickCount = Math.min(8, totalDays + 1);
+        const step = Math.max(1, Math.ceil(totalDays / targetTickCount));
+        const rawTicks = d3.timeDay.range(domainStart, domainEnd, step);
+        rawTicks.push(domainEnd);
+        const xTicks = Array.from(
+            new Map(rawTicks.map((day) => [day.getTime(), day])).values(),
+        );
+
+        context.save();
+        context.fillStyle = axisColor;
+        context.textAlign = "center";
+        context.textBaseline = "top";
+        for (const tick of xTicks) {
+            const x = xScale(tick);
+            context.fillText(
+                shortDateFormatter.format(tick),
+                x,
+                chartHeight - chartMargin.bottom + 8,
+            );
+        }
+        context.restore();
+
+        // Plot line
+        context.save();
+        context.strokeStyle = lineColor;
+        context.lineWidth = 2;
+        context.beginPath();
+        data.forEach((point, index) => {
+            const x = xScale!(point.date);
+            const y = yScale!(point.views);
+            if (index === 0) context.moveTo(x, y);
+            else context.lineTo(x, y);
+        });
+        context.stroke();
+        context.restore();
+
+        // Highlight hover point
+        if (hoverPoint) {
+            const hx = xScale(hoverPoint.date);
+            const hy = yScale(hoverPoint.views);
+            context.save();
+            context.fillStyle = focusColor;
+            context.beginPath();
+            context.arc(hx, hy, 4, 0, Math.PI * 2);
+            context.fill();
+            context.strokeStyle = focusColor;
+            context.lineWidth = 1.5;
+            context.beginPath();
+            context.arc(hx, hy, 7, 0, Math.PI * 2);
+            context.stroke();
+            context.restore();
+        }
+
+        // Keep tooltip in sync with latest draw
+        updateTooltip(hoverPoint);
+    }
+
+    const bisectDate = d3.bisector<{ date: Date; views: number }, Date>(
+        (d) => d.date,
+    ).left;
+
+    function findNearestPoint(x: number): { date: Date; views: number } | null {
+        if (!xScale) return null;
+        const date = xScale.invert(x);
+        const index = bisectDate(dailyViews, date, 1);
+        const previous = dailyViews[index - 1];
+        const next = dailyViews[index];
+
+        if (!previous && !next) return null;
+        if (!next) return previous ?? null;
+        if (!previous) return next;
+
+        return date.getTime() - previous.date.getTime() >
+            next.date.getTime() - date.getTime()
+            ? next
+            : previous;
+    }
+
+    function handlePointerMove(event: PointerEvent) {
+        const canvasNode = canvasElement;
+        if (!canvasNode || !xScale || !yScale || !dailyViews.length) return;
+        const rect = canvasNode.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+
+        if (
+            x < chartMargin.left ||
+            x > chartWidth - chartMargin.right ||
+            y < chartMargin.top ||
+            y > chartHeight - chartMargin.bottom
+        ) {
+            if (hoverPoint) {
+                hoverPoint = null;
+                drawChart();
+            }
+            return;
+        }
+
+        const nearest = findNearestPoint(x);
+        if (
+            !nearest ||
+            (hoverPoint && hoverPoint.date.getTime() === nearest.date.getTime())
+        ) {
+            updateTooltip(nearest ?? null);
+            return;
+        }
+
+        hoverPoint = nearest;
+        drawChart();
+    }
+
+    function handlePointerLeave() {
+        if (!hoverPoint) return;
+        hoverPoint = null;
+        updateTooltip(null);
+        drawChart();
+    }
 
     let loading = $state(false);
     let error = $state<string | null>(null);
@@ -400,187 +691,6 @@
         selectedPreset = inferPresetFromInputs();
     }
 
-    function renderChart() {
-        const container = chartContainer;
-        const svgNode = svgElement;
-        if (!container || !svgNode) return;
-
-        const data = dailyViews;
-        const svgSelection = d3.select(svgNode);
-        svgSelection.selectAll("*").remove();
-
-        const containerWidth = container.clientWidth || 320;
-        if (!data.length) {
-            svgNode.setAttribute("width", `${containerWidth}`);
-            svgNode.setAttribute("height", "180");
-            return;
-        }
-
-        const margin = { top: 16, right: 24, bottom: 40, left: 52 };
-        const width = Math.max(240, containerWidth);
-        const height = Math.max(200, Math.floor(width * 0.5));
-        const innerWidth = width - margin.left - margin.right;
-        const innerHeight = height - margin.top - margin.bottom;
-
-        svgNode.setAttribute("width", `${width}`);
-        svgNode.setAttribute("height", `${height}`);
-
-        const xExtent = d3.extent(data, (d) => d.date) as [Date, Date];
-        const xScale = d3.scaleTime().domain(xExtent).range([0, innerWidth]);
-        const yMax = d3.max(data, (d) => d.views) ?? 0;
-        const yScale = d3
-            .scaleLinear()
-            .domain([0, yMax === 0 ? 1 : yMax])
-            .nice()
-            .range([innerHeight, 0]);
-
-        const rootGroup = svgSelection
-            .append("g")
-            .attr("transform", `translate(${margin.left},${margin.top})`);
-
-        const area = d3
-            .area<{ date: Date; views: number }>()
-            .x((d) => xScale(d.date))
-            .y0(innerHeight)
-            .y1((d) => yScale(d.views))
-            .curve(d3.curveMonotoneX);
-
-        const line = d3
-            .line<{ date: Date; views: number }>()
-            .x((d) => xScale(d.date))
-            .y((d) => yScale(d.views))
-            .curve(d3.curveMonotoneX);
-
-        const style =
-            typeof window !== "undefined"
-                ? getComputedStyle(document.body)
-                : null;
-        const textColor =
-            style?.getPropertyValue("--text-color").trim() || "#ffffff";
-        const background =
-            style?.getPropertyValue("--background-color").trim() ||
-            "rgba(255,255,255,0.2)";
-        const axisColor =
-            style?.getPropertyValue("--viz-axis").trim() || textColor;
-        const gridColor =
-            style?.getPropertyValue("--viz-grid").trim() ||
-            "rgba(255,255,255,0.25)";
-
-        rootGroup
-            .append("path")
-            .datum(data)
-            .attr("fill", background)
-            .attr("fill-opacity", 0.2)
-            .attr("stroke", "none")
-            .attr("d", area);
-
-        rootGroup
-            .append("path")
-            .datum(data)
-            .attr("fill", "none")
-            .attr("stroke", textColor)
-            .attr("stroke-width", 2)
-            .attr("d", line);
-
-        const xAxis = d3
-            .axisBottom<Date>(xScale)
-            .ticks(Math.min(8, data.length))
-            .tickFormat((value) => shortDateFormatter.format(value));
-
-        const yAxis = d3
-            .axisLeft<number>(yScale)
-            .ticks(6)
-            .tickFormat((value) => numberFormatter.format(value));
-
-        const xAxisGroup = rootGroup
-            .append("g")
-            .attr("transform", `translate(0,${innerHeight})`)
-            .call(xAxis);
-        const yAxisGroup = rootGroup.append("g").call(yAxis);
-
-        xAxisGroup.selectAll("path, line").attr("stroke", axisColor);
-        xAxisGroup.selectAll("text").attr("fill", axisColor);
-
-        yAxisGroup.selectAll("path, line").attr("stroke", axisColor);
-        yAxisGroup.selectAll("text").attr("fill", axisColor);
-
-        rootGroup
-            .append("g")
-            .attr("class", "grid")
-            .call(
-                d3
-                    .axisLeft(yScale)
-                    .ticks(6)
-                    .tickSize(-innerWidth)
-                    .tickFormat(() => ""),
-            )
-            .selectAll("line")
-            .attr("stroke", gridColor)
-            .attr("stroke-opacity", 0.3)
-            .attr("shape-rendering", "crispEdges");
-
-        const focusGroup = rootGroup.append("g").style("display", "none");
-        focusGroup.append("circle").attr("r", 4).attr("fill", textColor);
-        const focusLabel = focusGroup
-            .append("text")
-            .attr("text-anchor", "start")
-            .attr("dy", "-0.75em")
-            .attr("fill", textColor)
-            .attr("font-size", "0.75em");
-
-        const bisectDate = d3.bisector<{ date: Date; views: number }, Date>(
-            (d) => d.date,
-        ).left;
-
-        function updateFocus(event: PointerEvent) {
-            const point = d3.pointer(event, svgNode);
-            const relativeX = point[0] - margin.left;
-            if (relativeX < 0 || relativeX > innerWidth) {
-                focusGroup.style("display", "none");
-                return;
-            }
-
-            const date = xScale.invert(relativeX);
-            const index = bisectDate(data, date, 1);
-            const previous = data[index - 1];
-            const next = data[index];
-            const chosen = !next
-                ? previous
-                : !previous
-                  ? next
-                  : date.getTime() - previous.date.getTime() >
-                      next.date.getTime() - date.getTime()
-                    ? next
-                    : previous;
-            if (!chosen) {
-                focusGroup.style("display", "none");
-                return;
-            }
-
-            const cx = xScale(chosen.date);
-            const cy = yScale(chosen.views);
-            focusGroup
-                .style("display", null)
-                .attr(
-                    "transform",
-                    `translate(${margin.left + cx},${margin.top + cy})`,
-                );
-            focusLabel.text(
-                `${shortDateFormatter.format(chosen.date)} · ${numberFormatter.format(chosen.views)}`,
-            );
-        }
-
-        svgNode.onpointerenter = (event: PointerEvent) => {
-            updateFocus(event);
-        };
-        svgNode.onpointermove = (event: PointerEvent) => {
-            updateFocus(event);
-        };
-        svgNode.onpointerleave = () => {
-            focusGroup.style("display", "none");
-        };
-    }
-
     onMount(() => {
         const internalHostSet = new Set([
             ...internalHostList,
@@ -592,17 +702,25 @@
         ]);
         internalHostList = Array.from(internalHostSet);
 
+        const clientOffset = new Date().getTimezoneOffset();
+
         if (!initialData) {
             fetchAnalytics({ resetPagination: false });
         } else {
             applyApiResponse(initialData);
+            const payloadOffset = initialData.filters.timezoneOffsetMinutes;
+            if (payloadOffset == null || payloadOffset !== clientOffset) {
+                fetchAnalytics({ resetPagination: false });
+            }
         }
     });
 
     $effect(() => {
         const container = chartContainer;
-        const svgNode = svgElement;
-        if (!container || !svgNode) {
+        const canvasNode = canvasElement;
+        const data = dailyViews;
+
+        if (!container || !canvasNode) {
             if (resizeObserver) {
                 if (observedContainer) {
                     resizeObserver.unobserve(observedContainer);
@@ -611,11 +729,17 @@
                 resizeObserver.disconnect();
                 resizeObserver = null;
             }
+            canvasContext = null;
             return;
         }
 
+        ensureCanvasMetrics();
+
         if (!resizeObserver) {
-            resizeObserver = new ResizeObserver(() => renderChart());
+            resizeObserver = new ResizeObserver(() => {
+                ensureCanvasMetrics();
+                drawChart();
+            });
         }
 
         if (observedContainer && observedContainer !== container) {
@@ -627,7 +751,12 @@
             observedContainer = container;
         }
 
-        renderChart();
+        if (!data.length) {
+            hoverPoint = null;
+            updateTooltip(null);
+        }
+
+        drawChart();
     });
 </script>
 
@@ -844,12 +973,21 @@
             {/if}
         </div>
         {#if dailyViews.length}
-            <div class="graph-wrapper" bind:this={chartContainer}>
-                <svg
-                    bind:this={svgElement}
-                    role="img"
-                    aria-label="Views over selected date range"
-                ></svg>
+            <div class="graph-wrapper">
+                <div class="graph-canvas-container" bind:this={chartContainer}>
+                    <canvas
+                        bind:this={canvasElement}
+                        aria-label="Views over selected date range"
+                        onpointerenter={handlePointerMove}
+                        onpointermove={handlePointerMove}
+                        onpointerleave={handlePointerLeave}
+                    ></canvas>
+                    <div
+                        class="graph-tooltip"
+                        bind:this={tooltipElement}
+                        aria-hidden="true"
+                    ></div>
+                </div>
             </div>
         {:else if loading}
             <p>Loading daily view data…</p>
@@ -1313,10 +1451,30 @@
         padding: calc(0.5lh - var(--border-thickness));
     }
 
-    .graph-wrapper svg {
+    .graph-canvas-container {
+        position: relative;
+        width: 100%;
+    }
+
+    .graph-canvas-container canvas {
+        display: block;
         width: 100%;
         height: auto;
-        display: block;
+        outline: none;
+    }
+
+    .graph-tooltip {
+        position: absolute;
+        pointer-events: none;
+        background: var(--surface-overlay, rgba(0, 0, 0, 0.75));
+        color: var(--text-color);
+        padding: calc(0.25lh);
+        font-size: 0.75em;
+        border-radius: 4px;
+        transform: translate(-50%, calc(-100% - 8px));
+        opacity: 0;
+        transition: opacity 0.1s ease;
+        white-space: nowrap;
     }
 
     .table-wrapper {

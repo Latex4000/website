@@ -135,21 +135,25 @@ export const GET: APIRoute = async ({ url }) => {
         const referrersPagination = withDefaultLimit(parsePagination(params, "referrers"), 10);
         const statusPagination = withDefaultLimit(parsePagination(params, "status"), 10);
 
+        const timezoneOffsetMinutesRaw = params.get("timezoneOffset");
+        const timezoneOffsetMinutes = timezoneOffsetMinutesRaw ? Number.parseInt(timezoneOffsetMinutesRaw, 10) : undefined;
+        if (timezoneOffsetMinutesRaw && Number.isNaN(timezoneOffsetMinutes))
+            throw new JsonResponseError("Invalid timezoneOffset");
+
+        const dailyViewOptions = timezoneOffsetMinutes == null
+            ? undefined
+            : { timezoneOffsetMinutes };
+
         const [totals, contentCounts, dailyViews, topPages, latestPageViews, topReferrers, statusBreakdown] =
             await Promise.all([
                 getPageViewTotals(baseFilters),
                 getContentCounts(),
-                getDailyViews(baseFilters),
+                getDailyViews(baseFilters, dailyViewOptions),
                 getTopPages(baseFilters, topPagesPagination),
                 getLatestPageViews(baseFilters, latestPagination),
                 getTopReferrers(baseFilters, referrersPagination),
                 getStatusBreakdown(baseFilters, statusPagination),
             ]);
-
-        const timezoneOffsetMinutesRaw = params.get("timezoneOffset");
-        const timezoneOffsetMinutes = timezoneOffsetMinutesRaw ? Number.parseInt(timezoneOffsetMinutesRaw, 10) : undefined;
-        if (timezoneOffsetMinutesRaw && Number.isNaN(timezoneOffsetMinutes))
-            throw new JsonResponseError("Invalid timezoneOffset");
 
         const fromIso = from ? from.toISOString() : null;
         const toIso = to ? to.toISOString() : null;

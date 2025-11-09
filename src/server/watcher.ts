@@ -444,9 +444,17 @@ export async function getLatestPageViews(
 
 export async function getDailyViews(
     filters: PageViewFilters = {},
+    options: { timezoneOffsetMinutes?: number } = {},
 ): Promise<Array<{ date: Date; views: number }>> {
     const condition = buildPageViewWhereClause(filters);
-    const bucketExpr = sql<string>`strftime('%Y-%m-%d', ${PageView.createdAt})`;
+    const rawOffset = options.timezoneOffsetMinutes ?? 0;
+    const timezoneOffsetMinutes = Number.isFinite(rawOffset)
+        ? Math.trunc(rawOffset)
+        : 0;
+
+    const bucketExpr = timezoneOffsetMinutes
+        ? sql<string>`strftime('%Y-%m-%d', datetime(${PageView.createdAt}, ${`${-timezoneOffsetMinutes} minutes`}))`
+        : sql<string>`strftime('%Y-%m-%d', ${PageView.createdAt})`;
     const countExpr = sql<number>`count(*)`;
 
     const baseQuery = db
@@ -460,11 +468,17 @@ export async function getDailyViews(
         .groupBy(bucketExpr)
         .orderBy(bucketExpr);
 
+    const timezoneShiftMs = timezoneOffsetMinutes * 60 * 1000;
+
     return rows
-        .map((row) => ({
-            date: new Date(`${row.bucket}T00:00:00Z`),
-            views: row.views,
-        }))
+        .map((row) => {
+            const utcMidnight = new Date(`${row.bucket}T00:00:00Z`).getTime();
+            const shifted = new Date(utcMidnight + timezoneShiftMs);
+            return {
+                date: shifted,
+                views: row.views,
+            };
+        })
         .sort((a, b) => a.date.getTime() - b.date.getTime());
 }
 
