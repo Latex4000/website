@@ -163,46 +163,42 @@ const [memberRows, soundRows, motionRows, sightRows, wordRows, actionItemRows] =
 
 const members = rotateArray(memberRows);
 
+const thingToFeedItem = <
+    T extends { id: number; title: string; date: Date; memberColor?: string },
+>(
+    rows: T[],
+    type: SiteFeedItem["type"],
+    label: string,
+    // eslint-disable-next-line no-unused-vars
+    urlFn: (row: T) => string
+): SiteFeedItem[] => {
+    return rows.map(
+        (row): SiteFeedItem => ({
+            type,
+            label,
+            title: row.title,
+            url: urlFn(row),
+            date: row.date,
+            ...(row.memberColor ? { memberColor: row.memberColor } : {}),
+        })
+    );
+};
+
 const rawSiteFeed: SiteFeedItem[] = [
-    ...soundRows.map(
-        (row): SiteFeedItem => ({
-            type: "sound",
-            label: "Sound",
-            title: row.title,
-            url: slug("sounds", row.id, row.title),
-            date: row.date,
-            ...(row.memberColor ? { memberColor: row.memberColor } : {}),
-        })
+    ...thingToFeedItem(soundRows, "sound", "Sound", (row) =>
+        slug("sounds", row.id, row.title)
     ),
-    ...motionRows.map(
-        (row): SiteFeedItem => ({
-            type: "motion",
-            label: "Motion",
-            title: row.title,
-            url: slug("motions", row.id, row.title),
-            date: row.date,
-            ...(row.memberColor ? { memberColor: row.memberColor } : {}),
-        })
+    ...thingToFeedItem(motionRows, "motion", "Motion", (row) =>
+        slug("motions", row.id, row.title)
     ),
-    ...sightRows.map(
-        (row): SiteFeedItem => ({
-            type: "sight",
-            label: "Sight",
-            title: row.title,
-            url: slug("sights", row.id, row.title),
-            date: row.date,
-            ...(row.memberColor ? { memberColor: row.memberColor } : {}),
-        })
+    ...thingToFeedItem(sightRows, "sight", "Sight", (row) =>
+        slug("sights", row.id, row.title)
     ),
-    ...wordRows.map(
-        (row): SiteFeedItem => ({
-            type: "word",
-            label: "Word",
-            title: row.title,
-            url: `/words/${Math.floor(row.date.getTime() / 1000).toString(10)}`,
-            date: row.date,
-            ...(row.memberColor ? { memberColor: row.memberColor } : {}),
-        })
+    ...thingToFeedItem(
+        wordRows,
+        "word",
+        "Word",
+        (row) => `/words/${Math.floor(row.date.getTime() / 1000).toString(10)}`
     ),
 ];
 
