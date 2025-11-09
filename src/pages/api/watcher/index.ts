@@ -13,6 +13,7 @@ import {
     type PageViewFilters,
     type PaginationOptions,
     type WatcherApiResponse,
+    type ViewBucket,
 } from "../../../server/watcher";
 import { JsonResponseError, jsonError, jsonResponse } from "../../../server/responses";
 
@@ -86,6 +87,17 @@ function withDefaultLimit(pagination: PaginationOptions, defaultLimit: number): 
         : pagination;
 }
 
+function parseBucketParam(params: URLSearchParams): ViewBucket | undefined {
+    const raw = params.get("bucket");
+    if (!raw) return undefined;
+
+    if (raw === "hour" || raw === "day" || raw === "week") {
+        return raw;
+    }
+
+    throw new JsonResponseError("Invalid bucket value");
+}
+
 export const GET: APIRoute = async ({ url }) => {
     try {
         const params = url.searchParams;
@@ -140,9 +152,11 @@ export const GET: APIRoute = async ({ url }) => {
         if (timezoneOffsetMinutesRaw && Number.isNaN(timezoneOffsetMinutes))
             throw new JsonResponseError("Invalid timezoneOffset");
 
+        const bucket = parseBucketParam(params) ?? "day";
+
         const dailyViewOptions = timezoneOffsetMinutes == null
-            ? undefined
-            : { timezoneOffsetMinutes };
+            ? { bucket }
+            : { bucket, timezoneOffsetMinutes };
 
         const [totals, contentCounts, dailyViews, topPages, latestPageViews, topReferrers, statusBreakdown] =
             await Promise.all([
@@ -169,6 +183,7 @@ export const GET: APIRoute = async ({ url }) => {
                 includeEmptyPath,
                 internalHosts,
                 timezoneOffsetMinutes: timezoneOffsetMinutes ?? null,
+                bucket,
             },
             results: {
                 totals,

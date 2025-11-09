@@ -442,19 +442,46 @@ export async function getLatestPageViews(
     };
 }
 
+export type ViewBucket = "hour" | "day" | "week";
+
+const viewBucketDurations: Record<ViewBucket, number> = {
+    hour: 60 * 60 * 1000,
+    day: 24 * 60 * 60 * 1000,
+    week: 7 * 24 * 60 * 60 * 1000,
+};
+
+function normalizeViewBucket(candidate: ViewBucket | null | undefined): ViewBucket {
+    if (candidate === "hour" || candidate === "week") return candidate;
+    return "day";
+}
+
+function getBucketAlignmentSeconds(bucket: ViewBucket): number {
+    switch (bucket) {
+        case "week":
+            return 3 * 24 * 60 * 60; // align buckets to start on Mondays
+        case "hour":
+        case "day":
+        default:
+            return 0;
+    }
+}
+
 export async function getDailyViews(
     filters: PageViewFilters = {},
-    options: { timezoneOffsetMinutes?: number } = {},
+    options: { timezoneOffsetMinutes?: number; bucket?: ViewBucket } = {},
 ): Promise<Array<{ date: Date; views: number }>> {
     const condition = buildPageViewWhereClause(filters);
     const rawOffset = options.timezoneOffsetMinutes ?? 0;
     const timezoneOffsetMinutes = Number.isFinite(rawOffset)
         ? Math.trunc(rawOffset)
         : 0;
+    const bucket = normalizeViewBucket(options.bucket);
 
-    const bucketExpr = timezoneOffsetMinutes
-        ? sql<string>`strftime('%Y-%m-%d', datetime(${PageView.createdAt}, ${`${-timezoneOffsetMinutes} minutes`}))`
-        : sql<string>`strftime('%Y-%m-%d', ${PageView.createdAt})`;
+    const bucketSeconds = Math.floor(viewBucketDurations[bucket] / 1000);
+    const offsetSeconds = timezoneOffsetMinutes * 60;
+    const alignmentSeconds = getBucketAlignmentSeconds(bucket);
+
+    const bucketExpr = sql<number>`CAST(((CAST(strftime('%s', ${PageView.createdAt}) AS INTEGER) - ${offsetSeconds}) + ${alignmentSeconds}) / ${bucketSeconds} AS INTEGER)`;
     const countExpr = sql<number>`count(*)`;
 
     const baseQuery = db
@@ -469,11 +496,15 @@ export async function getDailyViews(
         .orderBy(bucketExpr);
 
     const timezoneShiftMs = timezoneOffsetMinutes * 60 * 1000;
+    const alignmentMs = alignmentSeconds * 1000;
+    const bucketDurationMs = viewBucketDurations[bucket];
 
     return rows
         .map((row) => {
-            const utcMidnight = new Date(`${row.bucket}T00:00:00Z`).getTime();
-            const shifted = new Date(utcMidnight + timezoneShiftMs);
+            const bucketIndex = row.bucket;
+            const localBucketStartMs = bucketIndex * bucketDurationMs - alignmentMs;
+            const utcStartMs = localBucketStartMs + timezoneShiftMs;
+            const shifted = new Date(utcStartMs);
             return {
                 date: shifted,
                 views: row.views,
@@ -582,6 +613,7 @@ export type WatcherApiResponse = {
         includeEmptyPath: boolean;
         internalHosts: string[];
         timezoneOffsetMinutes: number | null;
+        bucket: ViewBucket;
     };
     results: {
         totals: TotalsResult;

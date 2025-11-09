@@ -15,6 +15,7 @@ import {
     type PageViewFilters,
     type PaginationOptions,
     type WatcherApiResponse,
+    type ViewBucket,
 } from "../server/watcher";
 
 export const prerender = false;
@@ -49,7 +50,7 @@ const [
 ] = await Promise.all([
     getPageViewTotals(defaultFilters),
     getContentCounts(),
-    getDailyViews(defaultFilters),
+    getDailyViews(defaultFilters, { bucket: "day" satisfies ViewBucket }),
     getTopPages(defaultFilters, defaultPagination.topPages),
     getLatestPageViews(defaultFilters, defaultPagination.latest),
     getTopReferrers(defaultFilters, defaultPagination.referrers),
@@ -70,6 +71,7 @@ const initialPayload: WatcherApiResponse = {
         includeEmptyPath: defaultFilters.includeEmptyPath ?? false,
         internalHosts: defaultInternalHosts,
         timezoneOffsetMinutes: null,
+        bucket: "day",
     },
     results: {
         totals,

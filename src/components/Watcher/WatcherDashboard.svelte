@@ -155,6 +155,63 @@
         month: "short",
         day: "numeric",
     });
+    const hourAxisFormatter = new Intl.DateTimeFormat(undefined, {
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+    });
+    const hourTooltipFormatter = new Intl.DateTimeFormat(undefined, {
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+    });
+    const weekRangeFormatter = new Intl.DateTimeFormat(undefined, {
+        month: "short",
+        day: "numeric",
+    });
+
+    function getBucketDurationMs(bucket: BucketId): number {
+        return bucketConfig[bucket]?.durationMs ?? bucketConfig.day.durationMs;
+    }
+
+    function formatTickLabel(date: Date, bucket: BucketId): string {
+        switch (bucket) {
+            case "hour":
+                return hourAxisFormatter.format(date);
+            case "week":
+                return weekRangeFormatter.format(date);
+            case "day":
+            default:
+                return shortDateFormatter.format(date);
+        }
+    }
+
+    function formatTooltipRange(date: Date, bucket: BucketId): string {
+        const durationMs = getBucketDurationMs(bucket);
+        const endExclusive = new Date(date.getTime() + durationMs);
+
+        switch (bucket) {
+            case "hour": {
+                const startLabel = hourTooltipFormatter.format(date);
+                const endLabel = hourTooltipFormatter.format(endExclusive);
+                return startLabel === endLabel
+                    ? startLabel
+                    : `${startLabel} – ${endLabel}`;
+            }
+            case "week": {
+                const startLabel = weekRangeFormatter.format(date);
+                const inclusiveEnd = new Date(endExclusive.getTime() - 1);
+                const endLabel = weekRangeFormatter.format(inclusiveEnd);
+                return startLabel === endLabel
+                    ? startLabel
+                    : `${startLabel} – ${endLabel}`;
+            }
+            case "day":
+            default:
+                return shortDateFormatter.format(date);
+        }
+    }
 
     const comparisonLabels: Record<string, string> = {
         last24Hours: "Last 24 hours",
@@ -186,6 +243,44 @@
             : [host, `www.${host}`];
     }
 
+    type BucketId = WatcherApiResponse["filters"]["bucket"];
+
+    interface BucketOption {
+        id: BucketId;
+        label: string;
+        durationMs: number;
+        minSpanMultiplier: number;
+    }
+
+    const bucketOptions: BucketOption[] = [
+        {
+            id: "hour",
+            label: "Hour",
+            durationMs: 60 * 60 * 1000,
+            minSpanMultiplier: 2,
+        },
+        {
+            id: "day",
+            label: "Day",
+            durationMs: 24 * 60 * 60 * 1000,
+            minSpanMultiplier: 2,
+        },
+        {
+            id: "week",
+            label: "Week",
+            durationMs: 7 * 24 * 60 * 60 * 1000,
+            minSpanMultiplier: 2,
+        },
+    ];
+
+    const bucketConfig = bucketOptions.reduce(
+        (accumulator, option) => {
+            accumulator[option.id] = option;
+            return accumulator;
+        },
+        {} as Record<BucketId, BucketOption>,
+    );
+
     let internalHostList: string[] = $state([]);
 
     let selectedPreset = $state<PresetId | null>(defaultPresetId);
@@ -198,6 +293,50 @@
     let statusInput = $state("");
     let includeEmptyPath = $state(false);
     let includeInternalReferrers = $state(false);
+    const initialBucket =
+        (initialData?.filters.bucket as BucketId | undefined) ?? "day";
+    let selectedBucket = $state<BucketId>(initialBucket);
+
+    function computeRangeDurationMs(): number | null {
+        const fromIso = fromInput ? dateInputToIso(fromInput) : null;
+        const toIso = toInput ? dateInputToIso(toInput, true) : null;
+        if (!fromIso) return null;
+
+        const fromDate = new Date(fromIso);
+        if (Number.isNaN(fromDate.getTime())) return null;
+
+        const toDate = toIso ? new Date(toIso) : new Date();
+        if (Number.isNaN(toDate.getTime())) return null;
+
+        const diff = toDate.getTime() - fromDate.getTime();
+        return diff > 0 ? diff : 0;
+    }
+
+    const availableBuckets = $derived.by(() => {
+        const spanMs = computeRangeDurationMs();
+        if (spanMs == null) return bucketOptions;
+
+        const filtered = bucketOptions.filter(
+            (option) => spanMs >= option.durationMs * option.minSpanMultiplier,
+        );
+
+        return filtered.length ? filtered : [bucketOptions[0]!];
+    });
+
+    $effect(() => {
+        if (availableBuckets.some((option) => option.id === selectedBucket))
+            return;
+        selectedBucket = availableBuckets[0]?.id ?? "day";
+    });
+
+    function ensureBucketSelection(): BucketId {
+        const options = availableBuckets;
+        if (options.some((option) => option.id === selectedBucket))
+            return selectedBucket;
+        const fallback = options[0]?.id ?? "day";
+        selectedBucket = fallback;
+        return fallback;
+    }
 
     let tableStates = $state<TableStates>({
         topPages: { data: null, limit: 10, offset: 0 },
@@ -265,7 +404,10 @@
         }
     }
 
-    function updateTooltip(point: { date: Date; views: number } | null) {
+    function updateTooltip(
+        point: { date: Date; views: number } | null,
+        bucket: BucketId = selectedBucket,
+    ) {
         const tooltipNode = tooltipElement;
         if (!tooltipNode) return;
 
@@ -283,11 +425,12 @@
 
         tooltipNode.style.left = `${x}px`;
         tooltipNode.style.top = `${y}px`;
-        tooltipNode.textContent = `${shortDateFormatter.format(point.date)} · ${numberFormatter.format(point.views)}`;
+        const label = formatTooltipRange(point.date, bucket);
+        tooltipNode.textContent = `${label} · ${numberFormatter.format(point.views)}`;
         tooltipNode.style.opacity = "1";
     }
 
-    function drawChart() {
+    function drawChart(currentBucket: BucketId = selectedBucket) {
         const context = canvasContext;
         if (!context) return;
 
@@ -381,20 +524,9 @@
         }
         context.restore();
 
-        // X-axis ticks / labels with unique days
-        const domainStart = d3.timeDay.floor(xScale.domain()[0]!);
-        const domainEnd = d3.timeDay.ceil(xScale.domain()[1]!);
-        const totalDays = Math.max(
-            1,
-            d3.timeDay.count(domainStart, domainEnd) || 1,
-        );
-        const targetTickCount = Math.min(8, totalDays + 1);
-        const step = Math.max(1, Math.ceil(totalDays / targetTickCount));
-        const rawTicks = d3.timeDay.range(domainStart, domainEnd, step);
-        rawTicks.push(domainEnd);
-        const xTicks = Array.from(
-            new Map(rawTicks.map((day) => [day.getTime(), day])).values(),
-        );
+        const maxTickCount = currentBucket === "hour" ? 6 : 8;
+        const tickTarget = Math.min(maxTickCount, Math.max(2, data.length));
+        const xTicks = xScale.ticks(tickTarget);
 
         context.save();
         context.fillStyle = axisColor;
@@ -403,7 +535,7 @@
         for (const tick of xTicks) {
             const x = xScale(tick);
             context.fillText(
-                shortDateFormatter.format(tick),
+                formatTickLabel(tick, currentBucket),
                 x,
                 chartHeight - chartMargin.bottom + 8,
             );
@@ -442,7 +574,7 @@
         }
 
         // Keep tooltip in sync with latest draw
-        updateTooltip(hoverPoint);
+        updateTooltip(hoverPoint, currentBucket);
     }
 
     const bisectDate = d3.bisector<{ date: Date; views: number }, Date>(
@@ -481,7 +613,7 @@
         ) {
             if (hoverPoint) {
                 hoverPoint = null;
-                drawChart();
+                drawChart(selectedBucket);
             }
             return;
         }
@@ -491,19 +623,19 @@
             !nearest ||
             (hoverPoint && hoverPoint.date.getTime() === nearest.date.getTime())
         ) {
-            updateTooltip(nearest ?? null);
+            updateTooltip(nearest ?? null, selectedBucket);
             return;
         }
 
         hoverPoint = nearest;
-        drawChart();
+        drawChart(selectedBucket);
     }
 
     function handlePointerLeave() {
         if (!hoverPoint) return;
         hoverPoint = null;
-        updateTooltip(null);
-        drawChart();
+        updateTooltip(null, selectedBucket);
+        drawChart(selectedBucket);
     }
 
     let loading = $state(false);
@@ -567,11 +699,16 @@
             ? payload.filters.statusCodes.join(", ")
             : "";
         includeEmptyPath = payload.filters.includeEmptyPath ?? false;
+        const responseBucket = payload.filters.bucket as BucketId | undefined;
+        if (responseBucket && bucketConfig[responseBucket]) {
+            selectedBucket = responseBucket;
+        }
     }
 
     async function fetchAnalytics({
         resetPagination = false,
     }: { resetPagination?: boolean } = {}) {
+        const bucketForRequest = ensureBucketSelection();
         if (resetPagination) {
             tableStates.topPages.offset = 0;
             tableStates.latest.offset = 0;
@@ -608,6 +745,7 @@
         params.set("statusLimit", `${tableStates.status.limit}`);
         params.set("statusOffset", `${tableStates.status.offset}`);
         params.set("timezoneOffset", `${new Date().getTimezoneOffset()}`);
+        params.set("bucket", bucketForRequest);
 
         loading = true;
         error = null;
@@ -666,6 +804,7 @@
         statusInput = "";
         includeEmptyPath = false;
         includeInternalReferrers = false;
+        selectedBucket = initialBucket;
         if (preset?.durationMs) {
             const { from, to } = computeRange(preset.durationMs);
             fromInput = dateToInputValue(from);
@@ -689,6 +828,12 @@
 
     function handleDateInputChange() {
         selectedPreset = inferPresetFromInputs();
+    }
+
+    function handleBucketChange(next: BucketId) {
+        if (next === selectedBucket) return;
+        selectedBucket = next;
+        fetchAnalytics();
     }
 
     onMount(() => {
@@ -719,6 +864,7 @@
         const container = chartContainer;
         const canvasNode = canvasElement;
         const data = dailyViews;
+        const bucket = selectedBucket;
 
         if (!container || !canvasNode) {
             if (resizeObserver) {
@@ -738,7 +884,7 @@
         if (!resizeObserver) {
             resizeObserver = new ResizeObserver(() => {
                 ensureCanvasMetrics();
-                drawChart();
+                drawChart(selectedBucket);
             });
         }
 
@@ -753,10 +899,10 @@
 
         if (!data.length) {
             hoverPoint = null;
-            updateTooltip(null);
+            updateTooltip(null, bucket);
         }
 
-        drawChart();
+        drawChart(bucket);
     });
 </script>
 
@@ -968,16 +1114,31 @@
             <h2 id="watcher-views-heading">Views over time</h2>
             {#if dailyViews.length}
                 <p class="section-note">
-                    Times shown in your browser timezone.
+                    Times shown in your browser timezone | Grouped by {bucketConfig[
+                        selectedBucket
+                    ].label}.
                 </p>
             {/if}
+        </div>
+        <div class="bucket-buttons" role="group" aria-label="Bucket size">
+            {#each availableBuckets as option}
+                <button
+                    type="button"
+                    class:selected={selectedBucket === option.id}
+                    onclick={() => handleBucketChange(option.id)}
+                    aria-pressed={selectedBucket === option.id}
+                    disabled={loading}
+                >
+                    {option.label}
+                </button>
+            {/each}
         </div>
         {#if dailyViews.length}
             <div class="graph-wrapper">
                 <div class="graph-canvas-container" bind:this={chartContainer}>
                     <canvas
                         bind:this={canvasElement}
-                        aria-label="Views over selected date range"
+                        aria-label={`Views over selected date range grouped by ${bucketConfig[selectedBucket].label.toLowerCase()} buckets`}
                         onpointerenter={handlePointerMove}
                         onpointermove={handlePointerMove}
                         onpointerleave={handlePointerLeave}
@@ -1285,13 +1446,15 @@
         font-size: 0.75em;
     }
 
-    .preset-buttons {
+    .preset-buttons,
+    .bucket-buttons {
         display: flex;
         flex-wrap: wrap;
         gap: 0.75ch;
     }
 
-    .preset-buttons button {
+    .preset-buttons button,
+    .bucket-buttons button {
         border: var(--border-thickness) solid var(--text-color);
         background: transparent;
         color: inherit;
@@ -1303,14 +1466,20 @@
             color 0.15s ease;
     }
 
-    .preset-buttons button.selected {
+    .preset-buttons button.selected,
+    .bucket-buttons button.selected {
         background: var(--text-color);
         color: var(--background-color);
     }
 
-    .preset-buttons button:disabled {
+    .preset-buttons button:disabled,
+    .bucket-buttons button:disabled {
         opacity: 0.6;
         cursor: not-allowed;
+    }
+
+    .bucket-buttons {
+        margin-bottom: 0.5lh;
     }
 
     .filter-grid {
