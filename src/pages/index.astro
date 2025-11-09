@@ -303,11 +303,8 @@ const collectiveFeed = rawCollectiveFeed
                                                 ? `color: ${item.memberColor}`
                                                 : undefined
                                         }
-                                        aria-label={
-                                            item.memberColor
-                                                ? `member colour ${item.memberColor}`
-                                                : "anonymous"
-                                        }
+                                        aria-label={item.memberColor ?? "ANON"}
+                                        title={item.memberColor ?? "ANON"}
                                     >
                                         L
                                     </div>
