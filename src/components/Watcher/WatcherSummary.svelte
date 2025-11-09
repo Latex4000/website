@@ -25,16 +25,16 @@
     aria-labelledby="watcher-summary-heading"
     aria-busy={loading ? "true" : "false"}
 >
-    <h2 id="watcher-summary-heading">Page view summary</h2>
+    <h2 id="watcher-summary-heading">Page hits summary</h2>
     {#if totals}
         <div class="summary-grid">
             <div class="card">
                 <h3>All time</h3>
-                <p>{numberFormatter.format(totals.overall)} views</p>
+                <p>{numberFormatter.format(totals.overall)} page hits</p>
             </div>
             <div class="card">
                 <h3>Current range</h3>
-                <p>{numberFormatter.format(totals.filtered)} views</p>
+                <p>{numberFormatter.format(totals.filtered)} page hits</p>
             </div>
             <div class="card">
                 <h3>Comparisons</h3>

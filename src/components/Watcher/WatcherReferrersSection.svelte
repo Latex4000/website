@@ -57,7 +57,7 @@
                 <thead>
                     <tr>
                         <th scope="col">Referrer</th>
-                        <th scope="col">Views</th>
+                        <th scope="col">Hits</th>
                     </tr>
                 </thead>
                 <tbody>

@@ -40,7 +40,7 @@
                 <thead>
                     <tr>
                         <th scope="col">Status</th>
-                        <th scope="col">Views</th>
+                        <th scope="col">Hits</th>
                     </tr>
                 </thead>
                 <tbody>

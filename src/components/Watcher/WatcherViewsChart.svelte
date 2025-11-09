@@ -450,7 +450,7 @@
     aria-busy={loading ? "true" : "false"}
 >
     <div class="section-heading">
-        <h2 id="watcher-views-heading">Views over time</h2>
+        <h2 id="watcher-views-heading">Page Hits over time</h2>
         {#if dailyViews.length}
             <p class="section-note">
                 Times shown in your browser timezone | Grouped by {selectedBucketLabel}.
@@ -475,7 +475,7 @@
             <div class="graph-canvas-container" bind:this={chartContainer}>
                 <canvas
                     bind:this={canvasElement}
-                    aria-label={`Views over selected date range grouped by ${selectedBucketLabel.toLowerCase()} buckets`}
+                    aria-label={`Page hits over selected date range grouped by ${selectedBucketLabel.toLowerCase()} buckets`}
                     onpointerenter={handlePointerMove}
                     onpointermove={handlePointerMove}
                     onpointerleave={handlePointerLeave}
