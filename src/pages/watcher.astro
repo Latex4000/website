@@ -14,7 +14,7 @@ import {
     type PageViewFilters,
     type PaginationOptions,
     type WatcherApiResponse,
-} from "../server/analytics";
+} from "../server/watcher";
 
 export const prerender = false;
 
@@ -88,13 +88,13 @@ const initialPayload: WatcherApiResponse = {
             </p>
             <p>
                 The API driving this view lives in
-                <a href="/api/analytics" rel="external" target="_blank"
-                    >/api/analytics</a
+                <a href="/api/watcher" rel="external" target="_blank"
+                    >/api/watcher</a
                 > and its functionality is primarily in
                 <a
-                    href="https://github.com/Latex4000/website/blob/main/src/server/analytics.ts"
+                    href="https://github.com/Latex4000/website/blob/main/src/server/watcher.ts"
                     rel="external"
-                    target="_blank">src/server/analytics.ts</a
+                    target="_blank">src/server/watcher.ts</a
                 >.
             </p>
         </details>

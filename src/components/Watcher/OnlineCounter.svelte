@@ -7,7 +7,7 @@
 
     async function fetchOnlineCount(): Promise<void> {
         try {
-            const response = await fetch("/api/analytics/online-count");
+            const response = await fetch("/api/watcher/online-count");
             if (!response.ok) {
                 throw new Error("Failed to fetch online count");
             }

@@ -4,7 +4,7 @@ import { defineMiddleware, sequence } from "astro:middleware";
 import { jsonError, ResponseError } from "./server/responses";
 import { openAsBlob } from "fs";
 import { loadSession, saveSession } from "./server/session";
-import { recordPageView } from "./server/analytics";
+import { recordPageView } from "./server/watcher";
 
 const checkHmacForApi = defineMiddleware(async (context, next) => {
     if (!context.url.pathname.startsWith("/api/")) {
@@ -14,7 +14,7 @@ const checkHmacForApi = defineMiddleware(async (context, next) => {
     if (
         context.request.method === "GET" && (
             context.url.pathname.startsWith("/api/action") ||
-            context.url.pathname.startsWith("/api/analytics")
+            context.url.pathname.startsWith("/api/watcher")
         )
     ) {
         return next();

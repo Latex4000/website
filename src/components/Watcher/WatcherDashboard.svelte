@@ -6,7 +6,7 @@
         PaginatedResult,
         TotalsResult,
         WatcherApiResponse,
-    } from "../../server/analytics";
+    } from "../../server/watcher";
 
     type TopPagesRow =
         WatcherApiResponse["results"]["topPages"]["rows"][number];
@@ -278,10 +278,9 @@
         loading = true;
         error = null;
         try {
-            const response = await fetch(
-                `/api/analytics?${params.toString()}`,
-                { headers: { Accept: "application/json" } },
-            );
+            const response = await fetch(`/api/watcher?${params.toString()}`, {
+                headers: { Accept: "application/json" },
+            });
             if (!response.ok)
                 throw new Error(
                     `Request failed with status ${response.status}`,
@@ -726,14 +725,14 @@
         </div>
         <div class="sr-only" aria-live="polite" role="status">
             {#if loading}
-                Loading analytics…
+                Loading…
             {/if}
         </div>
     </section>
 
     {#if error}
         <section class="error" role="alert">
-            <p>Unable to load analytics data: {error}</p>
+            <p>Unable to load data: {error}</p>
             <button
                 type="button"
                 onclick={() => fetchAnalytics()}

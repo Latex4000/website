@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { getOnlineVisitorCount } from "../../../server/analytics";
+import { getOnlineVisitorCount } from "../../../server/watcher";
 import { jsonError, jsonResponse } from "../../../server/responses";
 
 export const prerender = false;
