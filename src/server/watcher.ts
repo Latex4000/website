@@ -32,6 +32,7 @@ export interface PageViewFilters {
     statusCodes?: number[];
     referrerQuery?: string | null;
     includeEmptyPath?: boolean;
+    internalHosts?: string[];
 }
 
 export interface PaginationOptions {
@@ -90,6 +91,97 @@ function combineConditions(...conditions: (SQL | undefined)[]): SQL | undefined 
     return and(...filtered);
 }
 
+function normalizeHostCandidate(value: string | null | undefined): string | null {
+    if (!value) return null;
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+
+    const prepared = trimmed.startsWith("http")
+        ? trimmed
+        : trimmed.startsWith("//")
+            ? `https:${trimmed}`
+            : `https://${trimmed}`;
+
+    try {
+        const url = new URL(prepared);
+        return url.hostname.toLowerCase();
+    } catch {
+        return null;
+    }
+}
+
+function expandHostVariants(candidate: string | null | undefined): string[] {
+    const host = normalizeHostCandidate(candidate);
+    if (!host) return [];
+
+    const variants = new Set<string>();
+    variants.add(host);
+    if (host.startsWith("www.")) {
+        variants.add(host.slice(4));
+    } else {
+        variants.add(`www.${host}`);
+    }
+
+    return Array.from(variants).filter(Boolean);
+}
+
+export function resolveInternalHosts(
+    candidates: Array<string | null | undefined>,
+): string[] {
+    const hosts = new Set<string>();
+    for (const candidate of candidates) {
+        for (const host of expandHostVariants(candidate)) {
+            if (host) {
+                hosts.add(host);
+            }
+        }
+    }
+    return Array.from(hosts);
+}
+
+function buildInternalReferrerExclusionClause(
+    filters: PageViewFilters = {},
+): SQL | undefined {
+    if (!filters.internalHosts || !filters.internalHosts.length)
+        return undefined;
+
+    const hostList = filters.internalHosts.map((host) => normalizeHostCandidate(host))
+        .filter((host): host is string => Boolean(host));
+
+    const clauses: SQL[] = [
+        sql`substr(${PageView.referrer}, 1, 1) = '/'`,
+    ];
+
+    for (const host of new Set(hostList)) {
+        clauses.push(sql`instr(lower(${PageView.referrer}), ${`://${host}`}) > 0`);
+        clauses.push(sql`instr(lower(${PageView.referrer}), ${`//${host}`}) > 0`);
+    }
+
+    let internalCondition: SQL | undefined;
+    for (const clause of clauses) {
+        internalCondition = internalCondition
+            ? sql`${internalCondition} OR ${clause}`
+            : clause;
+    }
+
+    if (!internalCondition) return undefined;
+
+    return sql`NOT (${internalCondition})`;
+}
+
+function buildReferrerWhereClause(
+    filters: PageViewFilters = {},
+): SQL | undefined {
+    const baseCondition = combineConditions(
+        buildPageViewWhereClause(filters),
+        isNotNull(PageView.referrer),
+        ne(PageView.referrer, ""),
+    );
+
+    const internalExclusion = buildInternalReferrerExclusionClause(filters);
+    return combineConditions(baseCondition, internalExclusion);
+}
+
 function normalizePagination(options: PaginationOptions = {}): { limit: number; offset: number } {
     const limit = Math.min(Math.max(options.limit ?? DEFAULT_PAGE_LIMIT, 1), MAX_PAGE_LIMIT);
     const offset = Math.max(options.offset ?? 0, 0);
@@ -146,11 +238,7 @@ async function countDistinctPaths(filters: PageViewFilters = {}): Promise<number
 }
 
 async function countDistinctReferrers(filters: PageViewFilters = {}): Promise<number> {
-    const condition = combineConditions(
-        buildPageViewWhereClause(filters),
-        isNotNull(PageView.referrer),
-        ne(PageView.referrer, ""),
-    );
+    const condition = buildReferrerWhereClause(filters);
     const query = db.select({ count: sql<number>`count(DISTINCT ${PageView.referrer})` }).from(PageView);
     const row = await (condition ? query.where(condition) : query).get();
     return row?.count ?? 0;
@@ -385,11 +473,7 @@ export async function getTopReferrers(
     pagination: PaginationOptions = {},
 ): Promise<PaginatedResult<{ referrer: string; views: number }>> {
     const { limit, offset } = normalizePagination(pagination);
-    const condition = combineConditions(
-        buildPageViewWhereClause(filters),
-        isNotNull(PageView.referrer),
-        ne(PageView.referrer, ""),
-    );
+    const condition = buildReferrerWhereClause(filters);
     const countExpr = sql<number>`count(*)`;
 
     const baseQuery = db
@@ -482,6 +566,7 @@ export type WatcherApiResponse = {
         statusCodes: number[];
         referrerQuery: string | null;
         includeEmptyPath: boolean;
+        internalHosts: string[];
         timezoneOffsetMinutes: number | null;
     };
     results: {

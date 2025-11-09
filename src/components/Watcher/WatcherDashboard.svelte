@@ -38,7 +38,9 @@
         status: TableState<StatusRow>;
     };
 
-    const props = $props<{ data?: WatcherApiResponse | null }>();
+    const { data: initialData } = $props<{
+        data?: WatcherApiResponse | null;
+    }>();
 
     const presets: Preset[] = [
         { id: "24h", label: "Last 24 hours", durationMs: 24 * 60 * 60 * 1000 },
@@ -186,20 +188,6 @@
 
     let internalHostList: string[] = $state([]);
 
-    function isInternalReferrer(
-        referrer: string | null | undefined,
-        hosts: string[],
-    ): boolean {
-        const trimmed = referrer?.trim().toLowerCase();
-        if (!trimmed) return false;
-
-        // Relative paths are always internal
-        if (trimmed.startsWith("/")) return true;
-
-        const referrerHost = extractHost(trimmed);
-        return referrerHost ? hosts.includes(referrerHost) : false;
-    }
-
     let selectedPreset = $state<PresetId | null>(defaultPresetId);
     let fromInput = $state(
         defaultRange ? dateToInputValue(defaultRange.from) : "",
@@ -214,7 +202,7 @@
     let tableStates = $state<TableStates>({
         topPages: { data: null, limit: 10, offset: 0 },
         latest: { data: null, limit: 20, offset: 0 },
-        referrers: { data: null, limit: 50, offset: 0 },
+        referrers: { data: null, limit: 10, offset: 0 },
         status: { data: null, limit: 10, offset: 0 },
     });
 
@@ -233,22 +221,11 @@
 
     const topPagesInfo = $derived(getPageInfo(tableStates.topPages));
     const latestInfo = $derived(getPageInfo(tableStates.latest));
-    const filteredReferrerRows = $derived(
-        includeInternalReferrers
-            ? (tableStates.referrers.data?.rows ?? [])
-            : (tableStates.referrers.data?.rows ?? []).filter(
-                  (row) => !isInternalReferrer(row.referrer, internalHostList),
-              ),
-    );
-
     const referrersInfo = $derived.by(() => {
-        const limit =
-            tableStates.referrers.data?.limit ?? tableStates.referrers.limit;
-        const offset =
-            tableStates.referrers.data?.offset ?? tableStates.referrers.offset;
-        const total = includeInternalReferrers
-            ? (tableStates.referrers.data?.total ?? filteredReferrerRows.length)
-            : filteredReferrerRows.length;
+        const data = tableStates.referrers.data;
+        const limit = data?.limit ?? tableStates.referrers.limit;
+        const offset = data?.offset ?? tableStates.referrers.offset;
+        const total = data?.total ?? 0;
         const pageCount = limit ? Math.ceil(total / limit) : 0;
         const pageIndex = limit ? Math.floor(offset / limit) : 0;
         return { pageIndex, pageCount, total, limit };
@@ -323,6 +300,13 @@
             params.set("referrerQuery", referrerInput.trim());
         if (statusCodes.length) params.set("status", statusCodes.join(","));
         if (includeEmptyPath) params.set("includeEmptyPath", "true");
+        if (includeInternalReferrers)
+            params.set("includeInternalReferrers", "true");
+        if (!includeInternalReferrers && internalHostList.length) {
+            for (const host of internalHostList) {
+                params.append("internalHost", host);
+            }
+        }
 
         params.set("topPagesLimit", `${tableStates.topPages.limit}`);
         params.set("topPagesOffset", `${tableStates.topPages.offset}`);
@@ -597,14 +581,9 @@
         };
     }
 
-    $effect(() => {
-        const payload = props.data ?? null;
-        if (!payload) return;
-        applyApiResponse(payload);
-    });
-
     onMount(() => {
         const internalHostSet = new Set([
+            ...internalHostList,
             ...registerHost(import.meta.env.SITE),
             ...registerHost("localhost"),
             ...registerHost("127.0.0.1"),
@@ -613,8 +592,10 @@
         ]);
         internalHostList = Array.from(internalHostSet);
 
-        if (!props.data) {
+        if (!initialData) {
             fetchAnalytics({ resetPagination: false });
+        } else {
+            applyApiResponse(initialData);
         }
     });
 
@@ -1005,11 +986,12 @@
             <input
                 type="checkbox"
                 bind:checked={includeInternalReferrers}
+                onchange={() => fetchAnalytics({ resetPagination: true })}
                 disabled={loading}
             />
             <span>Include internal referrers</span>
         </label>
-        {#if tableStates.referrers.data && filteredReferrerRows.length}
+        {#if tableStates.referrers.data && tableStates.referrers.data.rows.length}
             <div class="table-wrapper">
                 <table>
                     <thead>
@@ -1019,7 +1001,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {#each filteredReferrerRows as row}
+                        {#each tableStates.referrers.data.rows as row}
                             <tr>
                                 <td>{row.referrer || "Direct"}</td>
                                 <td>{numberFormatter.format(row.views)}</td>

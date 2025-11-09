@@ -9,6 +9,7 @@ import {
     getTopReferrers,
     serializeDailyViews,
     serializeLatestPageViews,
+    resolveInternalHosts,
     type PageViewFilters,
     type PaginationOptions,
     type WatcherApiResponse,
@@ -94,13 +95,30 @@ export const GET: APIRoute = async ({ url }) => {
             throw new JsonResponseError("Parameter 'from' must be before 'to'");
 
         const includeEmptyPath = parseBooleanParam(params, "includeEmptyPath") ?? false;
+        const includeInternalReferrers =
+            parseBooleanParam(params, "includeInternalReferrers") ?? false;
         const pagePathRaw = params.get("pagePath");
         const pagePath = pagePathRaw && pagePathRaw.trim().length ? pagePathRaw : undefined;
         const referrerQueryRaw = params.get("referrerQuery") ?? params.get("referrer");
         const referrerQuery = referrerQueryRaw && referrerQueryRaw.trim().length ? referrerQueryRaw : undefined;
         const statusCodes = parseStatusCodes(params);
 
-        const baseFilters: PageViewFilters = { includeEmptyPath };
+        const internalHostParams = params.getAll("internalHost");
+        const internalHostCandidates = internalHostParams
+            .flatMap((value) => value.split(","))
+            .map((candidate) => candidate.trim())
+            .filter(Boolean);
+        const internalHosts = !includeInternalReferrers ? resolveInternalHosts([
+            ...internalHostCandidates,
+            typeof import.meta.env.SITE === "string" ? import.meta.env.SITE : null,
+            url.origin,
+            url.hostname,
+        ]) : [];
+
+        const baseFilters: PageViewFilters = {
+            includeEmptyPath,
+            internalHosts,
+        };
         if (from)
             baseFilters.from = from;
         if (to)
@@ -145,6 +163,7 @@ export const GET: APIRoute = async ({ url }) => {
                 statusCodes: statusCodes ?? [],
                 referrerQuery: referrerQuery ?? null,
                 includeEmptyPath,
+                internalHosts,
                 timezoneOffsetMinutes: timezoneOffsetMinutes ?? null,
             },
             results: {
