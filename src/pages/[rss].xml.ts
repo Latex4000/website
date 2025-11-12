@@ -81,7 +81,7 @@ export const GET: APIRoute = async ({ site, params }) => {
 
     return rss({
         title: "LaTeX 4000's Words",
-        description: "A collection of articles by members in LaTeX 4000",
+        description: "A collection of things by members in LaTeX 4000. For more specific feeds, see the /rss_sounds.xml, /rss_sights.xml, /rss_motions.xml, and /rss_words.xml",
         site: site ?? "",
         items: combinedItems.sort((a, b) => b.pubDate.getTime() - a.pubDate.getTime()).slice(0, 20),
     });
