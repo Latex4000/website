@@ -599,7 +599,11 @@
 
 <div class="chartOptions">
     <label for="interval">Group by:</label>
-    <select id="interval" bind:value={interval}>
+    <select
+        id="interval"
+        bind:value={interval}
+        aria-label="Select Grouping Interval"
+    >
         <option value="day">Day</option>
         <option value="week" selected>Week</option>
         <option value="month">Month</option>

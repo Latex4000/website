@@ -195,6 +195,7 @@
                 bind:value={firstDayOfWeek}
                 onchange={() =>
                     localStorage.setItem(FIRST_DAY_OF_WEEK_KEY, firstDayOfWeek)}
+                aria-label="Select First Day of the Week"
             >
                 <option value="0">Sunday</option>
                 <option value="1">Monday</option>

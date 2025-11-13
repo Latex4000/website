@@ -228,7 +228,10 @@
                     style={`background-color: ${emotionBackground};`}
                 >
                     <div>Major Emotion</div>
-                    <select bind:value={mainEmotion}>
+                    <select
+                        bind:value={mainEmotion}
+                        aria-label="Select Major Emotion"
+                    >
                         {#each mainEmotions as emotion}
                             <option value={emotion}>{emotion}</option>
                         {/each}
@@ -265,7 +268,10 @@
                         />
                     {/if}
                     <div>Your Energy Level</div>
-                    <select bind:value={energy}>
+                    <select
+                        bind:value={energy}
+                        aria-label="Select Energy Level"
+                    >
                         <option value="low">Low</option>
                         <option value="medium">Medium</option>
                         <option value="high">High</option>

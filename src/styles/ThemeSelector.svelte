@@ -12,6 +12,7 @@
 <select
     bind:value={themeSlug}
     onchange={() => window.localStorage.setItem("theme-slug", themeSlug)}
+    aria-label="Select Theme"
 >
     {#each themes as theme}
         <option value={theme.slug}>
