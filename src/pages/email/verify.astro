@@ -67,7 +67,7 @@ if (!token) {
     {
         status === "invalid" ? (
             <p>
-                That verification link is not valid. Request a new email update
+                Invalid verification link. Request a new email update
                 subscription.
             </p>
         ) : undefined
@@ -75,16 +75,16 @@ if (!token) {
     {
         status === "already" ? (
             <p>
-                Your email is already verified. You will continue to receive
-                updates based on your saved preferences.
+                Welcome back. Your email is already verified. You will continue
+                to receive updates based on your saved preferences.
             </p>
         ) : undefined
     }
     {
         status === "success" ? (
             <p>
-                You're all set! Your email is verified and daily digests will
-                start arriving when new content is published.
+                Yo, your email is now verified. Soon you will start receiving
+                updates based on your saved preferences.
             </p>
         ) : undefined
     }

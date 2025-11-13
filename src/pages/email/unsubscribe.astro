@@ -64,7 +64,7 @@ if (!token) {
     {
         status === "invalid" ? (
             <p>
-                That unsubscribe link is not valid. Request a new email update
+                Invalid unsubscribe link. Request a new email update
                 subscription if needed.
             </p>
         ) : undefined
@@ -72,14 +72,14 @@ if (!token) {
     {
         status === "already" ? (
             <p>
-                You're already unsubscribed. Submit the form again if you'd like
-                to rejoin.
+                Welcome back. You're already unsubscribed. Submit the form again
+                if you'd like to rejoin.
             </p>
         ) : undefined
     }
     {
         status === "success" ? (
-            <p>You have been unsubscribed. We're sorry to see you go!</p>
+            <p>Yo, you have been unsubscribed. Don't die.</p>
         ) : undefined
     }
 </Layout>
