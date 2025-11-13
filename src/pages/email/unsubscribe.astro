@@ -1,0 +1,85 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import db, { retryIfDbBusy } from "../../database/db";
+import { Subscriber } from "../../database/schema";
+import { eq } from "drizzle-orm";
+import { randomBytes } from "node:crypto";
+
+type Status = "missing" | "invalid" | "already" | "success";
+
+const token = Astro.url.searchParams.get("token");
+let status: Status = "missing";
+
+function createToken(): string {
+    return randomBytes(24).toString("hex");
+}
+
+if (!token) {
+    status = "missing";
+} else {
+    try {
+        const subscriber = await db
+            .select()
+            .from(Subscriber)
+            .where(eq(Subscriber.unsubscribeToken, token))
+            .get();
+
+        if (!subscriber) {
+            status = "invalid";
+        } else if (subscriber.unsubscribedAt !== null) {
+            status = "already";
+        } else {
+            await retryIfDbBusy(() =>
+                db
+                    .update(Subscriber)
+                    .set({
+                        unsubscribeToken: createToken(),
+                        verifyToken: createToken(),
+                        unsubscribedAt: new Date(),
+                    })
+                    .where(eq(Subscriber.id, subscriber.id))
+            );
+
+            status = "success";
+        }
+    } catch (error) {
+        console.error("Failed to unsubscribe subscriber", error);
+        status = "invalid";
+    }
+}
+---
+
+<Layout
+    header="Email preferences"
+    title="Email preferences"
+    description="LaTeX 4000 email preferences"
+>
+    {
+        status === "missing" ? (
+            <p>
+                Unsubscribe token missing. Please use the link from your email.
+            </p>
+        ) : undefined
+    }
+    {
+        status === "invalid" ? (
+            <p>
+                That unsubscribe link is not valid. Request a new email update
+                subscription if needed.
+            </p>
+        ) : undefined
+    }
+    {
+        status === "already" ? (
+            <p>
+                You're already unsubscribed. Submit the form again if you'd like
+                to rejoin.
+            </p>
+        ) : undefined
+    }
+    {
+        status === "success" ? (
+            <p>You have been unsubscribed. We're sorry to see you go!</p>
+        ) : undefined
+    }
+</Layout>
