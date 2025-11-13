@@ -32,6 +32,20 @@ const soundsSchema = {
     name: "LaTeX 4000 Sounds",
     url: Astro.url.toString(),
     itemListElement: sounds.slice(0, 25).map((sound, index) => {
+        const coverUrl = new URL(
+            `/sounds-uploads/${sound.id}/cover.${sound.coverType}`,
+            Astro.url
+        ).toString();
+        const trackUrl = new URL(
+            `/sounds-uploads/${sound.id}/track.${sound.trackType}`,
+            Astro.url
+        ).toString();
+        const sameAs = [sound.youtubeUrl, sound.soundcloudUrl].filter(
+            (value): value is string => typeof value === "string"
+        );
+        const trackMimeType =
+            sound.trackType === "mp3" ? "audio/mpeg" : "audio/wav";
+
         return {
             "@type": "ListItem",
             position: index + 1,
@@ -40,15 +54,45 @@ const soundsSchema = {
                 "@type": "MusicRecording",
                 name: sound.title,
                 datePublished: sound.date.toISOString(),
-                image: new URL(
-                    `/sounds-uploads/${sound.id}/cover.${sound.coverType}`,
-                    Astro.url
-                ).toString(),
-                byArtist: "L",
-                keywords: sound.tags,
+                image: coverUrl,
+                sameAs,
+                byArtist: {
+                    "@type": "MusicGroup",
+                    name: "L",
+                },
+                recordingOf: {
+                    "@type": "MusicComposition",
+                    name: sound.title,
+                    keywords: sound.tags,
+                },
+                audio: {
+                    "@type": "AudioObject",
+                    contentUrl: trackUrl,
+                    encodingFormat: trackMimeType,
+                },
+                genre: sound.tags,
             },
         };
     }),
+};
+
+const soundsBreadcrumbs = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+        {
+            "@type": "ListItem",
+            position: 1,
+            name: "Home",
+            item: new URL("/", Astro.url).toString(),
+        },
+        {
+            "@type": "ListItem",
+            position: 2,
+            name: "Sounds",
+            item: Astro.url.toString(),
+        },
+    ],
 };
 
 const activeSoundId =
@@ -63,22 +107,43 @@ const activeSoundSchema = activeSound
           "@context": "https://schema.org",
           "@type": "MusicRecording",
           name: activeSound.title,
-          byArtist: "L",
+          byArtist: {
+              "@type": "MusicGroup",
+              name: "L",
+          },
           datePublished: activeSound.date.toISOString(),
           url: makeSoundUrl(activeSound.id, activeSound.title),
           image: new URL(
               `/sounds-uploads/${activeSound.id}/cover.${activeSound.coverType}`,
               Astro.url
           ).toString(),
-          audio: new URL(
-              `/sounds-uploads/${activeSound.id}/track.${activeSound.trackType}`,
-              Astro.url
-          ).toString(),
           keywords: activeSound.tags,
           sameAs: [activeSound.youtubeUrl, activeSound.soundcloudUrl].filter(
               (value): value is string => typeof value === "string"
           ),
+          recordingOf: {
+              "@type": "MusicComposition",
+              name: activeSound.title,
+              keywords: activeSound.tags,
+          },
+          audio: {
+              "@type": "AudioObject",
+              contentUrl: new URL(
+                  `/sounds-uploads/${activeSound.id}/track.${activeSound.trackType}`,
+                  Astro.url
+              ).toString(),
+              encodingFormat:
+                  activeSound.trackType === "mp3" ? "audio/mpeg" : "audio/wav",
+          },
+          genre: activeSound.tags,
       }
+    : undefined;
+
+const soundsOgImage = sounds[0]
+    ? new URL(
+          `/sounds-uploads/${sounds[0]!.id}/cover.${sounds[0]!.coverType}`,
+          Astro.url
+      ).toString()
     : undefined;
 ---
 
@@ -86,11 +151,18 @@ const activeSoundSchema = activeSound
     header="Sounds"
     title="Sounds"
     description="Sounds created by the LaTeX 4000 Collective"
+    ogImage={soundsOgImage}
+    ogType="music.playlist"
 >
     <script
         is:inline
         type="application/ld+json"
         set:html={JSON.stringify(soundsSchema)}
+    />
+    <script
+        is:inline
+        type="application/ld+json"
+        set:html={JSON.stringify(soundsBreadcrumbs)}
     />
     {
         activeSoundSchema ? (

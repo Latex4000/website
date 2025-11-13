@@ -1,12 +1,58 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { Content, frontmatter } from "./_actions-help.md";
+
+const helpSchema = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: frontmatter.title,
+    description: frontmatter.description,
+    author: "LaTeX 4000",
+    url: Astro.url.toString(),
+    inLanguage: "en",
+};
+
+const helpBreadcrumbs = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+        {
+            "@type": "ListItem",
+            position: 1,
+            name: "Home",
+            item: new URL("/", Astro.url).toString(),
+        },
+        {
+            "@type": "ListItem",
+            position: 2,
+            name: "Actions",
+            item: new URL("/actions", Astro.url).toString(),
+        },
+        {
+            "@type": "ListItem",
+            position: 3,
+            name: frontmatter.title,
+            item: Astro.url.toString(),
+        },
+    ],
+};
 ---
 
 <Layout
     header={frontmatter.title}
     title={frontmatter.title}
     description={frontmatter.description}
+    ogType="article"
 >
+    <script
+        is:inline
+        type="application/ld+json"
+        set:html={JSON.stringify(helpSchema)}
+    />
+    <script
+        is:inline
+        type="application/ld+json"
+        set:html={JSON.stringify(helpBreadcrumbs)}
+    />
     <Content />
 </Layout>

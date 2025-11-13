@@ -48,6 +48,10 @@ const toPlainText = (html: string) =>
 const plainText = toPlainText(purifiedHtml);
 const summary = plainText.slice(0, 160);
 const canonicalUrl = Astro.url.toString();
+const firstImageMatch = purifiedHtml.match(/<img[^>]*src="([^"]+)"/i);
+const ogImage = firstImageMatch
+    ? new URL(firstImageMatch[1]!, Astro.url).toString()
+    : undefined;
 
 const wordSchema = {
     "@context": "https://schema.org",
@@ -58,8 +62,39 @@ const wordSchema = {
     url: canonicalUrl,
     inLanguage: "en",
     keywords: word.tags,
+    mainEntityOfPage: canonicalUrl,
+    ...(ogImage ? { image: ogImage } : {}),
     ...(plainText ? { articleBody: plainText } : {}),
     ...(summary ? { description: summary } : {}),
+    speakable: {
+        "@type": "SpeakableSpecification",
+        cssSelector: [".word-markdown > p", ".word-markdown > h2"],
+    },
+};
+
+const wordBreadcrumbs = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+        {
+            "@type": "ListItem",
+            position: 1,
+            name: "Home",
+            item: new URL("/", Astro.url).toString(),
+        },
+        {
+            "@type": "ListItem",
+            position: 2,
+            name: "Words",
+            item: new URL("/words", Astro.url).toString(),
+        },
+        {
+            "@type": "ListItem",
+            position: 3,
+            name: word.title,
+            item: canonicalUrl,
+        },
+    ],
 };
 ---
 
@@ -67,11 +102,18 @@ const wordSchema = {
     title={word.title}
     description={summary || word.title}
     colour={shownColour}
+    ogType="article"
+    ogImage={ogImage}
 >
     <script
         is:inline
         type="application/ld+json"
         set:html={JSON.stringify(wordSchema)}
+    />
+    <script
+        is:inline
+        type="application/ld+json"
+        set:html={JSON.stringify(wordBreadcrumbs)}
     />
     <small style={{ color: shownColour }}>{word.date.toLocaleString()}</small>
     <div class="word-markdown" set:html={purifiedHtml} />

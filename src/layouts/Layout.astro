@@ -21,8 +21,8 @@ const keywords =
 const schema = JSON.stringify({
     "@context": "https://schema.org",
     "@type": "Organization",
-    name: title || "LaTeX 4000",
-    description: description || "LaTeX 4000 Collective",
+    name: "LaTeX 4000",
+    description: "A collective webring of friends making things.",
     url: Astro.url.toString(),
     keywords,
     logo: new URL("/logo.png", Astro.url).toString(),

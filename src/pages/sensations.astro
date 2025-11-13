@@ -22,6 +22,25 @@ const sensationsSchema = {
     },
     isAccessibleForFree: true,
 };
+
+const sensationsBreadcrumbs = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+        {
+            "@type": "ListItem",
+            position: 1,
+            name: "Home",
+            item: new URL("/", Astro.url).toString(),
+        },
+        {
+            "@type": "ListItem",
+            position: 2,
+            name: "Sensations",
+            item: Astro.url.toString(),
+        },
+    ],
+};
 ---
 
 <Layout
@@ -32,6 +51,11 @@ const sensationsSchema = {
         is:inline
         type="application/ld+json"
         set:html={JSON.stringify(sensationsSchema)}
+    />
+    <script
+        is:inline
+        type="application/ld+json"
+        set:html={JSON.stringify(sensationsBreadcrumbs)}
     />
     <h2>THIS IS A WORK IN PROGRESS</h2>
     <p>

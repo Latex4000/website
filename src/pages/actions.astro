@@ -43,7 +43,24 @@ const actionsSchema = {
         },
     })),
 };
-console.log(JSON.stringify(actionsSchema));
+const actionsBreadcrumbs = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+        {
+            "@type": "ListItem",
+            position: 1,
+            name: "Home",
+            item: new URL("/", Astro.url).toString(),
+        },
+        {
+            "@type": "ListItem",
+            position: 2,
+            name: "Actions",
+            item: Astro.url.toString(),
+        },
+    ],
+};
 ---
 
 <Layout
@@ -55,6 +72,11 @@ console.log(JSON.stringify(actionsSchema));
         is:inline
         type="application/ld+json"
         set:html={JSON.stringify(actionsSchema)}
+    />
+    <script
+        is:inline
+        type="application/ld+json"
+        set:html={JSON.stringify(actionsBreadcrumbs)}
     />
     <h4>
         Here's a list of socials of each of ours, and the latest posts from each

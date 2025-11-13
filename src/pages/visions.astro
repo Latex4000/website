@@ -16,6 +16,25 @@ const visionsSchema = {
         name: "LaTeX 4000",
     },
 };
+
+const visionsBreadcrumbs = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+        {
+            "@type": "ListItem",
+            position: 1,
+            name: "Home",
+            item: new URL("/", Astro.url).toString(),
+        },
+        {
+            "@type": "ListItem",
+            position: 2,
+            name: "Visions",
+            item: Astro.url.toString(),
+        },
+    ],
+};
 ---
 
 <Layout
@@ -26,6 +45,11 @@ const visionsSchema = {
         is:inline
         type="application/ld+json"
         set:html={JSON.stringify(visionsSchema)}
+    />
+    <script
+        is:inline
+        type="application/ld+json"
+        set:html={JSON.stringify(visionsBreadcrumbs)}
     />
     <AudioVisualizer client:only="svelte" />
 </Layout>

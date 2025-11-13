@@ -1,5 +1,51 @@
 ---
 import Layout from "../layouts/Layout.astro";
+
+const thingsList = [
+    { name: "Watcher", url: "/watcher" },
+    { name: "Visions", url: "/visions" },
+    { name: "Sensations", url: "/sensations" },
+];
+
+const thingsSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Things",
+    url: Astro.url.toString(),
+    itemListElement: thingsList.map((thing, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        url: new URL(thing.url, Astro.url).toString(),
+        item: {
+            "@type": "CreativeWork",
+            name: thing.name,
+            url: new URL(thing.url, Astro.url).toString(),
+            publisher: {
+                "@type": "Organization",
+                name: "LaTeX 4000",
+            },
+        },
+    })),
+};
+
+const thingsBreadcrumbs = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+        {
+            "@type": "ListItem",
+            position: 1,
+            name: "Home",
+            item: new URL("/", Astro.url).toString(),
+        },
+        {
+            "@type": "ListItem",
+            position: 2,
+            name: "Things",
+            item: Astro.url.toString(),
+        },
+    ],
+};
 ---
 
 <Layout
@@ -7,14 +53,28 @@ import Layout from "../layouts/Layout.astro";
     title="Things"
     description="Things created by the LaTeX 4000 Collective"
 >
+    <script
+        is:inline
+        type="application/ld+json"
+        set:html={JSON.stringify(thingsSchema)}
+    />
+    <script
+        is:inline
+        type="application/ld+json"
+        set:html={JSON.stringify(thingsBreadcrumbs)}
+    />
     <p>
         Pages we have made on this site with unique, interactive, and specific
         features/content
     </p>
     <ul>
-        <li><a href="/watcher">Watcher</a></li>
-        <li><a href="/visions">Visions</a></li>
-        <li><a href="/sensations">Sensations</a></li>
+        {
+            thingsList.map((thing) => (
+                <li>
+                    <a href={thing.url}>{thing.name}</a>
+                </li>
+            ))
+        }
     </ul>
 </Layout>
 

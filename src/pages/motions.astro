@@ -83,16 +83,44 @@ const motionsSchema = {
             item: {
                 "@type": "VideoObject",
                 name: motion.title,
+                description: `Video created by the LaTeX 4000 Collective`,
                 uploadDate: motion.date.toISOString(),
                 url: pageUrl,
                 embedUrl,
-                description: `Video created by the LaTeX 4000 Collective`,
+                publisher: {
+                    "@type": "Organization",
+                    name: "LaTeX 4000",
+                    url: new URL("/", Astro.url).toString(),
+                },
+                creator: {
+                    "@type": "Person",
+                    name: "L",
+                },
                 ...(thumbnailUrl ? { thumbnailUrl } : {}),
                 keywords: motion.tags,
                 sameAs: motion.youtubeUrl ? [motion.youtubeUrl] : undefined,
             },
         };
     }),
+};
+
+const motionsBreadcrumbs = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+        {
+            "@type": "ListItem",
+            position: 1,
+            name: "Home",
+            item: new URL("/", Astro.url).toString(),
+        },
+        {
+            "@type": "ListItem",
+            position: 2,
+            name: "Motions",
+            item: Astro.url.toString(),
+        },
+    ],
 };
 
 const activeMotionId =
@@ -116,6 +144,15 @@ const activeMotionSchema = activeMotion
               Astro.url
           ).toString(),
           embedUrl: toEmbedUrl(activeMotion.youtubeUrl),
+          creator: {
+              "@type": "Person",
+              name: "L",
+          },
+          publisher: {
+              "@type": "Organization",
+              name: "LaTeX 4000",
+              url: new URL("/", Astro.url).toString(),
+          },
           ...(() => {
               const thumbnailUrl = toThumbnailUrl(activeMotion.youtubeUrl);
               return thumbnailUrl ? { thumbnailUrl } : {};
@@ -126,17 +163,32 @@ const activeMotionSchema = activeMotion
               : undefined,
       }
     : undefined;
+
+const motionsOgImage = (() => {
+    for (const motion of motions) {
+        const thumbnailUrl = toThumbnailUrl(motion.youtubeUrl);
+        if (thumbnailUrl) return thumbnailUrl;
+    }
+    return undefined;
+})();
 ---
 
 <Layout
     header="Motions"
     title="Motions"
     description="Motions created by the LaTeX 4000 Collective"
+    ogImage={motionsOgImage}
+    ogType="video.other"
 >
     <script
         is:inline
         type="application/ld+json"
         set:html={JSON.stringify(motionsSchema)}
+    />
+    <script
+        is:inline
+        type="application/ld+json"
+        set:html={JSON.stringify(motionsBreadcrumbs)}
     />
     {
         activeMotionSchema ? (
