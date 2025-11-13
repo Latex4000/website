@@ -7,7 +7,15 @@ import ThemeSelector from "../styles/ThemeSelector.svelte";
 import baseStylesUrl from "../styles/base.css?url";
 import resetStylesUrl from "../styles/reset.css?url";
 
-const { header, title, description, colour } = Astro.props;
+const {
+    header,
+    title,
+    description,
+    colour,
+    ogImage,
+    ogType = "website",
+    twitterCard = "summary_large_image",
+} = Astro.props;
 const keywords =
     "LaTeX 4000, LaTeX, latex, 4000, collective, webring, art, music, organization, design, web";
 const schema = JSON.stringify({
@@ -76,19 +84,27 @@ const onlineCount = await getOnlineVisitorCount(Astro);
             content={colour ?? defaultTheme.values["--background-color"]}
         />
 
-        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:card" content={twitterCard} />
         <meta name="twitter:site" content="@Latex4000" />
         <meta name="twitter:title" content={title || "LaTeX 4000"} />
         <meta
             name="twitter:description"
             content={description || "LaTeX 4000 Collective"}
         />
-        <meta name="twitter:image" content={new URL("/logo.png", Astro.url)} />
+        <meta
+            name="twitter:image"
+            content={ogImage ?? new URL("/logo.png", Astro.url)}
+        />
+        <meta name="twitter:image:alt" content={title || "LaTeX 4000"} />
 
         <meta property="og:title" content={title || "LaTeX 4000"} />
-        <meta property="og:type" content="website" />
+        <meta property="og:type" content={ogType} />
         <meta property="og:url" content={Astro.url} />
-        <meta property="og:image" content={new URL("/logo.png", Astro.url)} />
+        <meta
+            property="og:image"
+            content={ogImage ?? new URL("/logo.png", Astro.url)}
+        />
+        <meta property="og:image:alt" content={title || "LaTeX 4000"} />
         <meta
             property="og:description"
             content={description || "LaTeX 4000 Collective"}
