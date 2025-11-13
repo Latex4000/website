@@ -124,9 +124,11 @@
                             {@const thumbsDir =
                                 quality === "high" ? "thumbs" : "thumbs-evil"}
                             <img
-                                alt=""
+                                alt={`${sight.title} thumbnail`}
                                 class={sight.pixelated ? "pixelated" : ""}
                                 src="/sights-uploads/{sight.id}/{thumbsDir}/{filename}"
+                                loading="lazy"
+                                decoding="async"
                                 title={sight.description}
                             />
                         {/each}
@@ -195,11 +197,13 @@
                     {@const imageUrl = `/sights-uploads/${selectedSight.id}/original/${filename}`}
                     <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
                     <img
-                        alt=""
+                        alt={`${selectedSight.title} artwork`}
                         class={`${selectedSight.pixelated ? "pixelated" : ""} ${isLoading ? "loading-image" : ""} ${
                             loadedImages[filename] ? "loaded" : ""
                         } clickable-image`}
                         src={imageUrl}
+                        loading="lazy"
+                        decoding="async"
                         onclick={(e) => {
                             e.stopPropagation();
                             openImageInNewTab(imageUrl);

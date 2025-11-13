@@ -1,11 +1,31 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import AudioVisualizer from "../components/Visions/AudioVisualizer.svelte";
+
+const visionsSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    name: "Visions",
+    url: Astro.url.toString(),
+    applicationCategory: "CreativeWorkApplication",
+    operatingSystem: "All",
+    description:
+        "Browser-based audio visualizer that you can drop any audio file into.",
+    creator: {
+        "@type": "Organization",
+        name: "LaTeX 4000",
+    },
+};
 ---
 
 <Layout
     title="Visions"
     description="Are you seeing things? Are you hearing things? Are you feeling things? Are you having visions?"
 >
+    <script
+        is:inline
+        type="application/ld+json"
+        set:html={JSON.stringify(visionsSchema)}
+    />
     <AudioVisualizer client:only="svelte" />
 </Layout>

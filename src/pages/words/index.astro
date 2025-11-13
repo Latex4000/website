@@ -17,6 +17,25 @@ const wordResults = await db
     .innerJoin(Member, eq(Word.memberDiscord, Member.discord))
     .orderBy(desc(Word.id))
     .then(thingColourHandler);
+
+const wordsSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Words",
+    url: Astro.url.toString(),
+    itemListElement: wordResults.slice(0, 50).map((word, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        url: new URL(`/words/${wordId(word)}`, Astro.url).toString(),
+        item: {
+            "@type": "Article",
+            headline: word.title,
+            datePublished: word.date.toISOString(),
+            author: "L",
+            keywords: word.tags,
+        },
+    })),
+};
 ---
 
 <Layout
@@ -24,6 +43,11 @@ const wordResults = await db
     title="Words"
     description="Words created by the LaTeX 4000 Collective"
 >
+    <script
+        is:inline
+        type="application/ld+json"
+        set:html={JSON.stringify(wordsSchema)}
+    />
     <p>Here are {wordResults.length} words that we have written:</p>
     {
         wordResults.length > 0 ? (

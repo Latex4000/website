@@ -227,9 +227,43 @@ const rawCollectiveFeed: ExternalFeedItem[] = actionItemRows.flatMap((item) => {
 const collectiveFeed = rawCollectiveFeed
     .sort((a, b) => b.date.getTime() - a.date.getTime())
     .slice(0, HOME_EXTERNAL_LIMIT);
+
+const pageUrl = Astro.url.toString();
+
+const homeSchema = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: "LaTeX 4000 Collective",
+    description:
+        "A collective project creating sounds, sights, motions, and words.",
+    url: pageUrl,
+    about: [
+        "music",
+        "art",
+        "creative technology",
+        "writing",
+        "webring",
+        "video",
+        "community",
+        "collective",
+    ],
+    creator: {
+        "@type": "Organization",
+        name: "LaTeX 4000",
+    },
+};
 ---
 
-<Layout header="Yo">
+<Layout
+    header="Yo"
+    title="LaTeX 4000 Collective"
+    description="A collective project creating sounds, sights, motions, and words."
+>
+    <script
+        is:inline
+        type="application/ld+json"
+        set:html={JSON.stringify(homeSchema)}
+    />
     <p>
         We're a group of friends who have just been doing various shit, spanning
         from visual arts, music, games, computer science, and more
@@ -258,7 +292,7 @@ const collectiveFeed = rawCollectiveFeed
         created to submit and upload tracks we don't want to upload on our own
         aliases
     </p>
-    <p>Enjoy your stay</p>
+    <p>Enjoy your stay and explore!</p>
 
     <div>
         Signed:

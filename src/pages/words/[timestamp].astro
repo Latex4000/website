@@ -39,10 +39,40 @@ const wordHtml = await readFile(
     "utf8"
 );
 
-const purifiedHtml = serverHTMLPurify(wordHtml, ".word-markdown");
+const purifiedHtml = await serverHTMLPurify(wordHtml, ".word-markdown");
+const toPlainText = (html: string) =>
+    html
+        .replace(/<[^>]+>/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+const plainText = toPlainText(purifiedHtml);
+const summary = plainText.slice(0, 160);
+const canonicalUrl = Astro.url.toString();
+
+const wordSchema = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: word.title,
+    author: "L",
+    datePublished: word.date.toISOString(),
+    url: canonicalUrl,
+    inLanguage: "en",
+    keywords: word.tags,
+    ...(plainText ? { articleBody: plainText } : {}),
+    ...(summary ? { description: summary } : {}),
+};
 ---
 
-<Layout title={word.title} description={word.title} colour={shownColour}>
+<Layout
+    title={word.title}
+    description={summary || word.title}
+    colour={shownColour}
+>
+    <script
+        is:inline
+        type="application/ld+json"
+        set:html={JSON.stringify(wordSchema)}
+    />
     <small style={{ color: shownColour }}>{word.date.toLocaleString()}</small>
     <div class="word-markdown" set:html={purifiedHtml} />
     <p style={{ color: shownColour }}>-L</p>

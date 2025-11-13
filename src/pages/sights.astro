@@ -52,6 +52,75 @@ for (const path of filenames) {
             break;
     }
 }
+
+const toSlug = (value: string) =>
+    value.toLowerCase().replaceAll(/[\s_-]+/g, "-");
+const makeSightUrl = (sightId: number, title: string) =>
+    new URL(`/sights/${sightId}-${toSlug(title)}`, Astro.url).toString();
+const toFullImageUrls = (sightId: number) =>
+    (fullFilenamesById[sightId] ?? []).map((filename) =>
+        new URL(
+            `/sights-uploads/${sightId}/original/${filename}`,
+            Astro.url
+        ).toString()
+    );
+
+const sightsSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "LaTeX 4000 Sights",
+    url: Astro.url.toString(),
+    itemListElement: sights.slice(0, 25).map((sight, index) => {
+        const thumb = thumbFilenamesById[sight.id]?.[0];
+        const images = toFullImageUrls(sight.id);
+
+        return {
+            "@type": "ListItem",
+            position: index + 1,
+            url: makeSightUrl(sight.id, sight.title),
+            item: {
+                "@type": "VisualArtwork",
+                name: sight.title,
+                description: sight.description,
+                creator: "L",
+                dateCreated: sight.date.toISOString(),
+                image: images.length > 0 ? images : undefined,
+                thumbnailUrl:
+                    thumb != null
+                        ? new URL(
+                              `/sights-uploads/${sight.id}/thumbs/${thumb}`,
+                              Astro.url
+                          ).toString()
+                        : undefined,
+                keywords: sight.tags,
+            },
+        };
+    }),
+};
+
+const activeSightId =
+    typeof Astro.locals.sightId === "number" ? Astro.locals.sightId : undefined;
+const activeSight =
+    activeSightId != null
+        ? sights.find((sight) => sight.id === activeSightId)
+        : undefined;
+
+const activeSightSchema = activeSight
+    ? {
+          "@context": "https://schema.org",
+          "@type": "VisualArtwork",
+          name: activeSight.title,
+          description: activeSight.description,
+          creator: "L",
+          dateCreated: activeSight.date.toISOString(),
+          url: makeSightUrl(activeSight.id, activeSight.title),
+          ...(() => {
+              const images = toFullImageUrls(activeSight.id);
+              return images.length > 0 ? { image: images } : {};
+          })(),
+          keywords: activeSight.tags,
+      }
+    : undefined;
 ---
 
 <Layout
@@ -59,6 +128,20 @@ for (const path of filenames) {
     title="Sights"
     description="Sights created by the LaTeX 4000 Collective"
 >
+    <script
+        is:inline
+        type="application/ld+json"
+        set:html={JSON.stringify(sightsSchema)}
+    />
+    {
+        activeSightSchema ? (
+            <script
+                is:inline
+                type="application/ld+json"
+                set:html={JSON.stringify(activeSightSchema)}
+            />
+        ) : undefined
+    }
     <p>Welcome to my web sight we got {sights.length} sights</p>
     <noscript>
         <p>JavaScript is required to view the full-size images</p>

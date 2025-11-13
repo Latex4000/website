@@ -7,6 +7,51 @@ import { thingColourHandler } from "../server/thingUtils";
 
 export const prerender = false;
 
+const toSlug = (value: string) =>
+    value.toLowerCase().replaceAll(/[\s_-]+/g, "-");
+
+const toEmbedUrl = (url: string): string => {
+    try {
+        const parsed = new URL(url);
+        if (parsed.hostname === "youtu.be") {
+            const id = parsed.pathname.slice(1);
+            if (id) return `https://www.youtube.com/embed/${id}`;
+        }
+
+        if (parsed.hostname.includes("youtube")) {
+            const id = parsed.searchParams.get("v");
+            if (id) return `https://www.youtube.com/embed/${id}`;
+        }
+    } catch (error) {
+        console.warn("[motions] Failed to build embed URL", error);
+    }
+
+    return url.replace(/watch\?v=/, "embed/");
+};
+
+const toThumbnailUrl = (url: string): string | undefined => {
+    try {
+        const parsed = new URL(url);
+        if (parsed.hostname === "youtu.be") {
+            const id = parsed.pathname.slice(1);
+            return id
+                ? `https://img.youtube.com/vi/${id}/hqdefault.jpg`
+                : undefined;
+        }
+
+        if (parsed.hostname.includes("youtube")) {
+            const id = parsed.searchParams.get("v");
+            return id
+                ? `https://img.youtube.com/vi/${id}/hqdefault.jpg`
+                : undefined;
+        }
+    } catch (error) {
+        console.warn("[motions] Failed to build thumbnail URL", error);
+    }
+
+    return undefined;
+};
+
 const motions = await db
     .select({
         ...getTableColumns(Motion),
@@ -17,6 +62,70 @@ const motions = await db
     .innerJoin(Member, eq(Motion.memberDiscord, Member.discord))
     .orderBy(desc(Motion.id))
     .then(thingColourHandler);
+
+const motionsSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Motions",
+    url: Astro.url.toString(),
+    itemListElement: motions.slice(0, 25).map((motion, index) => {
+        const pageUrl = new URL(
+            `/motions/${motion.id}-${toSlug(motion.title)}`,
+            Astro.url
+        ).toString();
+        const embedUrl = toEmbedUrl(motion.youtubeUrl);
+        const thumbnailUrl = toThumbnailUrl(motion.youtubeUrl);
+
+        return {
+            "@type": "ListItem",
+            position: index + 1,
+            url: pageUrl,
+            item: {
+                "@type": "VideoObject",
+                name: motion.title,
+                uploadDate: motion.date.toISOString(),
+                url: pageUrl,
+                embedUrl,
+                description: `Video created by the LaTeX 4000 Collective`,
+                ...(thumbnailUrl ? { thumbnailUrl } : {}),
+                keywords: motion.tags,
+                sameAs: motion.youtubeUrl ? [motion.youtubeUrl] : undefined,
+            },
+        };
+    }),
+};
+
+const activeMotionId =
+    typeof Astro.locals.motionId === "number"
+        ? Astro.locals.motionId
+        : undefined;
+const activeMotion =
+    activeMotionId != null
+        ? motions.find((motion) => motion.id === activeMotionId)
+        : undefined;
+
+const activeMotionSchema = activeMotion
+    ? {
+          "@context": "https://schema.org",
+          "@type": "VideoObject",
+          name: activeMotion.title,
+          description: `Video created by the LaTeX 4000 Collective`,
+          uploadDate: activeMotion.date.toISOString(),
+          url: new URL(
+              `/motions/${activeMotion.id}-${toSlug(activeMotion.title)}`,
+              Astro.url
+          ).toString(),
+          embedUrl: toEmbedUrl(activeMotion.youtubeUrl),
+          ...(() => {
+              const thumbnailUrl = toThumbnailUrl(activeMotion.youtubeUrl);
+              return thumbnailUrl ? { thumbnailUrl } : {};
+          })(),
+          keywords: activeMotion.tags,
+          sameAs: activeMotion.youtubeUrl
+              ? [activeMotion.youtubeUrl]
+              : undefined,
+      }
+    : undefined;
 ---
 
 <Layout
@@ -24,6 +133,20 @@ const motions = await db
     title="Motions"
     description="Motions created by the LaTeX 4000 Collective"
 >
+    <script
+        is:inline
+        type="application/ld+json"
+        set:html={JSON.stringify(motionsSchema)}
+    />
+    {
+        activeMotionSchema ? (
+            <script
+                is:inline
+                type="application/ld+json"
+                set:html={JSON.stringify(activeMotionSchema)}
+            />
+        ) : undefined
+    }
     Some of us are REALLY bored. Here are {motions.length} motions that we have released
     under the collective's name instead of our own:
     <div class="motions">
@@ -31,7 +154,7 @@ const motions = await db
             motions.map((motion) => (
                 <div class="motion" data-motion-id={motion.id}>
                     <iframe
-                        src={motion.youtubeUrl.replace(/watch\?v=/, "embed/")}
+                        src={toEmbedUrl(motion.youtubeUrl)}
                         style={{
                             width: "var(--media-video-width, 16lh)",
                             height: "var(--media-video-height, 9lh)",
@@ -39,15 +162,16 @@ const motions = await db
                                 ? `var(--border-thickness) solid ${motion.memberColor}`
                                 : "none",
                         }}
-                        title="YouTube video player"
+                        title={`${motion.title} video`}
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                         referrerpolicy="strict-origin-when-cross-origin"
                         allowfullscreen
+                        loading="lazy"
                     />
                     <div class="details">
                         <h2>
                             <a
-                                href={`/motions/${motion.id}-${motion.title.toLowerCase().replaceAll(/[\s_-]+/g, "-")}`}
+                                href={`/motions/${motion.id}-${toSlug(motion.title)}`}
                             >
                                 {motion.title}
                             </a>

@@ -1,12 +1,38 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import SensationsApp from "../components/Sensations/SensationsApp.svelte";
+
+const sensationsSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    name: "Sensations",
+    url: Astro.url.toString(),
+    applicationCategory: "MentalHealthApplication",
+    operatingSystem: "All",
+    description: "Browser-based mood tracker, also stores entries locally.",
+    creator: {
+        "@type": "Organization",
+        name: "LaTeX 4000",
+    },
+    // LMAO free app
+    offers: {
+        "@type": "Offer",
+        price: "0",
+        priceCurrency: "USD",
+    },
+    isAccessibleForFree: true,
+};
 ---
 
 <Layout
     title="Sensations"
     description="Observe yourself. Are you feeling things? Are you having sensations?"
 >
+    <script
+        is:inline
+        type="application/ld+json"
+        set:html={JSON.stringify(sensationsSchema)}
+    />
     <h2>THIS IS A WORK IN PROGRESS</h2>
     <p>
         All data is stored in your browser/local storage.<br />You have full

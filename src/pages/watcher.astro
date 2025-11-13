@@ -84,9 +84,39 @@ const initialPayload: WatcherApiResponse = {
     },
     pagination: defaultPagination,
 };
+
+const watcherSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    name: "Watcher",
+    url: Astro.url.toString(),
+    applicationCategory: "AnalyticsApplication",
+    operatingSystem: "All",
+    description:
+        "Let's Have A Watch with an internal analytics dashboard for the LaTeX 4000 website.",
+    creator: {
+        "@type": "Organization",
+        name: "LaTeX 4000",
+    },
+    potentialAction: {
+        "@type": "SearchAction",
+        target: {
+            "@type": "EntryPoint",
+            urlTemplate: new URL(
+                "/api/watcher{?pagePath,statusCodes,from,to}",
+                Astro.url
+            ).toString(),
+        },
+    },
+};
 ---
 
 <Layout header="Watcher" title="Watcher" description="Let's Have A Watch">
+    <script
+        is:inline
+        type="application/ld+json"
+        set:html={JSON.stringify(watcherSchema)}
+    />
     <section class="context">
         <p>Analytics starting from ~Nov 8 UTC</p>
         <details>

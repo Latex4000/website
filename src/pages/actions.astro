@@ -24,6 +24,26 @@ const actions: ActionList[] = await db
             type: detectFeedType(row.url),
         }))
     );
+
+const actionsSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Actions",
+    url: Astro.url.toString(),
+    itemListElement: actions.map((action, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        url: action.siteUrl,
+        item: {
+            "@type": "WebSite",
+            name: action.title,
+            url: action.siteUrl,
+            sameAs: action.url,
+            author: action.username,
+        },
+    })),
+};
+console.log(JSON.stringify(actionsSchema));
 ---
 
 <Layout
@@ -31,6 +51,11 @@ const actions: ActionList[] = await db
     title="Actions"
     description="Actions from the LaTeX 4000 Collective"
 >
+    <script
+        is:inline
+        type="application/ld+json"
+        set:html={JSON.stringify(actionsSchema)}
+    />
     <h4>
         Here's a list of socials of each of ours, and the latest posts from each
         of them.

@@ -21,6 +21,65 @@ const sounds = await db
     .innerJoin(Member, eq(Sound.memberDiscord, Member.discord))
     .orderBy(desc(Sound.id))
     .then(thingColourHandler);
+
+const toSlug = (value: string) =>
+    value.toLowerCase().replaceAll(/[\s_-]+/g, "-");
+const makeSoundUrl = (soundId: number, title: string) =>
+    new URL(`/sounds/${soundId}-${toSlug(title)}`, Astro.url).toString();
+const soundsSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "LaTeX 4000 Sounds",
+    url: Astro.url.toString(),
+    itemListElement: sounds.slice(0, 25).map((sound, index) => {
+        return {
+            "@type": "ListItem",
+            position: index + 1,
+            url: makeSoundUrl(sound.id, sound.title),
+            item: {
+                "@type": "MusicRecording",
+                name: sound.title,
+                datePublished: sound.date.toISOString(),
+                image: new URL(
+                    `/sounds-uploads/${sound.id}/cover.${sound.coverType}`,
+                    Astro.url
+                ).toString(),
+                byArtist: "L",
+                keywords: sound.tags,
+            },
+        };
+    }),
+};
+
+const activeSoundId =
+    typeof Astro.locals.soundId === "number" ? Astro.locals.soundId : undefined;
+const activeSound =
+    activeSoundId != null
+        ? sounds.find((sound) => sound.id === activeSoundId)
+        : undefined;
+
+const activeSoundSchema = activeSound
+    ? {
+          "@context": "https://schema.org",
+          "@type": "MusicRecording",
+          name: activeSound.title,
+          byArtist: "L",
+          datePublished: activeSound.date.toISOString(),
+          url: makeSoundUrl(activeSound.id, activeSound.title),
+          image: new URL(
+              `/sounds-uploads/${activeSound.id}/cover.${activeSound.coverType}`,
+              Astro.url
+          ).toString(),
+          audio: new URL(
+              `/sounds-uploads/${activeSound.id}/track.${activeSound.trackType}`,
+              Astro.url
+          ).toString(),
+          keywords: activeSound.tags,
+          sameAs: [activeSound.youtubeUrl, activeSound.soundcloudUrl].filter(
+              (value): value is string => typeof value === "string"
+          ),
+      }
+    : undefined;
 ---
 
 <Layout
@@ -28,15 +87,31 @@ const sounds = await db
     title="Sounds"
     description="Sounds created by the LaTeX 4000 Collective"
 >
-    A lot of us in the group make music. We got about {sounds.length} sounds that
-    we have released under the collective's name instead of our own:
+    <script
+        is:inline
+        type="application/ld+json"
+        set:html={JSON.stringify(soundsSchema)}
+    />
+    {
+        activeSoundSchema ? (
+            <script
+                is:inline
+                type="application/ld+json"
+                set:html={JSON.stringify(activeSoundSchema)}
+            />
+        ) : undefined
+    }
+    A lot of us in the group make music. We have released about {sounds.length} sounds
+    so far under the LaTeX 4000 name instead of our own:
     <div class="sounds">
         {
             sounds.map((sound) => (
                 <div class="sound" data-sound-id={sound.id}>
                     <img
-                        alt=""
+                        alt={`Cover art for ${sound.title}`}
                         src={`/sounds-uploads/${sound.id}/cover.${sound.coverType}`}
+                        loading="lazy"
+                        decoding="async"
                         style={{
                             border: sound.memberColor
                                 ? `var(--border-thickness) solid ${sound.memberColor}`
@@ -46,7 +121,7 @@ const sounds = await db
                     <div class="details">
                         <h2>
                             <a
-                                href={`/sounds/${sound.id}-${sound.title.toLowerCase().replaceAll(/[\s_-]+/g, "-")}`}
+                                href={`/sounds/${sound.id}-${toSlug(sound.title)}`}
                             >
                                 {sound.title}
                             </a>
