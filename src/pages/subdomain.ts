@@ -5,6 +5,8 @@ import { Member } from "../database/schema";
 
 export const prerender = false;
 
+// Basically redirects to the member's site from [USER].nonacademic.net to their actual site
+
 const memberAliasToHostName = (alias: string) => alias
     .toLowerCase()
     .replace(/[^a-z0-9-_]/g, "")
