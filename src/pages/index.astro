@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import SignupForm from "../components/Newsletter/SignupForm.astro";
 import db, { wordId } from "../database/db";
 import {
     Action,
@@ -395,6 +396,8 @@ const homeSchema = {
             </div>
         </div>
     </div>
+
+    <SignupForm />
 </Layout>
 
 <style>
