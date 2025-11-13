@@ -1,6 +1,5 @@
 // @ts-check
 import { defineConfig } from "astro/config";
-import sitemap from "@astrojs/sitemap";
 import svelte from "@astrojs/svelte";
 import react from "@astrojs/react";
 import vue from "@astrojs/vue";
@@ -15,9 +14,6 @@ export default defineConfig({
 
     integrations: [
         localIntegrations(),
-        sitemap({
-            filter: (page) => page !== "https://nonacademic.net/messages",
-        }),
         svelte(),
         react(),
         vue(),
