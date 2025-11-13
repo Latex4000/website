@@ -37,8 +37,32 @@ const onlineCount = await getOnlineVisitorCount(Astro);
         <link
             rel="alternate"
             type="application/rss+xml"
-            title="LaTeX 4000's Words"
+            title="LaTeX 4000's RSS Feed"
             href={new URL("/rss.xml", Astro.url)}
+        />
+        <link
+            rel="alternate"
+            type="application/rss+xml"
+            title="LaTeX 4000's Sounds RSS Feed"
+            href={new URL("/rss_sounds.xml", Astro.url)}
+        />
+        <link
+            rel="alternate"
+            type="application/rss+xml"
+            title="LaTeX 4000's Sights RSS Feed"
+            href={new URL("/rss_sights.xml", Astro.url)}
+        />
+        <link
+            rel="alternate"
+            type="application/rss+xml"
+            title="LaTeX 4000's Motions RSS Feed"
+            href={new URL("/rss_motions.xml", Astro.url)}
+        />
+        <link
+            rel="alternate"
+            type="application/rss+xml"
+            title="LaTeX 4000's Words RSS Feed"
+            href={new URL("/rss_words.xml", Astro.url)}
         />
         <title>{title || "LaTeX 4000"}</title>
         <meta
