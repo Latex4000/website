@@ -32,7 +32,7 @@
     let label = $derived(
         online == null
             ? "online status unavailable"
-            : `${online} ${online === 1 ? "person" : "people"} watching 👀`,,
+            : `${online} ${online === 1 ? "person" : "people"} watching 👀`,
     );
 </script>
 
