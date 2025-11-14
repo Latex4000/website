@@ -1,0 +1,188 @@
+---
+import Layout from "../_Layout.astro";
+---
+
+<Layout>
+    <h1>Submit a Sound</h1>
+    <p>
+        Upload an audio track along with artwork and optional video for social
+        posts.
+    </p>
+
+    <form
+        id="sound-form"
+        action="/corp/api/sounds"
+        method="post"
+        enctype="multipart/form-data"
+    >
+        <label>
+            Title
+            <input type="text" name="title" required />
+        </label>
+
+        <label>
+            Genre
+            <input type="text" name="genre" required />
+        </label>
+
+        <label>
+            Description
+            <textarea name="description" rows="3"></textarea>
+        </label>
+
+        <label>
+            Tags (comma separated)
+            <input type="text" name="tags" />
+        </label>
+
+        <label>
+            Audio File (mp3 or wav)
+            <input
+                type="file"
+                name="audio"
+                accept="audio/mpeg,audio/wav"
+                required
+            />
+        </label>
+
+        <label>
+            Cover Image (png or jpg)
+            <input
+                type="file"
+                name="image"
+                accept="image/png,image/jpeg"
+                required
+            />
+        </label>
+
+        <label>
+            Optional Video (mp4/mov/mkv/avi/wmv)
+            <input type="file" name="video" accept="video/*" />
+        </label>
+
+        <label class="checkbox">
+            <input type="checkbox" name="allowYoutubeShorts" />
+            Allow YouTube Shorts
+        </label>
+
+        <label class="checkbox">
+            <input type="checkbox" name="allowVerticalCover" />
+            Allow vertical cover images
+        </label>
+
+        <label class="checkbox">
+            <input type="checkbox" name="colour" checked />
+            Show colour for this sound
+        </label>
+
+        <label class="checkbox">
+            <input type="checkbox" name="confirmInformation" required />
+            I confirm the information is correct
+        </label>
+
+        <label class="checkbox">
+            <input type="checkbox" name="confirmOwnWork" required />
+            This is my own work
+        </label>
+
+        <button type="submit">Submit Sound</button>
+    </form>
+
+    <p id="sound-status" class="status" role="status" aria-live="polite"></p>
+</Layout>
+
+<script type="module">
+    const form = document.getElementById("sound-form");
+    const status = document.getElementById("sound-status");
+
+    async function handleSubmit(event) {
+        event.preventDefault();
+        if (
+            !(form instanceof HTMLFormElement) ||
+            !(status instanceof HTMLElement)
+        )
+            return;
+
+        const audioInput = form.querySelector('input[name="audio"]');
+        const imageInput = form.querySelector('input[name="image"]');
+        if (
+            !(audioInput instanceof HTMLInputElement) ||
+            !audioInput.files?.length ||
+            !(imageInput instanceof HTMLInputElement) ||
+            !imageInput.files?.length
+        ) {
+            status.textContent = "Audio and cover image are required";
+            return;
+        }
+
+        status.textContent = "Submitting…";
+
+        try {
+            const response = await fetch(form.action, {
+                method: "POST",
+                body: new FormData(form),
+            });
+            const text = await response.text();
+            let payload;
+            try {
+                payload = JSON.parse(text);
+            } catch {
+                payload = null;
+            }
+
+            if (!response.ok) {
+                const errorMessage =
+                    payload && typeof payload === "object" && "error" in payload
+                        ? payload.error
+                        : text || "Request failed";
+                status.textContent = String(errorMessage);
+                return;
+            }
+
+            status.textContent = "Uploaded successfully";
+            form.reset();
+        } catch (error) {
+            status.textContent =
+                error instanceof Error ? error.message : "Unknown error";
+        }
+    }
+
+    if (form) form.addEventListener("submit", handleSubmit);
+</script>
+
+<style>
+    form {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    label {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        font-weight: 600;
+    }
+
+    .checkbox {
+        flex-direction: row;
+        align-items: center;
+        font-weight: normal;
+        gap: 0.5rem;
+    }
+
+    button {
+        align-self: flex-start;
+        padding: 0.6rem 1rem;
+        font-weight: 600;
+        background: #ebdf35;
+        border: 2px solid black;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .status {
+        min-height: 1.5rem;
+        font-weight: 600;
+    }
+</style>
