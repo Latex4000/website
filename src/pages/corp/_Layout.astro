@@ -1,0 +1,173 @@
+---
+import type { ImageMetadata } from "astro";
+import footerImage from "../../assets/corp/footer.gif";
+import logoImage from "../../assets/corp/logo.png";
+
+const bannerImages = Object.values(
+    import.meta.glob<{ default: ImageMetadata }>(
+        "../../assets/corp/ssobanner*.jpg",
+        {
+            eager: true,
+        }
+    )
+);
+const bannerImage =
+    bannerImages[Math.floor(Math.random() * bannerImages.length)]!.default;
+
+function unCorpUrl(url: string | URL): URL {
+    return import.meta.env.CORPORATE_URL
+        ? new URL(url, Astro.site)
+        : new URL(url, Astro.url);
+}
+
+const canonicalUrl = new URL(
+    Astro.url,
+    import.meta.env.CORPORATE_URL || Astro.url
+);
+
+if (import.meta.env.CORPORATE_URL)
+    canonicalUrl.pathname = canonicalUrl.pathname.replace(/^\/corp/, "");
+---
+
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="generator" content={Astro.generator} />
+        <link
+            rel="icon"
+            type="image/svg+xml"
+            href={unCorpUrl("/favicon.svg")}
+        />
+        <link rel="sitemap" href={unCorpUrl("/sitemap.xml")} />
+        <link
+            rel="alternate"
+            type="application/rss+xml"
+            title="LaTeX 4000's RSS Feed"
+            href={unCorpUrl("/rss.xml")}
+        />
+        <link
+            rel="alternate"
+            type="application/rss+xml"
+            title="LaTeX 4000's Sounds RSS Feed"
+            href={unCorpUrl("/rss_sounds.xml")}
+        />
+        <link
+            rel="alternate"
+            type="application/rss+xml"
+            title="LaTeX 4000's Sights RSS Feed"
+            href={unCorpUrl("/rss_sights.xml")}
+        />
+        <link
+            rel="alternate"
+            type="application/rss+xml"
+            title="LaTeX 4000's Motions RSS Feed"
+            href={unCorpUrl("/rss_motions.xml")}
+        />
+        <link
+            rel="alternate"
+            type="application/rss+xml"
+            title="LaTeX 4000's Words RSS Feed"
+            href={unCorpUrl("/rss_words.xml")}
+        />
+        <link rel="canonical" href={canonicalUrl} />
+        <title>Nonacademic.net | Corp Portal</title>
+    </head>
+    <body>
+        <div class="bar">
+            <img
+                src={logoImage.src}
+                width={logoImage.width}
+                height={logoImage.height}
+                alt="Nonacademic Corporate"
+            />
+            <div class="bar__spacer">Corp Portal</div>
+        </div>
+
+        <main>
+            <div class="corp-card">
+                <slot />
+            </div>
+            <img
+                src={bannerImage.src}
+                width={bannerImage.width}
+                height={bannerImage.height}
+                alt=""
+            />
+        </main>
+
+        <div class="bar bar--footer">
+            <div class="bar__spacer"></div>
+            <img
+                src={footerImage.src}
+                width={footerImage.width}
+                height={footerImage.height}
+                alt=""
+            />
+        </div>
+    </body>
+</html>
+
+<style is:global>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 2px 0 0;
+        padding: 0;
+    }
+
+    a:focus {
+        outline: solid;
+    }
+
+    .bar {
+        display: flex;
+        width: 95%;
+        margin: 0 auto;
+        height: 3em;
+    }
+
+    .bar__spacer {
+        border-radius: 4px;
+        background-color: #ebdf35;
+        flex-grow: 1;
+        align-self: end;
+        font-weight: bold;
+        text-align: left;
+        padding: 3px 7px;
+        height: 18px;
+        margin: 0 3px -1px;
+    }
+
+    .bar img {
+        margin: 13px 3px 13px 0;
+        height: 100%;
+        width: auto;
+    }
+
+    .bar--footer img {
+        height: 53px;
+    }
+
+    main {
+        border: #ebdf35 2px solid;
+        background-color: lightyellow;
+        display: flex;
+        margin: 44px auto 16px;
+        width: max-content;
+        padding: 6px;
+    }
+
+    main > img {
+        max-width: 400px;
+        margin: 8px;
+        border: 1px solid black;
+    }
+
+    .corp-card {
+        padding: 1.5rem;
+        max-width: 640px;
+    }
+
+    h1 {
+        margin-top: 0;
+    }
+</style>
