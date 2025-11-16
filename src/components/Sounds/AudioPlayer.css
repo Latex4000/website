@@ -39,7 +39,7 @@
     position: absolute;
     height: 100%;
     background-color: var(--text-color);
-    transition: width 0.2s cubic-bezier(0.215, 0.61, 0.355, 1);
+    transition: width 0.05s cubic-bezier(0.215, 0.61, 0.355, 1);
 }
 
 /* .audio-player-bar-fill-buffered {
