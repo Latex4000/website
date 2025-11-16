@@ -209,6 +209,11 @@ const onlineCount = await getOnlineVisitorCount(Astro);
 <script>
     // Formats timestamps for any <time data-format="localized"> nodes
     const formatElement = (element: HTMLTimeElement): void => {
+        if (element.dataset.formattedValue) {
+            element.textContent = element.dataset.formattedValue;
+            return;
+        }
+
         const value =
             element.getAttribute("datetime") || element.dataset.timestamp;
         if (!value) return;
@@ -216,11 +221,8 @@ const onlineCount = await getOnlineVisitorCount(Astro);
         const date = new Date(value);
         if (Number.isNaN(date.getTime())) return;
 
-        const locale =
-            element.getAttribute("lang") || navigator.language || "en-US";
-        const timeZone =
-            element.dataset.timezone ||
-            Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const locale = navigator.language || "en-US";
+        const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
         try {
             const formatter = new Intl.DateTimeFormat(locale, {
