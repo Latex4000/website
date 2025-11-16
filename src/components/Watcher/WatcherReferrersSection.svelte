@@ -40,6 +40,7 @@
 <section
     aria-labelledby="watcher-referrers-heading"
     aria-busy={props.loading ? "true" : "false"}
+    aria-live="polite"
 >
     <h2 id="watcher-referrers-heading">Top referrers</h2>
     <label class="checkbox">
@@ -94,8 +95,8 @@
             </div>
         {/if}
     {:else if props.loading}
-        <p>Loading referrer data…</p>
+        <p role="status">Loading referrer data…</p>
     {:else}
-        <p>No referrer information for this range.</p>
+        <p role="status">No referrer information for this range.</p>
     {/if}
 </section>

@@ -24,6 +24,7 @@
 <section
     aria-labelledby="watcher-summary-heading"
     aria-busy={loading ? "true" : "false"}
+    aria-live="polite"
 >
     <h2 id="watcher-summary-heading">Page hits summary</h2>
     {#if totals}
@@ -53,8 +54,8 @@
             </div>
         </div>
     {:else if loading}
-        <p>Loading summary…</p>
+        <p role="status">Loading summary…</p>
     {:else}
-        <p>No page view data for the selected filters.</p>
+        <p role="status">No page view data for the selected filters.</p>
     {/if}
 </section>

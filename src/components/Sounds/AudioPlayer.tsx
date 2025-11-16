@@ -63,6 +63,8 @@ export function AudioPlayer({ coverUrl, durationGuess, id, src, title, trackType
 			data-audio-src={src}
 			data-audio-title={title}
 			style={{ "--duration": durationGuess }}
+			role="group"
+			aria-label={`Audio player for ${title}`}
 		>
 			<button className="audio-player-play js-audio-player-play" aria-label="Play sound">{"|>"}</button>
 			<div className="audio-player-bar js-audio-player-bar">
@@ -70,6 +72,9 @@ export function AudioPlayer({ coverUrl, durationGuess, id, src, title, trackType
 				<div className="audio-player-bar-fill audio-player-bar-fill-current-time" />
 				<div
 					className="audio-player-timestamps js-audio-player-timestamps"
+					role="timer"
+					aria-live="off"
+					aria-label="Elapsed time and total duration"
 					dangerouslySetInnerHTML={{ __html: timestampHtml(0, durationGuess) }}
 				/>
 			</div>
@@ -582,7 +587,7 @@ export function MasterAudioPlayer() {
 	// Render
 	return (
 		<div className="audio-player-master-container">
-			<h2>{title}</h2>
+			<h2 aria-live="polite" role="heading">{title}</h2>
 			<div
 				className="audio-player"
 				style={{
@@ -590,6 +595,8 @@ export function MasterAudioPlayer() {
 					"--current-time": currentTime,
 					"--duration": duration,
 				}}
+				role="group"
+				aria-label="Master audio controls"
 			>
 				<button
 					onClick={onPrevTrackClick}
@@ -613,6 +620,9 @@ export function MasterAudioPlayer() {
 					<div className="audio-player-bar-fill audio-player-bar-fill-current-time" />
 					<div
 						className="audio-player-timestamps"
+						role="timer"
+						aria-live="off"
+						aria-label="Elapsed time and total duration"
 						dangerouslySetInnerHTML={{ __html: timestampHtml(currentTime, duration) }}
 					/>
 				</div>
@@ -627,8 +637,12 @@ export function MasterAudioPlayer() {
 				<div
 					className={`audio-player-volume-control ${muted ? "audio-player-volume-control-muted" : ""}`}
 					ref={volumeRef}
-					role="status"
+					role="meter"
 					aria-live="polite"
+					aria-label="Volume"
+					aria-valuenow={Math.round(volume * 100)}
+					aria-valuemin={0}
+					aria-valuemax={100}
 				>
 					{Math.round(volume * 100)}%
 				</div>

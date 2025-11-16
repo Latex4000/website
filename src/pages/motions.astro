@@ -201,10 +201,16 @@ const motionsOgImage = (() => {
     }
     Some of us are REALLY bored. Here are {motions.length} motions that we have released
     under the collective's name instead of our own:
-    <div class="motions">
+    <div class="motions" role="list" aria-label="Motions list">
         {
             motions.map((motion) => (
-                <div class="motion" data-motion-id={motion.id}>
+                <article
+                    class="motion"
+                    data-motion-id={motion.id}
+                    role="listitem"
+                    aria-labelledby={`motion-title-${motion.id}`}
+                    aria-describedby={`motion-meta-${motion.id}`}
+                >
                     <iframe
                         src={toEmbedUrl(motion.youtubeUrl)}
                         style={{
@@ -221,7 +227,7 @@ const motionsOgImage = (() => {
                         loading="lazy"
                     />
                     <div class="details">
-                        <h2>
+                        <h2 id={`motion-title-${motion.id}`}>
                             <a
                                 href={`/motions/${motion.id}-${toSlug(motion.title)}`}
                             >
@@ -229,7 +235,7 @@ const motionsOgImage = (() => {
                             </a>
                         </h2>
                         {/* prettier-ignore */}
-                        <div>
+                        <div id={`motion-meta-${motion.id}`}>
                             <a href={motion.youtubeUrl}>{/* prettier-ignore */}<span class="y">You</span><span class="t">Tube</span></a>
                             |
                             <span>{motion.date.toLocaleString()}</span>
@@ -240,7 +246,7 @@ const motionsOgImage = (() => {
                             ))}
                         </div>
                     </div>
-                </div>
+                </article>
             ))
         }
     </div>

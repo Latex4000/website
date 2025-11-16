@@ -32,6 +32,7 @@
 <section
     aria-labelledby="watcher-top-pages-heading"
     aria-busy={props.loading ? "true" : "false"}
+    aria-live="polite"
 >
     <h2 id="watcher-top-pages-heading">Top pages</h2>
     {#if props.data && props.data.rows.length}
@@ -77,8 +78,8 @@
             </div>
         {/if}
     {:else if props.loading}
-        <p>Loading top pages…</p>
+        <p role="status">Loading top pages…</p>
     {:else}
-        <p>No page view data found.</p>
+        <p role="status">No page view data found.</p>
     {/if}
 </section>

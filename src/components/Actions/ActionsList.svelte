@@ -17,41 +17,56 @@
 
     filtersRef.set(Object.fromEntries(actions.map((row) => [row.id, true])));
 
+    const actionItemsRegionId = "action-items-feed";
+    const getUserSectionId = (username: string) =>
+        `actions-${username.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+
+    let isFetching = $state(false);
+
     onMount(async () => await updateActionItems());
 
     const updateActionItems = async (dir?: "prev" | "next") => {
-        const {
-            things: actionItems,
-            prevCursor,
-            nextCursor,
-        }: {
-            things: InferSelectModel<typeof ActionItem>[];
-            prevCursor?: string;
-            nextCursor?: string;
-        } = await fetch(
-            `/api/actionitems?pageSize=20&ignore=${Object.entries($filtersRef)
-                .filter(([_, v]) => !v)
-                .map(([k, _]) => k)
-                .join(
-                    ",",
-                )}${dir ? `&direction=${dir}&cursor=${dir === "prev" ? $prevCursorRef : $nextCursorRef}` : ""}
-                `,
-        ).then((res) => res.json());
-        actionItems.forEach((item) => {
-            item.date = new Date(item.date);
-        });
-        actionItems.sort((a, b) => b.date.getTime() - a.date.getTime());
+        isFetching = true;
+        try {
+            const {
+                things: actionItems,
+                prevCursor,
+                nextCursor,
+            }: {
+                things: InferSelectModel<typeof ActionItem>[];
+                prevCursor?: string;
+                nextCursor?: string;
+            } = await fetch(
+                `/api/actionitems?pageSize=20&ignore=${Object.entries(
+                    $filtersRef,
+                )
+                    .filter(([_, v]) => !v)
+                    .map(([k, _]) => k)
+                    .join(
+                        ",",
+                    )}${dir ? `&direction=${dir}&cursor=${dir === "prev" ? $prevCursorRef : $nextCursorRef}` : ""}
+                    `,
+            ).then((res) => res.json());
+            actionItems.forEach((item) => {
+                item.date = new Date(item.date);
+            });
+            actionItems.sort((a, b) => b.date.getTime() - a.date.getTime());
 
-        actionItemsRef.set(
-            actionItems.map((item) => ({
-                ...item,
-                action: $actionsRef.find(
-                    (action) => action.id === item.actionID,
-                )!,
-            })),
-        );
-        prevCursorRef.set(prevCursor ? new Date(prevCursor) : undefined);
-        nextCursorRef.set(nextCursor ? new Date(nextCursor) : undefined);
+            actionItemsRef.set(
+                actionItems.map((item) => ({
+                    ...item,
+                    action: $actionsRef.find(
+                        (action) => action.id === item.actionID,
+                    )!,
+                })),
+            );
+            prevCursorRef.set(prevCursor ? new Date(prevCursor) : undefined);
+            nextCursorRef.set(nextCursor ? new Date(nextCursor) : undefined);
+        } catch (error) {
+            console.error("Failed to load action items", error);
+        } finally {
+            isFetching = false;
+        }
     };
 
     let actionsGroupedByUser = $derived(
@@ -83,19 +98,41 @@
     let expandedUsers: Record<string, boolean> = $state({});
 </script>
 
-<div class="pagination">
+<div
+    class="pagination"
+    aria-label="Action items pagination"
+    aria-controls={actionItemsRegionId}
+    aria-busy={isFetching ? "true" : "false"}
+>
     {#if $prevCursorRef}
-        <button onclick={() => updateActionItems("prev")}>Previous</button>
+        <button
+            onclick={() => updateActionItems("prev")}
+            aria-controls={actionItemsRegionId}
+        >
+            Previous
+        </button>
     {/if}
     {#if $nextCursorRef}
-        <button onclick={() => updateActionItems("next")}>Next</button>
+        <button
+            onclick={() => updateActionItems("next")}
+            aria-controls={actionItemsRegionId}
+        >
+            Next
+        </button>
     {/if}
-    <button onclick={() => updateActionItems()}>Reset</button>
+    <button
+        onclick={() => updateActionItems()}
+        aria-controls={actionItemsRegionId}
+    >
+        Reset
+    </button>
 </div>
 {#each Object.entries(actionsGroupedByUser) as [username, actions]}
     <div class="actionUserHeader">
         <button
             onclick={() => (expandedUsers[username] = !expandedUsers[username])}
+            aria-expanded={expandedUsers[username] ?? false}
+            aria-controls={getUserSectionId(username)}
         >
             {username}
             <span class="triangle" class:expanded={expandedUsers[username]}>
@@ -111,7 +148,12 @@
         />
     </div>
     {#if expandedUsers[username]}
-        <ul class="actions">
+        <ul
+            class="actions"
+            id={getUserSectionId(username)}
+            role="group"
+            aria-label={`${username} action filters`}
+        >
             {#each actions as action}
                 <li class="action">
                     {#if action.isRSS}

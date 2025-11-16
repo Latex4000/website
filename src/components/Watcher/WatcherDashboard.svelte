@@ -619,11 +619,11 @@
                 Reset
             </button>
         </div>
-        <div class="sr-only" aria-live="polite" role="status">
-            {#if loading}
-                Loading…
-            {/if}
-        </div>
+        {#if loading}
+            <p class="filters-loading" role="status" aria-live="polite">
+                Loading analytics…
+            </p>
+        {/if}
     </section>
 
     {#if error}
@@ -682,17 +682,6 @@
 </div>
 
 <style>
-    :global(.watcher-dashboard .sr-only) {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        padding: 0;
-        margin: -1px;
-        overflow: hidden;
-        clip: rect(0, 0, 0, 0);
-        border: 0;
-    }
-
     :global(.watcher-dashboard button:focus-visible),
     :global(.watcher-dashboard input:focus-visible) {
         outline: 2px solid var(--text-color);
@@ -728,6 +717,12 @@
     :global(.watcher-dashboard .filters-updated) {
         margin: 0;
         font-size: 0.75em;
+    }
+
+    :global(.watcher-dashboard .filters-loading) {
+        margin: 0;
+        font-style: italic;
+        color: var(--text-color-alt);
     }
 
     :global(.watcher-dashboard .preset-buttons),

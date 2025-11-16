@@ -7,11 +7,24 @@
     import { actionItemsRef } from "../../store/actionsState";
     import linkifyHtml from "linkify-html";
     import { clientHTMLPurify } from "../DOMPurify/client";
+
+    let actionItemCount = $derived($actionItemsRef.length);
 </script>
 
-<ul>
+<ul
+    id={"action-items-feed"}
+    role="feed"
+    aria-live="polite"
+    aria-label="Latest actions"
+    aria-busy={$actionItemsRef.length === 0 ? "true" : "false"}
+>
     {#each $actionItemsRef as item, index}
-        <li class={`actionItem actionItem${index}`}>
+        <li
+            class={`actionItem actionItem${index}`}
+            role="article"
+            aria-posinset={index + 1}
+            aria-setsize={actionItemCount}
+        >
             <strong>
                 <a href={linkChanger(item.url, item.action.type)}
                     >{item.action.username} - {item.action.type}

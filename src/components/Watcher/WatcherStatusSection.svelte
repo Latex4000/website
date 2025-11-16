@@ -32,6 +32,7 @@
 <section
     aria-labelledby="watcher-status-heading"
     aria-busy={props.loading ? "true" : "false"}
+    aria-live="polite"
 >
     <h2 id="watcher-status-heading">Status codes</h2>
     {#if props.data && props.data.rows.length}
@@ -77,8 +78,8 @@
             </div>
         {/if}
     {:else if props.loading}
-        <p>Loading status breakdown…</p>
+        <p role="status">Loading status breakdown…</p>
     {:else}
-        <p>No status data for this range.</p>
+        <p role="status">No status data for this range.</p>
     {/if}
 </section>

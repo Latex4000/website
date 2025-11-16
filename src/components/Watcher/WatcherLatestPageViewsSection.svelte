@@ -31,6 +31,7 @@
 <section
     aria-labelledby="watcher-latest-heading"
     aria-busy={props.loading ? "true" : "false"}
+    aria-live="polite"
 >
     <h2 id="watcher-latest-heading">Latest page hits</h2>
     {#if props.data && props.data.rows.length}
@@ -80,8 +81,8 @@
             </div>
         {/if}
     {:else if props.loading}
-        <p>Loading recent page hits…</p>
+        <p role="status">Loading recent page hits…</p>
     {:else}
-        <p>No recent page hits found.</p>
+        <p role="status">No recent page hits found.</p>
     {/if}
 </section>

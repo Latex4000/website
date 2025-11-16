@@ -175,10 +175,16 @@ const soundsOgImage = sounds[0]
     }
     A lot of us in the group make music. We have released about {sounds.length} sounds
     so far under the LaTeX 4000 name instead of our own:
-    <div class="sounds">
+    <div class="sounds" role="list" aria-label="Sounds list">
         {
             sounds.map((sound) => (
-                <div class="sound" data-sound-id={sound.id}>
+                <article
+                    class="sound"
+                    data-sound-id={sound.id}
+                    role="listitem"
+                    aria-labelledby={`sound-title-${sound.id}`}
+                    aria-describedby={`sound-meta-${sound.id}`}
+                >
                     <img
                         alt={`Cover art for ${sound.title}`}
                         src={`/sounds-uploads/${sound.id}/cover.${sound.coverType}`}
@@ -191,7 +197,7 @@ const soundsOgImage = sounds[0]
                         }}
                     />
                     <div class="details">
-                        <h2>
+                        <h2 id={`sound-title-${sound.id}`}>
                             <a
                                 href={`/sounds/${sound.id}-${toSlug(sound.title)}`}
                             >
@@ -199,7 +205,7 @@ const soundsOgImage = sounds[0]
                             </a>
                         </h2>
                         {/* prettier-ignore */}
-                        <div>
+                        <div id={`sound-meta-${sound.id}`}>
                             {sound.youtubeUrl != null && (
                                 <>
                                     <a href={sound.youtubeUrl}>{/* prettier-ignore */}<span class="y">You</span><span class="t">Tube</span></a>
@@ -235,7 +241,7 @@ const soundsOgImage = sounds[0]
                             ))}
                         </div>
                     </div>
-                </div>
+                </article>
             ))
         }
     </div>

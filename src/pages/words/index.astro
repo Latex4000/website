@@ -72,7 +72,6 @@ const wordsBreadcrumbs = {
         type="application/ld+json"
         set:html={JSON.stringify(wordsBreadcrumbs)}
     />
-    <p>Here are {wordResults.length} words that we have written:</p>
     {
         wordResults.length > 0 ? (
             <ul>
@@ -92,7 +91,7 @@ const wordsBreadcrumbs = {
                 })}
             </ul>
         ) : (
-            <p>No words currently</p>
+            <p role="status">No words currently</p>
         )
     }
 </Layout>

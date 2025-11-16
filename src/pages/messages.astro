@@ -12,17 +12,32 @@ import MessageHeatmap from "../components/Messages/MessageHeatmap.svelte";
     <div>
         <div class="messageOptions">
             <label for="chartType">Chart type:</label>
-            <select id="chartType" aria-label="Select Chart Type">
+            <select
+                id="chartType"
+                aria-label="Select chart type"
+                aria-controls="graphContainer heatmapContainer"
+            >
                 <option value="graph">Graph</option>
                 <option value="heatmap">Heatmap</option>
             </select>
         </div>
 
-        <div id="graphContainer">
+        <div
+            id="graphContainer"
+            role="region"
+            aria-label="Message graph view"
+            aria-hidden="false"
+        >
             <MessageGraph client:visible />
         </div>
 
-        <div id="heatmapContainer" style="display: none;">
+        <div
+            id="heatmapContainer"
+            role="region"
+            aria-label="Message heatmap view"
+            aria-hidden="true"
+            style="display: none;"
+        >
             <MessageHeatmap client:visible />
         </div>
     </div>
@@ -37,9 +52,13 @@ import MessageHeatmap from "../components/Messages/MessageHeatmap.svelte";
             if (selected === "graph") {
                 graphContainer.style.display = "block";
                 heatmapContainer.style.display = "none";
+                graphContainer.setAttribute("aria-hidden", "false");
+                heatmapContainer.setAttribute("aria-hidden", "true");
             } else {
                 graphContainer.style.display = "none";
                 heatmapContainer.style.display = "block";
+                graphContainer.setAttribute("aria-hidden", "true");
+                heatmapContainer.setAttribute("aria-hidden", "false");
             }
         });
     </script>

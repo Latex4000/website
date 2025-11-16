@@ -29,6 +29,9 @@
     let thumbsMode = $state(initialThumbsMode as "high" | "low");
     let isLoading = $state(false);
     let loadedImages = $state<Record<string, boolean>>({});
+    const getOverlayTitleId = (id: number) => `sight-overlay-title-${id}`;
+    const getOverlayDescriptionId = (id: number) =>
+        `sight-overlay-description-${id}`;
 
     function selectSight(sight: Sight) {
         isLoading = true;
@@ -90,6 +93,8 @@
         class="thumbs-mode"
         style="--thumbs-mode: {thumbsMode}"
         onclick={() => selectThumbsMode(thumbsMode === "high" ? "low" : "high")}
+        aria-pressed={thumbsMode === "low"}
+        aria-label="Heh... upload sight.... if u dare"
     >
         {thumbsMode === "high" ? "Upload Sight" : "YOU ARE EVIL"}
     </button>
@@ -105,7 +110,7 @@
                 class="sight"
                 tabindex="0"
                 role="button"
-                aria-pressed="false"
+                aria-pressed={selectedSight?.id === sight.id}
                 onclick={() => selectSight(sight)}
                 onkeydown={(event) =>
                     event.key === "Enter" && selectSight(sight)}
@@ -156,18 +161,33 @@
             tabindex="0"
             role="button"
             aria-pressed="false"
+            aria-label="Show previous sight"
             onclick={() => sightsNav(-1)}
             onkeydown={(event) => event.key === "Enter" && sightsNav(-1)}
         >
             ←
         </div>
-        <div class="overlay-content" tabindex="-1">
+        <div
+            class="overlay-content"
+            tabindex="-1"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={getOverlayTitleId(selectedSight.id)}
+            aria-describedby={getOverlayDescriptionId(selectedSight.id)}
+            aria-live="assertive"
+        >
             <button class="overlay-close" onclick={closeOverlay}>Close</button>
             <div class="overlay-header">
-                <h3 style="color: {selectedSight.memberColor}">
+                <h3
+                    id={getOverlayTitleId(selectedSight.id)}
+                    style="color: {selectedSight.memberColor}"
+                >
                     {selectedSight.title}
                 </h3>
-                <p style="color: {selectedSight.memberColor}">
+                <p
+                    id={getOverlayDescriptionId(selectedSight.id)}
+                    style="color: {selectedSight.memberColor}"
+                >
                     {selectedSight.description}
                 </p>
                 <div class="overlay-tags">
@@ -189,9 +209,14 @@
                     {new Date(selectedSight.date).toLocaleString()}
                 </div>
             </div>
-            <div class="overlay-images">
+            <div
+                class="overlay-images"
+                aria-live="polite"
+                aria-busy={isLoading ? "true" : "false"}
+                role="region"
+            >
                 {#if isLoading}
-                    <p>Loading...</p>
+                    <p role="status" aria-live="assertive">Loading...</p>
                 {/if}
                 {#each selectedSight.fullFilenames as filename}
                     {@const imageUrl = `/sights-uploads/${selectedSight.id}/original/${filename}`}
@@ -225,6 +250,7 @@
             tabindex="0"
             role="button"
             aria-pressed="false"
+            aria-label="Show next sight"
             onclick={() => sightsNav(1)}
             onkeydown={(event) => event.key === "Enter" && sightsNav(1)}
         >

@@ -252,6 +252,14 @@ const homeSchema = {
         name: "LaTeX 4000",
     },
 };
+
+const siteFeedStatus = siteFeed.length
+    ? `Showing ${siteFeed.length} recent site updates.`
+    : "No recent site updates.";
+
+const collectiveFeedStatus = collectiveFeed.length
+    ? `Showing ${collectiveFeed.length} recent posts from the collective.`
+    : "No recent collective updates.";
 ---
 
 <Layout
@@ -316,6 +324,9 @@ const homeSchema = {
         <div class="home-feed__columns">
             <div class="feed-column">
                 <h3>Latest on the site</h3>
+                <p class="feed-status" role="status" aria-live="polite">
+                    {siteFeedStatus}
+                </p>
                 {
                     siteFeed.length > 0 ? (
                         <ul class="feed-list">
@@ -345,9 +356,7 @@ const homeSchema = {
                                 </li>
                             ))}
                         </ul>
-                    ) : (
-                        <p>No recent site updates.</p>
-                    )
+                    ) : undefined
                 }
             </div>
             <div
@@ -355,6 +364,9 @@ const homeSchema = {
                 data-collective={JSON.stringify(collectiveFeed)}
             >
                 <h3>Latest from the collective</h3>
+                <p class="feed-status" role="status" aria-live="polite">
+                    {collectiveFeedStatus}
+                </p>
                 {
                     collectiveFeed.length > 0 ? (
                         <ul class="feed-list">
@@ -388,9 +400,7 @@ const homeSchema = {
                                 </li>
                             ))}
                         </ul>
-                    ) : (
-                        <p>No recent collective updates.</p>
-                    )
+                    ) : undefined
                 }
             </div>
         </div>
@@ -398,6 +408,12 @@ const homeSchema = {
 </Layout>
 
 <style>
+    .feed-status {
+        margin: 0 0 var(--line-height);
+        font-style: italic;
+        color: var(--text-color-alt);
+    }
+
     ul {
         margin-top: var(--home-grid-margin-block-start, 0.5lh);
         padding: 0;
