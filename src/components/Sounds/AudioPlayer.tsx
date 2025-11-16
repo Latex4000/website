@@ -18,14 +18,13 @@ function sanitizeFilename(filename: string): string {
 }
 
 function timestampHtml(currentTime: number, duration: number | undefined): string {
-	if (Number.isNaN(duration) || !Number.isFinite(duration)) {
-		duration = undefined;
-	}
+	const resolvedDuration = duration != null && Number.isFinite(duration) ? duration : undefined;
+	const resolvedCurrentTime = resolvedDuration != null && Number.isFinite(currentTime) ? currentTime : undefined;
 
 	return (
-		`<span>${formatTimestamp(duration && currentTime)}</span>` +
+		`<span>${formatTimestamp(resolvedCurrentTime)}</span>` +
 		"/" +
-		`<span>${formatTimestamp(duration)}</span>`
+		`<span>${formatTimestamp(resolvedDuration)}</span>`
 	);
 }
 
@@ -65,7 +64,7 @@ export function AudioPlayer({ coverUrl, durationGuess, id, src, title, trackType
 			data-audio-title={title}
 			style={{ "--duration": durationGuess }}
 		>
-			<button className="audio-player-play js-audio-player-play">{"|>"}</button>
+			<button className="audio-player-play js-audio-player-play" aria-label="Play sound">{"|>"}</button>
 			<div className="audio-player-bar js-audio-player-bar">
 				{/* <div className="audio-player-bar-fill audio-player-bar-fill-buffered" /> */}
 				<div className="audio-player-bar-fill audio-player-bar-fill-current-time" />
@@ -75,7 +74,7 @@ export function AudioPlayer({ coverUrl, durationGuess, id, src, title, trackType
 				/>
 			</div>
 			{/* <button onClick={onBookmarkClick} className="audio-player-bookmark">*</button> */}
-			<button onClick={onDownloadClick} className="audio-player-download">↓</button>
+			<button onClick={onDownloadClick} className="audio-player-download" aria-label="Download sound">↓</button>
 		</div>
 	);
 }
@@ -101,15 +100,15 @@ export function MasterAudioPlayer() {
 	const [shuffle, setShuffle] = useState(false);
 	const [title, setTitle] = useState("<no sound playing>");
 	const [volume, setVolume] = useState(0.35);
-	const [playHistory, setPlayHistory] = useState<HTMLDivElement[]>([]);
-	const [historyIndex, setHistoryIndex] = useState(-1);
+	const playHistoryRef = useRef<HTMLDivElement[]>([]);
+	const historyIndexRef = useRef(-1);
 
-	const allPlayers = useRef<HTMLDivElement[]>(null);
+	const allPlayers = useRef<HTMLDivElement[]>([]);
 	const currentPlayer = useRef<HTMLDivElement>(null);
 	const audio = useRef(new Audio());
 	const volumeRef = useRef<HTMLDivElement>(null);
 
-	const syncPlayer = () => {
+	const syncPlayer = useCallback(() => {
 		if (currentPlayer.current == null) {
 			return;
 		}
@@ -142,14 +141,14 @@ export function MasterAudioPlayer() {
 		if (button != null) {
 			button.innerText = playing ? "||" : "|>";
 		}
-	};
+	}, []);
 
 	const syncCurrentTime = useCallback(() => {
 		setCurrentTime(audio.current.currentTime);
 		syncPlayer();
-	}, []);
+	}, [syncPlayer]);
 
-	const loadNewPlayer = (player: Element | null, startTime?: (duration: number) => number): void => {
+	const loadNewPlayer = useCallback((player: Element | null, startTime?: (duration: number | undefined) => number): void => {
 		if (
 			!(player instanceof HTMLDivElement) ||
 			!player.dataset.audioCoverUrl ||
@@ -177,70 +176,87 @@ export function MasterAudioPlayer() {
 		currentPlayer.current = player;
 		audio.current.src = player.dataset.audioSrc;
 		audio.current.pause();
+		audio.current.load(); // Resets buffered state apparentyl
 		setCoverUrl(player.dataset.audioCoverUrl);
 		setId(Number.parseInt(player.dataset.audioId, 10));
 		setTitle(player.dataset.audioTitle);
 
-		// TODO this barely works and should probably just keep around old Audio to switch back to
-		audio.current.addEventListener("durationchange", () => {
-			const currentTime = startTime?.(audio.current.duration) ?? newPlayerCurrentTime;
+		const seekAndPlay = () => {
+			const durationValue = Number.isFinite(audio.current.duration)
+				? audio.current.duration
+				: undefined;
+			const desiredStart = startTime?.(durationValue) ?? newPlayerCurrentTime;
+			const safeStart =
+				typeof desiredStart === "number" && Number.isFinite(desiredStart)
+					? desiredStart
+					: 0;
 
-			const intervalId = setInterval(() => {
-				const bufferedEnd = audio.current.buffered.end(audio.current.buffered.length - 1);
+			audio.current.currentTime = safeStart;
+			audio.current.play().catch();
+		};
 
-				if (bufferedEnd >= currentTime) {
-					clearInterval(intervalId);
-					audio.current.currentTime = currentTime;
-					audio.current.play().catch();
-				}
-			}, 25);
-		}, { once: true });
-	};
-
-	const addToHistory = (player: HTMLDivElement) => {
-		setPlayHistory(prev => {
-			const newHistory = [...prev];
-			
-			// If we're not at the end of history, truncate everything after current position
-			setHistoryIndex(currentIndex => {
-				if (currentIndex < newHistory.length - 1) {
-					newHistory.splice(currentIndex + 1);
-				}
-				
-				// Add the new player to history
-				newHistory.push(player);
-				
-				// Keep history trimmed
-				if (newHistory.length > 100) {
-					newHistory.shift();
-					return currentIndex;
-				}
-				
-				return newHistory.length - 1;
-			});
-			
-			return newHistory;
-		});
-	};
-
-	const navigateToTrack = (direction: 'next' | 'prev'): void => {
-		if (!allPlayers.current || !currentPlayer.current) {
-			return;
+		if (Number.isFinite(audio.current.duration)) {
+			seekAndPlay();
+		} else {
+			audio.current.addEventListener("loadedmetadata", seekAndPlay, { once: true });
 		}
+	}, [syncCurrentTime]);
 
-		let targetTrack: HTMLDivElement | null = null;
+	const addToHistory = useCallback((player: HTMLDivElement) => {
+		const history = playHistoryRef.current;
+		const currentIndex = historyIndexRef.current;
 
-		if (direction === 'next') {
-			// If not at the end, return next from history
-			if (historyIndex >= 0 && historyIndex < playHistory.length - 1) {
-				targetTrack = playHistory[historyIndex + 1]!;
-				setHistoryIndex(prev => prev + 1);
-			} else {
+		if (history[currentIndex] === player)
+			return;
+
+		// If we're not at the end of history, truncate everything after current position
+		if (currentIndex >= 0 && currentIndex < history.length - 1)
+			history.splice(currentIndex + 1);
+
+		// Add the new player to history
+		history.push(player);
+
+		// Keep history trimmed
+		if (history.length > 100)
+			history.shift();
+
+		historyIndexRef.current = history.length - 1;
+	}, []);
+
+	const loadPlayerWithHistory = useCallback(
+		(player: HTMLDivElement, startTime?: (duration: number | undefined) => number) => {
+			addToHistory(player);
+			loadNewPlayer(player, startTime);
+		},
+		[addToHistory, loadNewPlayer],
+	);
+
+	const navigateToTrack = useCallback(
+		(direction: "next" | "prev"): void => {
+			if (!allPlayers.current.length || !currentPlayer.current) {
+				return;
+			}
+
+			const history = playHistoryRef.current;
+			const historyIndex = historyIndexRef.current;
+			let targetTrack: HTMLDivElement | null = null;
+
+			if (direction === "next") {
+				// If not at the end, return next from history
+				if (historyIndex >= 0 && historyIndex < history.length - 1) {
+					targetTrack = history[historyIndex + 1] ?? null;
+					if (targetTrack) {
+						historyIndexRef.current = historyIndex + 1;
+						loadNewPlayer(targetTrack);
+					}
+					return;
+				}
+
 				const playerIndex = allPlayers.current.findIndex((player) => player === currentPlayer.current);
 				if (playerIndex >= 0) {
 					let nextPlayerIndex = (playerIndex + 1) % allPlayers.current.length;
 
-					if (shuffle) {
+					if (shuffle && allPlayers.current.length > 1) {
 						// Generate random index that's different from current index
 						const legalIndices = allPlayers.current
 							.map((_, index) => index)
@@ -251,42 +267,40 @@ export function MasterAudioPlayer() {
 						}
 					}
 
-					targetTrack = allPlayers.current[nextPlayerIndex]!;
+					targetTrack = allPlayers.current[nextPlayerIndex] ?? null;
 				} else {
 					// If current player is not found, just return the first player I guess
-					targetTrack = allPlayers.current[0]!;
+					targetTrack = allPlayers.current[0] ?? null;
 				}
-			}
-		} else { // direction === 'prev'
-			// If not at the beginning, go back in history
-			if (historyIndex > 0 && playHistory.length > 1) {
-				targetTrack = playHistory[historyIndex - 1]!;
-				setHistoryIndex(prev => Math.max(0, prev - 1));
-				// Don't add to history when going back
-				loadNewPlayer(targetTrack);
-				return;
-			} else {
-				// If no history or at beginning of history, go to previous track sequentially
+			} else { // direction === 'prev'
+				// If not at the beginning, go back in history
+				if (historyIndex > 0 && history.length > 1) {
+					targetTrack = history[historyIndex - 1] ?? null;
+					if (targetTrack) {
+						historyIndexRef.current = historyIndex - 1;
+						// Don't add to history when going back
+						loadNewPlayer(targetTrack);
+					}
+					return;
+				}
+
 				const playerIndex = allPlayers.current.findIndex((player) => player === currentPlayer.current);
 				if (playerIndex >= 0) {
-					const prevPlayerIndex = playerIndex === 0 
-						? allPlayers.current.length - 1 
+					const prevPlayerIndex = playerIndex === 0
+						? allPlayers.current.length - 1
 						: playerIndex - 1;
-					targetTrack = allPlayers.current[prevPlayerIndex]!;
+					targetTrack = allPlayers.current[prevPlayerIndex] ?? null;
 				} else {
 					// If current player is not found, just return the last player I guess
-					targetTrack = allPlayers.current[allPlayers.current.length - 1]!;
+					targetTrack = allPlayers.current[allPlayers.current.length - 1] ?? null;
 				}
 			}
-		}
 
-		loadPlayerWithHistory(targetTrack);
-	};
-
-	const loadPlayerWithHistory = (player: HTMLDivElement, startTime?: (duration: number) => number): void => {
-		addToHistory(player);
-		loadNewPlayer(player, startTime);
-	};
+			if (targetTrack)
+				loadPlayerWithHistory(targetTrack);
+		},
+		[shuffle, loadNewPlayer, loadPlayerWithHistory],
+	);
 
 	useRequestAnimationFrame(syncCurrentTime, playing);
 
@@ -388,7 +402,7 @@ export function MasterAudioPlayer() {
 			const xRelative = x / targetRect.width;
 
 			// Just fuckin do nothing if no player's found
-			if (!player) {
+			if (!(player instanceof HTMLDivElement)) {
 				return;
 			}
 
@@ -405,10 +419,14 @@ export function MasterAudioPlayer() {
 
 			// Otherwise, load the new player starting at requested time
 			loadPlayerWithHistory(
-				player as HTMLDivElement,
-				(duration) => Number.isNaN(duration) || !Number.isFinite(duration)
-					? 0
-					: xRelative * duration,
+				player,
+				(duration) => {
+					if (duration == null || Number.isNaN(duration) || !Number.isFinite(duration)) {
+						return 0;
+					}
+
+					return xRelative * duration;
+				},
 			);
 		};
 
@@ -419,7 +437,7 @@ export function MasterAudioPlayer() {
 			document.removeEventListener("click", onClick);
 			document.removeEventListener("mouseup", onMouseUp);
 		};
-	}, []);
+	}, [loadPlayerWithHistory]);
 
 	useEffect(() => {
 		// const onCanPlayThrough = () => {
@@ -487,7 +505,7 @@ export function MasterAudioPlayer() {
 			// audio.current.removeEventListener("progress", onProgress);
 			audio.current.removeEventListener("volumechange", onVolumeChange);
 		};
-	}, [shuffle]);
+	}, [navigateToTrack, syncCurrentTime, syncPlayer]);
 
 	// UI event handlers
 	const onBarMouseUp: MouseEventHandler<HTMLDivElement> = (event) => {
@@ -540,25 +558,26 @@ export function MasterAudioPlayer() {
 		navigateToTrack('prev');
 	};
 
-	const onVolumeWheel = (event: WheelEvent) => {
+	const onVolumeWheel = useCallback((event: WheelEvent) => {
 		event.preventDefault();
 
 		const step = event.ctrlKey || event.shiftKey ? 0.01 : 0.05;
-
-		const newVolume = Math.min(Math.max((event.deltaY < 0 ? 1 : -1) * step + audio.current.volume, 0), 1);
+		const delta = event.deltaY < 0 ? 1 : -1;
+		const newVolume = Math.min(Math.max(delta * step + audio.current.volume, 0), 1);
 		audio.current.volume = newVolume;
 		localStorage.setItem('audioPlayerVolume', newVolume.toString());
-	};
+	}, []);
 
 	useEffect(() => {
-		if (volumeRef.current == null) {
+		const element = volumeRef.current;
+		if (element == null) {
 			return;
 		}
 
-		volumeRef.current.addEventListener("wheel", onVolumeWheel, { passive: false });
+		element.addEventListener("wheel", onVolumeWheel, { passive: false });
 
-		return () => volumeRef.current?.removeEventListener("wheel", onVolumeWheel);
-	}, [volumeRef.current]);
+		return () => element.removeEventListener("wheel", onVolumeWheel);
+	}, [onVolumeWheel]);
 
 	// Render
 	return (
@@ -572,9 +591,23 @@ export function MasterAudioPlayer() {
 					"--duration": duration,
 				}}
 			>
-				<button onClick={onPrevTrackClick} className="audio-player-prev">⏮</button>
-				<button onClick={onPlayPauseClick}>{playing ? "||" : "|>"}</button>
-				<button onClick={onNextTrackClick} className="audio-player-next">⏭</button>
+				<button
+					onClick={onPrevTrackClick}
+					className="audio-player-prev"
+					aria-label="Play previous track"
+				>
+					⏮
+				</button>
+				<button onClick={onPlayPauseClick} aria-label={playing ? "Pause track" : "Play track"}>
+					{playing ? "||" : "|>"}
+				</button>
+				<button
+					onClick={onNextTrackClick}
+					className="audio-player-next"
+					aria-label="Play next track"
+				>
+					⏭
+				</button>
 				<div className="audio-player-bar" onMouseUp={onBarMouseUp}>
 					{/* <div className="audio-player-bar-fill audio-player-bar-fill-buffered" /> */}
 					<div className="audio-player-bar-fill audio-player-bar-fill-current-time" />
@@ -586,16 +619,27 @@ export function MasterAudioPlayer() {
 				<button 
 					onClick={onShuffleClick} 
 					className={`audio-player-shuffle ${shuffle ? "audio-player-shuffle-active" : ""}`}
+					aria-label="Toggle shuffle"
+					aria-pressed={shuffle}
 				>
 					⤭
 				</button>
 				<div
 					className={`audio-player-volume-control ${muted ? "audio-player-volume-control-muted" : ""}`}
 					ref={volumeRef}
+					role="status"
+					aria-live="polite"
 				>
 					{Math.round(volume * 100)}%
 				</div>
-				<button onClick={onMuteClick} className="audio-player-mute">{muted ? "U" : "M"}</button>
+				<button
+					onClick={onMuteClick}
+					className="audio-player-mute"
+					aria-label={muted ? "Unmute audio" : "Mute audio"}
+					aria-pressed={muted}
+				>
+					{muted ? "U" : "M"}
+				</button>
 			</div>
 			<div
 				className="web-scrobbler-extension"

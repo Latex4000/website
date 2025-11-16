@@ -212,7 +212,9 @@ const soundsOgImage = sounds[0]
                                     |
                                 </>
                             )}
-                            <span>{sound.date.toLocaleString()}</span>
+                            <time class="sound-date" datetime={sound.date.toISOString()}>
+                                {sound.date.toUTCString()}
+                            </time>
                         </div>
                         <div class="audio-player-container">
                             <AudioPlayer
@@ -229,7 +231,7 @@ const soundsOgImage = sounds[0]
                         </div>
                         <div class="tags">
                             {sound.tags.map((tag) => (
-                                <span>{tag}</span>
+                                <span data-tag={tag}>{tag}</span>
                             ))}
                         </div>
                     </div>
@@ -242,10 +244,44 @@ const soundsOgImage = sounds[0]
 </Layout>
 
 <script is:inline define:vars={{ soundId: Astro.locals.soundId }}>
+    const formatDate = (isoString) => {
+        const date = new Date(isoString);
+        if (Number.isNaN(date.getTime())) return null;
+
+        return date.toLocaleString(navigator.language || "en-US", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        });
+    };
+
+    document.querySelectorAll("time.sound-date").forEach((timeEl) => {
+        const iso = timeEl.getAttribute("datetime");
+        const formatted = iso ? formatDate(iso) : null;
+
+        if (formatted) timeEl.textContent = formatted;
+    });
+
     if (soundId != null) {
-        document
-            .querySelector(`.sound[data-sound-id="${soundId}"]`)
-            ?.scrollIntoView();
+        // Overriding scroll restoration to prevent the browser from fuckinf with scroll position when we try to scroll to the sound.
+        const previous = history.scrollRestoration;
+        history.scrollRestoration = "manual";
+
+        const performScroll = () => {
+            document
+                .querySelector(`.sound[data-sound-id="${soundId}"]`)
+                ?.scrollIntoView();
+            history.scrollRestoration = previous;
+        };
+
+        window.addEventListener(
+            "load",
+            () => requestAnimationFrame(performScroll),
+            { once: true }
+        );
     }
 </script>
 
