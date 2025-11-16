@@ -208,16 +208,6 @@ const onlineCount = await getOnlineVisitorCount(Astro);
 
 <script>
     // Formats timestamps for any <time data-format="localized"> nodes
-    const format: Record<string, Intl.DateTimeFormatOptions> = {
-        datetime: {
-            year: "numeric",
-            month: "short",
-            day: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-        },
-    };
-
     const formatElement = (element: HTMLTimeElement): void => {
         const value =
             element.getAttribute("datetime") || element.dataset.timestamp;
@@ -234,7 +224,11 @@ const onlineCount = await getOnlineVisitorCount(Astro);
 
         try {
             const formatter = new Intl.DateTimeFormat(locale, {
-                ...format.datetime,
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
                 timeZone,
             });
 
