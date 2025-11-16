@@ -320,11 +320,19 @@ export async function getPageViewTotals(
     const overall = await countPageViews();
     const filtered = await countPageViews(filters);
 
+    const comparisonFilters: PageViewFilters = { ...filters };
+    delete comparisonFilters.from;
+    delete comparisonFilters.to;
+
     const comparisonsEntries = await Promise.all(
         Object.entries(presetDurations).map(async ([label, duration]) => {
-            const to = filters.to ? new Date(filters.to) : new Date();
+            const to = new Date();
             const from = new Date(to.getTime() - duration);
-            const value = await countPageViews({ ...filters, from });
+            const value = await countPageViews({
+                ...comparisonFilters,
+                from,
+                to,
+            });
             return [label, value] as const;
         }),
     );

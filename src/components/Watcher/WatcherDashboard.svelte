@@ -221,6 +221,7 @@
     let internalHostList: string[] = $state([]);
 
     let selectedPreset = $state<PresetId | null>(defaultPresetId);
+    let presetAnchored = $state(Boolean(defaultPreset?.durationMs));
     let fromInput = $state(
         defaultRange ? dateToInputValue(defaultRange.from) : "",
     );
@@ -366,8 +367,25 @@
 
         const statusCodes = parseStatusInput(statusInput);
         const params = new URLSearchParams();
-        const fromIso = fromInput ? dateInputToIso(fromInput) : null;
-        const toIso = toInput ? dateInputToIso(toInput, true) : null;
+        const activePreset = selectedPreset
+            ? presets.find((candidate) => candidate.id === selectedPreset)
+            : undefined;
+
+        let fromIso = fromInput ? dateInputToIso(fromInput) : null;
+        let toIso = toInput ? dateInputToIso(toInput, true) : null;
+
+        if (presetAnchored && activePreset?.durationMs) {
+            const { from, to } = computeRange(activePreset.durationMs);
+            fromIso = from.toISOString();
+            toIso = to.toISOString();
+        } else if (
+            presetAnchored &&
+            activePreset &&
+            activePreset.durationMs == null
+        ) {
+            fromIso = null;
+            toIso = null;
+        }
 
         if (fromIso) params.set("from", fromIso);
         if (toIso) params.set("to", toIso);
@@ -420,6 +438,7 @@
 
     function handlePresetClick(preset: Preset) {
         selectedPreset = preset.id;
+        presetAnchored = Boolean(preset.durationMs);
         if (preset.durationMs) {
             const { from, to } = computeRange(preset.durationMs);
             fromInput = dateToInputValue(from);
@@ -439,6 +458,7 @@
 
     function applyFilters() {
         selectedPreset = inferPresetFromInputs();
+        presetAnchored = false;
         fetchAnalytics({ resetPagination: true });
     }
 
@@ -447,6 +467,7 @@
             (candidate) => candidate.id === defaultPresetId,
         );
         selectedPreset = defaultPresetId;
+        presetAnchored = Boolean(preset?.durationMs);
         pagePathInput = "";
         referrerInput = "";
         statusInput = "";
@@ -476,6 +497,7 @@
 
     function handleDateInputChange() {
         selectedPreset = inferPresetFromInputs();
+        presetAnchored = false;
     }
 
     function handleBucketChange(next: BucketId) {
