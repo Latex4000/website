@@ -209,10 +209,7 @@ const onlineCount = await getOnlineVisitorCount(Astro);
 <script>
     // Formats timestamps for any <time data-format="localized"> nodes
     const formatElement = (element: HTMLTimeElement): void => {
-        if (element.dataset.formattedValue) {
-            element.textContent = element.dataset.formattedValue;
-            return;
-        }
+        if (element.dataset.formattedValue) return;
 
         const value =
             element.getAttribute("datetime") || element.dataset.timestamp;
