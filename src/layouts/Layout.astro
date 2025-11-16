@@ -206,6 +206,67 @@ const onlineCount = await getOnlineVisitorCount(Astro);
     </body>
 </html>
 
+<script>
+    // Formats timestamps for any <time data-format="localized"> nodes
+    const format: Record<string, Intl.DateTimeFormatOptions> = {
+        datetime: {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+        },
+    };
+
+    const formatElement = (element: HTMLTimeElement): void => {
+        const value =
+            element.getAttribute("datetime") || element.dataset.timestamp;
+        if (!value) return;
+
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return;
+
+        const locale =
+            element.getAttribute("lang") || navigator.language || "en-US";
+        const timeZone =
+            element.dataset.timezone ||
+            Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+        try {
+            const formatter = new Intl.DateTimeFormat(locale, {
+                ...format.datetime,
+                timeZone,
+            });
+
+            const formatted = formatter.format(date);
+            if (element.dataset.formattedValue === formatted) return;
+
+            element.textContent = formatted;
+            element.dataset.formattedValue = formatted;
+        } catch (error) {
+            console.warn("Failed to format date", error);
+        }
+    };
+
+    const formatAll = (): void => {
+        document
+            .querySelectorAll<HTMLTimeElement>("time[data-format='localized']")
+            .forEach((element) => formatElement(element));
+    };
+
+    const observer = new MutationObserver(formatAll);
+
+    const init = (): void => {
+        formatAll();
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+        });
+    };
+
+    document.addEventListener("DOMContentLoaded", init);
+</script>
+
 <style>
     header {
         margin-block: var(--layout-header-margin-block, 1lh);

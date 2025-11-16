@@ -143,9 +143,14 @@
                     {sight.title}
                     {thumbsMode === "high" ? "(Original)" : "(Remix)"}
                 </h3>
-                <div class="sight__date" style="color: {sight.memberColor}">
-                    {new Date(sight.date).toLocaleString()}
-                </div>
+                <time
+                    class="sight__date"
+                    style="color: {sight.memberColor}"
+                    datetime={sight.date.toISOString()}
+                    data-format="localized"
+                >
+                    {sight.date.toUTCString()}
+                </time>
             </div>
         {/each}
     </div>
@@ -202,12 +207,14 @@
                         {/each}
                     {/if}
                 </div>
-                <div
+                <time
                     class="overlay-date"
                     style="color: {selectedSight.memberColor}"
+                    datetime={selectedSight.date.toISOString()}
+                    data-format="localized"
                 >
-                    {new Date(selectedSight.date).toLocaleString()}
-                </div>
+                    {selectedSight.date.toUTCString()}
+                </time>
             </div>
             <div
                 class="overlay-images"
@@ -303,6 +310,7 @@
         text-align: center;
     }
     .sight__date {
+        display: block;
         color: var(--text-color-alt);
         text-align: center;
     }

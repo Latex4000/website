@@ -48,7 +48,9 @@
                 {/await}
             {/if}
             <br />
-            <small>Date: {item.date.toLocaleString()}</small>
+            <time datetime={item.date.toISOString()} data-format="localized">
+                Date: {item.date.toLocaleString()}
+            </time>
         </li>
     {/each}
 </ul>

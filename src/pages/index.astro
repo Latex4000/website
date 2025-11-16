@@ -335,8 +335,11 @@ const collectiveFeedStatus = collectiveFeed.length
                                     <span class="feed-item__header">
                                         {item.label}
                                     </span>
-                                    <time datetime={item.date.toISOString()}>
-                                        {item.date.toLocaleString()}
+                                    <time
+                                        datetime={item.date.toISOString()}
+                                        data-format="localized"
+                                    >
+                                        {item.date.toUTCString()}
                                     </time>
                                     <a class="feed-item__title" href={item.url}>
                                         {item.title}
@@ -375,8 +378,11 @@ const collectiveFeedStatus = collectiveFeed.length
                                     <span class="feed-item__header">
                                         {item.feedType}
                                     </span>
-                                    <time datetime={item.date.toISOString()}>
-                                        {item.date.toLocaleString()}
+                                    <time
+                                        datetime={item.date.toISOString()}
+                                        data-format="localized"
+                                    >
+                                        {item.date.toUTCString()}
                                     </time>
                                     <a
                                         class="feed-item__title"

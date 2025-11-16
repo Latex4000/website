@@ -115,7 +115,11 @@ const wordBreadcrumbs = {
         type="application/ld+json"
         set:html={JSON.stringify(wordBreadcrumbs)}
     />
-    <small style={{ color: shownColour }}>{word.date.toLocaleString()}</small>
+    <small style={{ color: shownColour }}>
+        <time datetime={word.date.toISOString()} data-format="localized">
+            {word.date.toUTCString()}
+        </time>
+    </small>
     <div class="word-markdown" set:html={purifiedHtml} />
     <p style={{ color: shownColour }}>-L</p>
     <div class="tags">

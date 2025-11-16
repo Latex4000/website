@@ -238,7 +238,9 @@ const motionsOgImage = (() => {
                         <div id={`motion-meta-${motion.id}`}>
                             <a href={motion.youtubeUrl}>{/* prettier-ignore */}<span class="y">You</span><span class="t">Tube</span></a>
                             |
-                            <span>{motion.date.toLocaleString()}</span>
+                            <time datetime={motion.date.toISOString()} data-format="localized">
+                                {motion.date.toUTCString()}
+                            </time>
                         </div>
                         <div class="tags">
                             {motion.tags.map((tag) => (

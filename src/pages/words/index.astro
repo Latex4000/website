@@ -84,7 +84,12 @@ const wordsBreadcrumbs = {
                             <a href={`/words/${wordId(word)}`}>
                                 {word.title}
                                 <br />
-                                {word.date.toLocaleString()}
+                                <time
+                                    datetime={word.date.toISOString()}
+                                    data-format="localized"
+                                >
+                                    {word.date.toUTCString()}
+                                </time>
                             </a>
                         </li>
                     );
