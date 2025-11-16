@@ -39,17 +39,6 @@
         bucketConfig[selectedBucket]?.label ?? selectedBucket,
     );
 
-    const viewsStatus = $derived(() => {
-        if (loading) {
-            return "Loading page hit buckets…";
-        }
-        if (dailyViews.length) {
-            const bucketLabel = selectedBucketLabel.toLowerCase();
-            return `Showing ${dailyViews.length} ${bucketLabel} buckets of page hits.`;
-        }
-        return "No view data available for the selected filters.";
-    });
-
     const numberFormatter = new Intl.NumberFormat();
     const shortDateFormatter = new Intl.DateTimeFormat(undefined, {
         month: "short",
@@ -463,7 +452,6 @@
 >
     <div class="section-heading">
         <h2 id="watcher-views-heading">Page Hits over time</h2>
-        <p class="views-status" role="status">{viewsStatus}</p>
         {#if dailyViews.length}
             <p class="section-note">
                 Times shown in your browser timezone | Grouped by {selectedBucketLabel}.
