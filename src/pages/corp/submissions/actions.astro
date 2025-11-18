@@ -1,5 +1,6 @@
 ---
 import Layout from "../_Layout.astro";
+import "../../../styles/corp-submission-forms.css";
 ---
 
 <Layout>
@@ -158,36 +159,6 @@ import Layout from "../_Layout.astro";
 </script>
 
 <style>
-    form {
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-    }
-
-    label {
-        display: flex;
-        flex-direction: column;
-        gap: 0.35rem;
-        font-weight: 600;
-    }
-
-    input,
-    textarea {
-        padding: 0.5rem;
-        border: 2px solid #333;
-        border-radius: 4px;
-        font-family: inherit;
-        font-size: 1rem;
-        transition: all 0.2s ease;
-    }
-
-    input:focus,
-    textarea:focus {
-        outline: none;
-        border-color: #ebdf35;
-        box-shadow: 0 0 0 3px rgba(235, 223, 53, 0.2);
-    }
-
     fieldset {
         border: 2px solid black;
         padding: 0.75rem 1rem;
@@ -200,103 +171,5 @@ import Layout from "../_Layout.astro";
     legend {
         font-weight: 700;
         padding: 0 0.5rem;
-    }
-
-    .checkbox {
-        flex-direction: row;
-        align-items: center;
-        font-weight: normal;
-        gap: 0.5rem;
-    }
-
-    .submit-button {
-        align-self: flex-start;
-        padding: 0.75rem 1.5rem;
-        font-weight: 700;
-        font-size: 1rem;
-        background: #ebdf35;
-        border: 2px solid black;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    .submit-button:hover:not(:disabled) {
-        background: #f7ef83;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-    }
-
-    .submit-button:active:not(:disabled) {
-        transform: translateY(0);
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-    }
-
-    .submit-button:disabled {
-        opacity: 0.7;
-        cursor: not-allowed;
-    }
-
-    .button-spinner {
-        animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
-    }
-
-    .status {
-        min-height: 1.5rem;
-        font-weight: 600;
-        padding: 0.75rem 1rem;
-        border-radius: 6px;
-        transition: all 0.3s ease;
-    }
-
-    .status--loading {
-        background: #e3f2fd;
-        border: 2px solid #2196f3;
-        animation: pulse 1.5s ease-in-out infinite;
-    }
-
-    .status--success {
-        background: #e8f5e9;
-        border: 2px solid #4caf50;
-        animation: slideIn 0.3s ease;
-    }
-
-    .status--error {
-        background: #ffebee;
-        border: 2px solid #f44336;
-        animation: shake 0.5s ease;
-    }
-
-    @keyframes pulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.7; }
-    }
-
-    @keyframes slideIn {
-        from {
-            opacity: 0;
-            transform: translateY(-10px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    @keyframes shake {
-        0%, 100% { transform: translateX(0); }
-        25% { transform: translateX(-10px); }
-        75% { transform: translateX(10px); }
-    }
-
-    @keyframes successPulse {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.02); }
     }
 </style>

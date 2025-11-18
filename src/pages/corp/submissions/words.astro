@@ -1,11 +1,12 @@
 ---
 import Layout from "../_Layout.astro";
+import "../../../styles/corp-submission-forms.css";
 
 const markdownLimit = 2 ** 20;
 ---
 
 <Layout>
-    <h1>Submit Words</h1>
+    <h1>Submit Words 📝</h1>
     <p>
         Paste Markdown content for a words post and optionally include a zip of
         assets.
@@ -53,114 +54,50 @@ const markdownLimit = 2 ** 20;
             This is my own work
         </label>
 
-        <button type="submit">Submit Words</button>
+        <button type="submit" class="submit-button">
+            <span class="button-text">Submit Words</span>
+            <span class="button-spinner" style="display: none;">⏳</span>
+        </button>
     </form>
 
     <p id="word-status" class="status" role="status" aria-live="polite"></p>
 </Layout>
 
 <script type="module">
+    import { setupFormHandler } from "../../../components/corp/formHandler";
+
     const form = document.getElementById("word-form");
-    const status = document.getElementById("word-status");
     const markdownLimit =
         form instanceof HTMLFormElement && form.dataset.markdownLimit
             ? Number(form.dataset.markdownLimit)
             : 2 ** 20;
 
-    async function handleSubmit(event) {
-        event.preventDefault();
-        if (
-            !(form instanceof HTMLFormElement) ||
-            !(status instanceof HTMLElement)
-        )
-            return;
-
-        const markdownInput = form.querySelector('textarea[name="md"]');
-        if (!(markdownInput instanceof HTMLTextAreaElement)) return;
-
-        const markdown = markdownInput.value;
-        if (!markdown.trim()) {
-            status.textContent = "Markdown content is required";
-            return;
-        }
-
-        if (markdown.length > markdownLimit) {
-            status.textContent = `Markdown must be under ${markdownLimit} characters`;
-            return;
-        }
-
-        status.textContent = "Submitting…";
-
-        try {
-            const response = await fetch(form.action, {
-                method: "POST",
-                body: new FormData(form),
-            });
-            const text = await response.text();
-            let payload;
-            try {
-                payload = JSON.parse(text);
-            } catch {
-                payload = null;
+    setupFormHandler({
+        formId: "word-form",
+        statusId: "word-status",
+        successMessage: "✅ Words submitted successfully!",
+        validateFn: (form) => {
+            const markdownInput = form.querySelector('textarea[name="md"]');
+            if (!(markdownInput instanceof HTMLTextAreaElement)) {
+                return "Markdown textarea not found";
             }
 
-            if (!response.ok) {
-                const errorMessage =
-                    payload && typeof payload === "object" && "error" in payload
-                        ? payload.error
-                        : text || "Request failed";
-                status.textContent = String(errorMessage);
-                return;
+            const markdown = markdownInput.value;
+            if (!markdown.trim()) {
+                return "Markdown content is required";
             }
 
-            status.textContent = "Uploaded successfully";
-            form.reset();
-        } catch (error) {
-            status.textContent =
-                error instanceof Error ? error.message : "Unknown error";
-        }
-    }
+            if (markdown.length > markdownLimit) {
+                return `Markdown must be under ${markdownLimit} characters`;
+            }
 
-    if (form) form.addEventListener("submit", handleSubmit);
+            return null;
+        },
+    });
 </script>
 
 <style>
-    form {
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-    }
-
-    label {
-        display: flex;
-        flex-direction: column;
-        gap: 0.35rem;
-        font-weight: 600;
-    }
-
     textarea[name="md"] {
         font-family: monospace;
-    }
-
-    .checkbox {
-        flex-direction: row;
-        align-items: center;
-        font-weight: normal;
-        gap: 0.5rem;
-    }
-
-    button {
-        align-self: flex-start;
-        padding: 0.6rem 1rem;
-        font-weight: 600;
-        background: #ebdf35;
-        border: 2px solid black;
-        border-radius: 4px;
-        cursor: pointer;
-    }
-
-    .status {
-        min-height: 1.5rem;
-        font-weight: 600;
     }
 </style>

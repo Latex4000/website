@@ -1,9 +1,10 @@
 ---
 import Layout from "../_Layout.astro";
+import "../../../styles/corp-submission-forms.css";
 ---
 
 <Layout>
-    <h1>Submit a Sight</h1>
+    <h1>Submit a Sight 🖼️</h1>
     <p>
         Upload images (or a zip) for a sight. We will split spritesheets the
         same way the bot does.
@@ -61,108 +62,49 @@ import Layout from "../_Layout.astro";
             This is my own work
         </label>
 
-        <button type="submit">Submit Sight</button>
+        <button type="submit" class="submit-button">
+            <span class="button-text">Submit Sight</span>
+            <span class="button-spinner" style="display: none;">⏳</span>
+        </button>
     </form>
+
+    <div id="upload-progress" class="upload-progress" style="display: none;">
+        <div class="progress-bar">
+            <div class="progress-fill"></div>
+        </div>
+        <p class="progress-text">Uploading... 0%</p>
+    </div>
 
     <p id="sight-status" class="status" role="status" aria-live="polite"></p>
 </Layout>
 
 <script type="module">
-    const form = document.getElementById("sight-form");
-    const status = document.getElementById("sight-status");
+    import { setupFormHandler } from "../../../components/corp/formHandler";
 
-    async function handleSubmit(event) {
-        event.preventDefault();
-        if (
-            !(form instanceof HTMLFormElement) ||
-            !(status instanceof HTMLElement)
-        )
-            return;
-
-        const assetInputs = form.querySelectorAll('input[name="assets"]');
-        let hasAsset = false;
-        assetInputs.forEach((input) => {
-            if (
-                input instanceof HTMLInputElement &&
-                input.files &&
-                input.files.length > 0
-            )
-                hasAsset = true;
-        });
-
-        if (!hasAsset) {
-            status.textContent = "Please attach at least one image or zip";
-            return;
-        }
-
-        status.textContent = "Submitting…";
-
-        try {
-            const response = await fetch(form.action, {
-                method: "POST",
-                body: new FormData(form),
+    setupFormHandler({
+        formId: "sight-form",
+        statusId: "sight-status",
+        progressId: "upload-progress",
+        successMessage: "✅ Sight uploaded successfully!",
+        useXHR: true,
+        validateFn: (form) => {
+            const assetInputs = form.querySelectorAll('input[name="assets"]');
+            let hasAsset = false;
+            assetInputs.forEach((input) => {
+                if (
+                    input instanceof HTMLInputElement &&
+                    input.files &&
+                    input.files.length > 0
+                )
+                    hasAsset = true;
             });
-            const text = await response.text();
-            let payload;
-            try {
-                payload = JSON.parse(text);
-            } catch {
-                payload = null;
+
+            if (!hasAsset) {
+                return "Please attach at least one image or zip";
             }
-
-            if (!response.ok) {
-                const errorMessage =
-                    payload && typeof payload === "object" && "error" in payload
-                        ? payload.error
-                        : text || "Request failed";
-                status.textContent = String(errorMessage);
-                return;
-            }
-
-            status.textContent = "Uploaded successfully";
-            form.reset();
-        } catch (error) {
-            status.textContent =
-                error instanceof Error ? error.message : "Unknown error";
-        }
-    }
-
-    if (form) form.addEventListener("submit", handleSubmit);
+            return null;
+        },
+    });
 </script>
 
-<style>
-    form {
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-    }
 
-    label {
-        display: flex;
-        flex-direction: column;
-        gap: 0.35rem;
-        font-weight: 600;
-    }
-
-    .checkbox {
-        flex-direction: row;
-        align-items: center;
-        font-weight: normal;
-        gap: 0.5rem;
-    }
-
-    button {
-        align-self: flex-start;
-        padding: 0.6rem 1rem;
-        font-weight: 600;
-        background: #ebdf35;
-        border: 2px solid black;
-        border-radius: 4px;
-        cursor: pointer;
-    }
-
-    .status {
-        min-height: 1.5rem;
-        font-weight: 600;
-    }
-</style>
