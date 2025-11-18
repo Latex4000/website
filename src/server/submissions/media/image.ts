@@ -17,6 +17,11 @@ export function checkImageAspectRatio(imagePath: string): Promise<ImageAspectRes
                 }
 
                 const [widthString, heightString] = stdout.trim().split("x");
+                if (!widthString || !heightString) {
+                    reject(new Error("Invalid image dimensions"));
+                    return;
+                }
+
                 const width = Number.parseFloat(widthString);
                 const height = Number.parseFloat(heightString);
 
