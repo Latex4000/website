@@ -1,0 +1,20 @@
+---
+import Layout from "../layouts/Layout.astro";
+import OmarcordChat from "../components/Omarcord/OmarcordChat.svelte";
+
+export const prerender = false;
+---
+
+<Layout
+    header="Omarcord"
+    title="Omarcord - Real-time Chat"
+    description="A Discord-like chat room for everyone visiting this page"
+>
+    <p>
+        Welcome to Omarcord! This is a real-time chat room where you can talk
+        with anyone else who's currently visiting this page. Just enter a
+        username and start chatting!
+    </p>
+
+    <OmarcordChat client:load />
+</Layout>

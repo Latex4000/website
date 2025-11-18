@@ -173,3 +173,12 @@ export const PageView = sqliteTable("PageView", {
     index("PageView_createdAt_idx").on(table.createdAt),
     index("PageView_path_createdAt_idx").on(table.path, table.createdAt),
 ]);
+
+export const OmarcordMessage = sqliteTable("OmarcordMessage", {
+    id: integer().primaryKey({ autoIncrement: true }),
+    username: text().notNull(),
+    message: text().notNull(),
+    createdAt: date().default(sql`CURRENT_TIMESTAMP`).notNull(),
+}, (table) => [
+    index("OmarcordMessage_createdAt_idx").on(table.createdAt),
+]);
