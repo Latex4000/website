@@ -61,6 +61,10 @@ export const POST: APIRoute = async ({ request }) => {
 
         const newMessage = result[0];
 
+        if (!newMessage) {
+            return jsonError("Failed to create message", 500);
+        }
+
         return jsonResponse({
             message: {
                 id: newMessage.id,
