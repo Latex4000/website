@@ -2,11 +2,11 @@
 import Layout from "../_Layout.astro";
 
 const pages = [
-    { href: "/corp/submissions/motions", label: "Motions" },
-    { href: "/corp/submissions/sounds", label: "Sounds" },
-    { href: "/corp/submissions/sights", label: "Sights" },
-    { href: "/corp/submissions/actions", label: "Actions" },
-    { href: "/corp/submissions/words", label: "Words" },
+    { href: "/corp/submissions/motions", label: "Motions", icon: "🎬", description: "Videos & GIFs" },
+    { href: "/corp/submissions/sounds", label: "Sounds", icon: "🎵", description: "Audio tracks" },
+    { href: "/corp/submissions/sights", label: "Sights", icon: "🖼️", description: "Images & art" },
+    { href: "/corp/submissions/actions", label: "Actions", icon: "⚡", description: "Links & feeds" },
+    { href: "/corp/submissions/words", label: "Words", icon: "📝", description: "Text posts" },
 ];
 ---
 
@@ -15,7 +15,13 @@ const pages = [
     <p>Pick the type of submission you would like to add to the site.</p>
 
     <nav class="submission-links">
-        {pages.map((page) => <a href={page.href}>{page.label}</a>)}
+        {pages.map((page) => (
+            <a href={page.href} class="submission-card">
+                <span class="submission-icon">{page.icon}</span>
+                <span class="submission-label">{page.label}</span>
+                <span class="submission-description">{page.description}</span>
+            </a>
+        ))}
     </nav>
 
     <p>
@@ -28,25 +34,64 @@ const pages = [
 <style>
     .submission-links {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-        gap: 12px;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 16px;
         margin: 1.5rem 0;
     }
 
-    .submission-links a {
-        display: block;
+    .submission-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
         border: 2px solid black;
-        border-radius: 6px;
-        padding: 0.85rem 1rem;
+        border-radius: 8px;
+        padding: 1.25rem 1rem;
         text-align: center;
-        font-weight: 600;
         color: black;
         text-decoration: none;
         background: #ebdf35;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
-    .submission-links a:hover,
-    .submission-links a:focus {
+    .submission-card:hover,
+    .submission-card:focus {
         background: #f7ef83;
+        transform: translateY(-4px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .submission-icon {
+        font-size: 2.5rem;
+        line-height: 1;
+        margin-bottom: 0.5rem;
+        animation: bounce 0.6s ease;
+    }
+
+    .submission-card:hover .submission-icon {
+        animation: wiggle 0.5s ease;
+    }
+
+    .submission-label {
+        font-weight: 700;
+        font-size: 1.1rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .submission-description {
+        font-size: 0.85rem;
+        opacity: 0.8;
+        font-weight: 500;
+    }
+
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-8px); }
+    }
+
+    @keyframes wiggle {
+        0%, 100% { transform: rotate(0deg); }
+        25% { transform: rotate(-10deg); }
+        75% { transform: rotate(10deg); }
     }
 </style>
