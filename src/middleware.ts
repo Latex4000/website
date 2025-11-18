@@ -14,8 +14,20 @@ const checkHmacForApi = defineMiddleware(async (context, next) => {
     if (
         context.request.method === "GET" && (
             context.url.pathname.startsWith("/api/action") ||
-            context.url.pathname.startsWith("/api/watcher")
+            context.url.pathname.startsWith("/api/watcher") ||
+            // Allow public reads of Omarcord messages
+            context.url.pathname.startsWith("/api/omarcord")
         )
+    ) {
+        return next();
+    }
+
+    // Allow public posts to Omarcord (frontend posts) without HMAC validation.
+    // Omarcord is a public chat that accepts non-authenticated messages. We still
+    // validate content server-side (length/content checks), but skip HMAC for the route
+    // so that the client can POST directly.
+    if (
+        context.request.method === "POST" && context.url.pathname.startsWith("/api/omarcord")
     ) {
         return next();
     }

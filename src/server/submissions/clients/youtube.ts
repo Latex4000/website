@@ -37,7 +37,7 @@ class YoutubeClient {
         if (!this.auth)
             return;
 
-        this.auth.on("tokens", async (tokens) => {
+    this.auth.on("tokens", async (tokens: Auth.Credentials) => {
             if (tokens.refresh_token)
                 await writeFile("ytToken.json", JSON.stringify(tokens));
         });
