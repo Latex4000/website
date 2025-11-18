@@ -1,0 +1,172 @@
+[
+  {
+    "pattern": "Claude-Web",
+    "url": "https://www.anthropic.com",
+    "instances": [
+      "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Claude-Web/1.0; +https://www.anthropic.com)"
+    ]
+  },
+  {
+    "pattern": "[Aa]nthropic-?[Aa][Ii]",
+    "url": "http://www.anthropic.com/bot.html",
+    "instances": [
+      "Mozilla/5.0 (compatible; anthropic-ai/1.0; +http://www.anthropic.com/bot.html)",
+      "Mozilla/5.0 (compatible; Anthropic-AI/1.0; +http://www.anthropic.com/bot.html)"
+    ]
+  },
+  {
+    "pattern": "Google-Extended",
+    "url": "http://www.google.com/bot.html",
+    "instances": [
+      "Mozilla/5.0 (compatible; Google-Extended/1.0; +http://www.google.com/bot.html)"
+    ]
+  },
+  {
+    "pattern": "cohere-ai",
+    "url": "http://www.cohere.ai/bot.html",
+    "instances": [
+      "Mozilla/5.0 (compatible; cohere-ai/1.0; +http://www.cohere.ai/bot.html)"
+    ]
+  },
+  {
+    "pattern": "Omgilibot",
+    "url": "http://www.omgili.com/Crawler.html",
+    "instances": [
+      "Mozilla/5.0 (compatible; Omgilibot/1.0; +http://www.omgili.com/Crawler.html)"
+    ]
+  },
+  {
+    "pattern": "Amazonbot",
+    "url": "https://developer.amazon.com/support/amazonbot",
+    "instances": [
+      "Mozilla/5.0 (compatible; Amazonbot/0.1; +https://developer.amazon.com/support/amazonbot)"
+    ]
+  },
+  {
+    "pattern": "ImagesiftBot",
+    "url": "http://imagesift.com",
+    "instances": [
+      "Mozilla/5.0 (compatible; ImagesiftBot; +imagesift.com)"
+    ]
+  },
+  {
+    "pattern": "Diffbot",
+    "url": "http://www.diffbot.com",
+    "instances": [
+      "Mozilla/5.0 (compatible; Diffbot/1.0; +http://www.diffbot.com)"
+    ]
+  },
+  {
+    "pattern": "AI2Bot",
+    "url": "https://allenai.org/",
+    "instances": [
+      "Mozilla/5.0 (compatible; AI2Bot/1.0; +https://allenai.org/)"
+    ]
+  },
+  {
+    "pattern": "YouBot",
+    "url": "https://about.you.com/youbot/",
+    "instances": [
+      "Mozilla/5.0 (compatible; YouBot/1.0; +https://about.you.com/youbot/)"
+    ]
+  },
+  {
+    "pattern": "Applebot-Extended",
+    "url": "https://support.apple.com/en-us/119829",
+    "instances": [
+      "Mozilla/5.0 (compatible; Applebot-Extended/1.0; +https://support.apple.com/en-us/119829)"
+    ]
+  },
+  {
+    "pattern": "CCBot",
+    "url": "https://commoncrawl.org/faq/",
+    "instances": [
+      "CCBot/2.0 (https://commoncrawl.org/faq/)"
+    ]
+  },
+  {
+    "pattern": "FacebookBot",
+    "url": "https://developers.facebook.com/docs/sharing/webmasters/crawler",
+    "instances": [
+      "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)",
+      "Mozilla/5.0 (compatible; FacebookBot/1.0; +https://developers.facebook.com/docs/sharing/webmasters/crawler)"
+    ]
+  },
+  {
+    "pattern": "anthropic",
+    "url": "https://www.anthropic.com",
+    "instances": [
+      "anthropic-ai",
+      "Claude-Web",
+      "ClaudeBot"
+    ]
+  },
+  {
+    "pattern": "Timpibot",
+    "url": "https://www.timpi.io",
+    "instances": [
+      "Mozilla/5.0 (compatible; Timpibot/1.0; +https://www.timpi.io)"
+    ]
+  },
+  {
+    "pattern": "Kangaroo Bot",
+    "url": "https://kangaroosearch.com",
+    "instances": [
+      "Mozilla/5.0 (compatible; Kangaroo Bot/1.0; +https://kangaroosearch.com)"
+    ]
+  },
+  {
+    "pattern": "peer39_crawler",
+    "url": "https://www.peer39.com",
+    "instances": [
+      "peer39_crawler"
+    ]
+  },
+  {
+    "pattern": "IAS[- ]?Crawler",
+    "url": "https://integralads.com",
+    "instances": [
+      "IAS-Crawler",
+      "IAS Crawler"
+    ]
+  },
+  {
+    "pattern": "Scrapy",
+    "url": "https://scrapy.org",
+    "instances": [
+      "Scrapy/2.11.0 (+https://scrapy.org)"
+    ]
+  },
+  {
+    "pattern": "python-requests",
+    "instances": [
+      "python-requests/2.31.0"
+    ]
+  },
+  {
+    "pattern": "Go-http-client",
+    "instances": [
+      "Go-http-client/1.1",
+      "Go-http-client/2.0"
+    ]
+  },
+  {
+    "pattern": "axios",
+    "instances": [
+      "axios/1.6.0"
+    ]
+  },
+  {
+    "pattern": "curl",
+    "instances": [
+      "curl/7.88.1",
+      "curl/8.0.0"
+    ]
+  },
+  {
+    "pattern": "wget",
+    "instances": [
+      "Wget/1.21.3"
+    ]
+  }
+]
