@@ -3,17 +3,16 @@ import type { APIRoute } from "astro";
 import { eq, type InferSelectModel } from "drizzle-orm";
 import { jsonError, jsonResponse } from "../../server/responses";
 import { mkdir, writeFile } from "fs/promises";
-import { createWriteStream, ReadStream } from "fs";
 import { Marked } from "marked";
 import { baseUrl as markedBaseUrl } from "marked-base-url";
 import { markedEmoji } from "marked-emoji";
 import { execFileSync } from "child_process";
-import { finished } from "stream/promises";
 import { thingDeletion, thingGet } from "../../server/thingUtils";
 import { serverHTMLPurify } from "../../components/DOMPurify/server";
 import { getMap } from "../../data/emoji";
 import db, { retryIfDbBusy, wordId } from "../../database/db";
 import { Member, Word } from "../../database/schema";
+import { writeBlobToFile } from "../../server/webApi";
 
 export const prerender = false;
 
@@ -136,11 +135,7 @@ export const POST: APIRoute = async (context) => {
     await writeFile(`${directory}/words.md`, md, "utf8");
 
     for (const file of assetFiles) {
-        await finished(
-            ReadStream.fromWeb(file.stream()).pipe(
-                createWriteStream(`${directory}/${file.name}`),
-            ),
-        );
+        await writeBlobToFile(`${directory}/${file.name}`, file);
     }
 
     // Upload compiled HTML file
