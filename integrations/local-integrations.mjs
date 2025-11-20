@@ -36,7 +36,7 @@ const hook = async ({ command, logger, updateConfig }) => {
         if (command === "build" || await access(join(integrationPath, "dist")).catch(() => true)) {
             logger.info(`Building "${integrationEntry.name}"`);
 
-            execFileSync("tsc", ["-p", integrationPath], { stdio: "inherit" });
+            execFileSync("tsc", { cwd: integrationPath, stdio: "inherit" });
         }
 
         try {
