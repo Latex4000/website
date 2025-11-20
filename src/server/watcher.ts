@@ -282,6 +282,14 @@ function validForAnalytics(context: AstroSharedContext): boolean {
 }
 
 export async function recordPageView(context: AstroSharedContext, response: Response): Promise<void> {
+    // This special response header will be present on the entire rewrite stack, so to filter out rewrites we additionally check if the origin pathname is different from the current pathname. This would be incorrect in cases where the origin pathname actually does appear further into the rewrite stack but I can't figure out how to differentiate rewrites from normal requests at that point, and hopefully it'll never come up...
+    if (
+        response.headers.has("X-Astro-Rewrite") &&
+        context.originPathname !== new URL(context.request.url).pathname
+    ) {
+        return;
+    }
+
     if (
         context.locals.skipRecordPageView ||
         !validForAnalytics(context) ||
