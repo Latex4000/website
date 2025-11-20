@@ -1,5 +1,5 @@
 import { LibsqlError } from "@libsql/client";
-import type { APIContext, APIRoute } from "astro";
+import type { APIContext, APIRoute, RewritePayload } from "astro";
 import { and, eq } from "drizzle-orm";
 import { jsonError, jsonResponse } from "./responses";
 import { paginationQuery, parseNumberCursor } from "./pagination";
@@ -95,10 +95,7 @@ export function thingColourHandler<T extends { memberColor: string, showColour: 
     });
 }
 
-export function thingIDRewriteRoute(resourceName: string): APIRoute {
-    const localKey = `${resourceName.slice(0, -1)}Id` as keyof App.Locals;
-    const rewritePath = `/${resourceName}`;
-
+export function thingIDRewriteRoute(rewritePayload: RewritePayload, localKey: "motionId" | "sightId" | "soundId"): APIRoute {
     return (context) => {
         const idMatch = context.params.id?.match(/^\d+/);
 
@@ -106,10 +103,9 @@ export function thingIDRewriteRoute(resourceName: string): APIRoute {
             return new Response(null, { status: 404 });
         }
 
-        // If it's not any it fucking says bullshit like 'Number is not assignable to type never' like a dumbass so
-        (context.locals as any)[localKey] = Number.parseInt(idMatch[0], 10);
+        context.locals[localKey] = Number.parseInt(idMatch[0], 10);
 
-        return context.rewrite(rewritePath);
+        return context.rewrite(rewritePayload);
     };
 }
 
