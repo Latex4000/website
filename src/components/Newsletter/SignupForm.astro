@@ -1,0 +1,153 @@
+---
+const categories = [
+    { value: "sound", label: "Sounds" },
+    { value: "sight", label: "Sights" },
+    { value: "motion", label: "Motions" },
+    { value: "word", label: "Words" },
+];
+---
+
+<section class="newsletter-section">
+    <h2>Get Updates</h2>
+    <p>Give Us Your Email to get updated when we upload bullshit here</p>
+
+    <form class="newsletter-form" data-newsletter-form>
+        <label class="newsletter-form__field">
+            <span>Email address</span>
+            <input type="email" name="email" required autocomplete="email" />
+        </label>
+
+        <fieldset class="newsletter-form__field">
+            <legend>What u wanna get notified for</legend>
+            {
+                categories.map((category) => (
+                    <label class="newsletter-checkbox">
+                        <input
+                            type="checkbox"
+                            name="categories"
+                            value={category.value}
+                            checked
+                        />
+                        <span>{category.label}</span>
+                    </label>
+                ))
+            }
+        </fieldset>
+
+        <button type="submit" class="newsletter-form__submit"> Sign up </button>
+        <p
+            class="newsletter-form__status"
+            data-newsletter-message
+            role="status"
+            aria-live="polite"
+        >
+        </p>
+    </form>
+</section>
+
+<style>
+    .newsletter-section {
+        display: grid;
+        gap: var(--space-sm, 1lh);
+        padding: var(--space-sm, 1lh);
+        border: var(--border-thickness, 1px) solid
+            var(--text-color, currentColor);
+        max-width: 32rem;
+    }
+
+    .newsletter-form {
+        display: grid;
+        gap: var(--space-sm, 1lh);
+    }
+
+    .newsletter-form__field {
+        display: grid;
+        gap: var(--space-xs, 0.5lh);
+    }
+
+    .newsletter-checkbox {
+        display: flex;
+        gap: var(--space-xs, 0.5lh);
+        align-items: center;
+    }
+
+    .newsletter-form__submit {
+        width: fit-content;
+    }
+
+    .newsletter-form__status {
+        margin: 0;
+        min-height: 1lh;
+        font-size: 0.9em;
+    }
+</style>
+
+<script is:inline>
+    const form = document.querySelector("[data-newsletter-form]");
+    const message = document.querySelector("[data-newsletter-message]");
+
+    if (form instanceof HTMLFormElement && message instanceof HTMLElement) {
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const submitButton = form.querySelector('button[type="submit"]');
+            if (submitButton instanceof HTMLButtonElement) {
+                submitButton.disabled = true;
+                submitButton.textContent = "Sending…";
+            }
+
+            message.textContent = "";
+
+            const categories = Array.from(
+                form.querySelectorAll('input[name="categories"]:checked')
+            )
+                .map((input) =>
+                    input instanceof HTMLInputElement ? input.value : null
+                )
+                .filter((value) => Boolean(value));
+
+            const emailField = form.querySelector('input[name="email"]');
+            const email =
+                emailField instanceof HTMLInputElement ? emailField.value : "";
+
+            if (categories.length === 0) {
+                message.textContent = "Select at least one category.";
+                if (submitButton instanceof HTMLButtonElement) {
+                    submitButton.disabled = false;
+                    submitButton.textContent = "Sign up";
+                }
+                return;
+            }
+
+            try {
+                const response = await fetch("/api/subscribers", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, categories }),
+                });
+
+                const data = await response.json().catch(() => ({}));
+
+                if (!response.ok) {
+                    message.textContent =
+                        data.error ?? "Something went wrong. Try again later.";
+                } else if (data.status === "pendingVerification") {
+                    form.reset();
+                    message.textContent =
+                        "Check your inbox for a verification email.";
+                } else {
+                    message.textContent = "Preferences saved. Thanks!";
+                }
+            } catch (error) {
+                console.error("Failed to submit newsletter form", error);
+                message.textContent =
+                    "Could not submit the form. Try again later.";
+            } finally {
+                if (submitButton instanceof HTMLButtonElement) {
+                    submitButton.disabled = false;
+                    submitButton.textContent = "Sign up";
+                }
+            }
+        });
+    }
+</script>
