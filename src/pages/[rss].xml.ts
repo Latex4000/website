@@ -10,6 +10,14 @@ function slug(slugType: string, id: number, title: string): string {
     return `/${slugType}/${id}-${title.toLowerCase().replaceAll(/[\s_-]+/g, "-")}`;
 }
 
+function feedType(rss: string): string {
+    if (rss.endsWith("_sounds")) return "Sounds";
+    if (rss.endsWith("_sights")) return "Sights";
+    if (rss.endsWith("_motions")) return "Motions";
+    if (rss.endsWith("_words")) return "Words";
+    return "";
+}
+
 export const GET: APIRoute = async ({ site, params }) => {
     const things: {
         id?: number;
@@ -80,7 +88,7 @@ export const GET: APIRoute = async ({ site, params }) => {
     ];
 
     return rss({
-        title: "LaTeX 4000's Words",
+        title: `LaTeX 4000's ${params.rss ? `${feedType(params.rss)} ` : " "}Feed`,
         description: "A collection of things by members in LaTeX 4000. For more specific feeds, see the /rss_sounds.xml, /rss_sights.xml, /rss_motions.xml, and /rss_words.xml",
         site: site ?? "",
         items: combinedItems.sort((a, b) => b.pubDate.getTime() - a.pubDate.getTime()).slice(0, 20),
