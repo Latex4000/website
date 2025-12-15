@@ -1,6 +1,8 @@
 import type { AstroSharedContext } from "astro";
 import { createHash } from "node:crypto";
+import { isIP } from "node:net";
 import db, { retryIfDbBusy } from "../database/db";
+import isBlockedReferrerHost from "./isBlockedReferrer";
 import isCrawlerUserAgent from "./isCrawlerUserAgent";
 import {
     Action,
@@ -281,6 +283,26 @@ function validForAnalytics(context: AstroSharedContext): boolean {
     return true;
 }
 
+function shouldSkipPageViewForReferrer(referrer: string | null): boolean {
+    if (!referrer)
+        return false;
+
+    const host = normalizeHostCandidate(referrer);
+
+    if (!host)
+        return true;
+
+    if (isIP(host))
+        return true;
+
+    if (isBlockedReferrerHost(host))
+        return true;
+
+    // Add checks as we need them here basically
+
+    return false;
+}
+
 export async function recordPageView(context: AstroSharedContext, response: Response): Promise<void> {
     // This special response header will be present on the entire rewrite stack, so to filter out rewrites we additionally check if the origin pathname is different from the current pathname. This would be incorrect in cases where the origin pathname actually does appear further into the rewrite stack but I can't figure out how to differentiate rewrites from normal requests at that point, and hopefully it'll never come up...
     if (
@@ -299,10 +321,15 @@ export async function recordPageView(context: AstroSharedContext, response: Resp
         return;
     }
 
+    const rawReferrer = context.request.headers.get("Referer");
+    const referrer = rawReferrer && rawReferrer.trim().length ? rawReferrer.trim() : null;
+    if (shouldSkipPageViewForReferrer(referrer))
+        return;
+
     const fields = {
         path: context.url.pathname,
         status: response.status,
-        referrer: context.request.headers.get("Referer"),
+        referrer,
     };
 
     if (!context.isPrerendered) {
