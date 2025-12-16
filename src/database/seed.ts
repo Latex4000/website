@@ -1,5 +1,6 @@
+import { hash, randomBytes } from "node:crypto";
 import { faker } from "@faker-js/faker";
-import { ActionFactory, ActionItemFactory, MemberFactory, MotionFactory, SightFactory, SoundFactory, WordFactory } from "./factories";
+import { ActionFactory, ActionItemFactory, MemberFactory, MotionFactory, SightFactory, SoundFactory, WordFactory, TicketFactory } from "./factories";
 
 export default async function seed() {
     const members = await new MemberFactory().count(20).create();
@@ -11,6 +12,13 @@ export default async function seed() {
             alias: "Developer",
             discord: process.env.DEVELOPER_DISCORD_ID,
         }));
+        const ticket = randomBytes(20);
+        await new TicketFactory().create({
+            memberDiscord: process.env.DEVELOPER_DISCORD_ID,
+            createdAt: new Date(),
+            hash: hash("sha256", ticket, "base64"),
+        });
+        console.log("Developer ticket: ", ticket.toString("base64url"));
     }
 
     const actions = await new ActionFactory().count(10).create({
