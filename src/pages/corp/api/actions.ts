@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 import type { InferSelectModel } from "drizzle-orm";
 import { jsonError, jsonResponse, JsonResponseError } from "../../../server/responses";
 import { Action } from "../../../database/schema";
-import { processActionSubmission, requireCorpMember, postJsonToSiteApi, tryPostToDiscordFeed } from "../../../server/submissions";
+import { postJsonToBot, requireCorpMember } from "../../../server/submissions";
 
 export const prerender = false;
 
@@ -27,40 +27,21 @@ export const POST: APIRoute = async (context) => {
     if (!link || isRSS == null)
         return jsonError("Missing link or isRSS flag");
 
-    let processed: Awaited<ReturnType<typeof processActionSubmission>>;
     try {
-        processed = await processActionSubmission({
-            link,
-            isRSS,
-            title: titleOverride,
-            description: descriptionOverride,
-        });
-    } catch (error) {
-        return jsonError(error instanceof Error ? error.message : "Failed to process RSS feed");
-    }
-
-    let upstream: { action: InferSelectModel<typeof Action> };
-    try {
-        upstream = await postJsonToSiteApi<{ action: InferSelectModel<typeof Action> }>(context, "/api/actions", {
-            memberDiscord: member.discord,
-            title: processed.title,
-            description: processed.description,
-            url: processed.link,
-            siteUrl: processed.link,
-            isRSS: processed.isRSS,
-        });
+        const response = await postJsonToBot<{ action: InferSelectModel<typeof Action>; feedTitle?: string | null }>(
+            "/things/actions",
+            {
+                discord: member.discord,
+                link,
+                isRSS,
+                title: titleOverride,
+                description: descriptionOverride,
+            },
+        );
+        return jsonResponse(response);
     } catch (error) {
         if (error instanceof JsonResponseError)
             return error.response;
         throw error;
     }
-
-    await tryPostToDiscordFeed(
-        `<@${member.discord}> added an action\nTitle: ${upstream.action.title}\nLink: ${upstream.action.siteUrl}`,
-    );
-
-    return jsonResponse({
-        ...upstream,
-        feedTitle: processed.feedTitle,
-    });
 };
