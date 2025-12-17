@@ -76,6 +76,7 @@ const markdownLimit = 2 ** 20;
             return;
 
         const markdownInput = form.querySelector('textarea[name="md"]');
+        const assetsInput = form.querySelector('input[name="assets"]');
         if (!(markdownInput instanceof HTMLTextAreaElement)) return;
 
         const markdown = markdownInput.value;
@@ -87,6 +88,16 @@ const markdownLimit = 2 ** 20;
         if (markdown.length > markdownLimit) {
             status.textContent = `Markdown must be under ${markdownLimit} characters`;
             return;
+        }
+
+        if (assetsInput instanceof HTMLInputElement && assetsInput.files?.length) {
+            const file = assetsInput.files[0];
+            const type = file.type.toLowerCase();
+            const name = file.name.toLowerCase();
+            if (type && !type.includes("zip") && !name.endsWith(".zip")) {
+                status.textContent = "Assets must be uploaded as a .zip file";
+                return;
+            }
         }
 
         status.textContent = "Submitting…";
