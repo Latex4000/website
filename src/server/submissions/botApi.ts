@@ -16,10 +16,7 @@ function getBotHmacKey(): string {
     return secret;
 }
 
-type BotBody = FormData | string | null;
-type BotHeaders = Record<string, string> | undefined;
-
-async function requestBot<T>(path: string, body: BotBody, headers?: BotHeaders): Promise<T> {
+async function requestBot<T>(path: string, body: FormData | string | null, headers?: Record<string, string>): Promise<T> {
     const baseUrl = getBotBaseUrl();
     const secret = getBotHmacKey();
     const target = new URL(path, baseUrl);
@@ -57,7 +54,7 @@ async function requestBot<T>(path: string, body: BotBody, headers?: BotHeaders):
 }
 
 export function postJsonToBot<T>(path: string, payload: unknown): Promise<T> {
-    const headers: BotHeaders = { "Content-Type": "application/json" };
+    const headers = { "Content-Type": "application/json" };
     return requestBot(path, JSON.stringify(payload), headers);
 }
 
