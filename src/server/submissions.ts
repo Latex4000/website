@@ -22,18 +22,20 @@ function getBotHmacKey(): string {
     return secret;
 }
 
-async function requestBot<T>(path: string, body: FormData | string | null, headers?: Record<string, string>): Promise<T> {
+async function requestBot<T>(path: string, body: FormData | string | null, headers?: HeadersInit): Promise<T> {
     const baseUrl = getBotBaseUrl();
     const secret = getBotHmacKey();
     const target = new URL(path, baseUrl);
 
     let response: Response;
+    const init: RequestInit = {
+        method: "POST",
+        body,
+    };
+    if (headers)
+        init.headers = headers;
     try {
-        response = await fetchWithHmac(secret, target, {
-            method: "POST",
-            headers,
-            body,
-        });
+        response = await fetchWithHmac(secret, target, init);
     } catch (error) {
         console.error("Failed to contact submission bot", error);
         throw new JsonResponseError("Failed to reach submission service", 502);

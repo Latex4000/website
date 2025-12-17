@@ -4,9 +4,7 @@ import Layout from "../_Layout.astro";
 
 <Layout>
     <h1>Submit an Action</h1>
-    <p>
-        Share a link or RSS feed for the activity log.
-    </p>
+    <p>Share a link or RSS feed for the activity log.</p>
 
     <form id="action-form" action="/corp/api/actions" method="post">
         <label>
@@ -42,7 +40,7 @@ import Layout from "../_Layout.astro";
     <p id="action-status" class="status" role="status" aria-live="polite"></p>
 </Layout>
 
-<script type="module">
+<script is:inline type="module">
     const form = document.getElementById("action-form");
     const status = document.getElementById("action-status");
 

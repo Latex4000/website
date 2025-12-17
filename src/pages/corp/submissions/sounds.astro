@@ -4,9 +4,7 @@ import Layout from "../_Layout.astro";
 
 <Layout>
     <h1>Submit a Sound</h1>
-    <p>
-        Upload an audio track along with artwork (and optional video).
-    </p>
+    <p>Upload an audio track along with artwork (and optional video).</p>
 
     <form
         id="sound-form"
@@ -85,7 +83,7 @@ import Layout from "../_Layout.astro";
     <p id="sound-status" class="status" role="status" aria-live="polite"></p>
 </Layout>
 
-<script type="module">
+<script is:inline type="module">
     const form = document.getElementById("sound-form");
     const status = document.getElementById("sound-status");
 

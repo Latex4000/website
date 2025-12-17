@@ -4,9 +4,7 @@ import Layout from "../_Layout.astro";
 
 <Layout>
     <h1>Submit a Motion</h1>
-    <p>
-        Upload a motion.
-    </p>
+    <p>Upload a motion.</p>
 
     <form
         id="motion-form"
@@ -65,7 +63,7 @@ import Layout from "../_Layout.astro";
     <p id="motion-status" class="status" role="status" aria-live="polite"></p>
 </Layout>
 
-<script type="module">
+<script is:inline type="module">
     const form = document.getElementById("motion-form");
     const status = document.getElementById("motion-status");
 
