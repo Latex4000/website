@@ -1,0 +1,167 @@
+---
+import Layout from "../_Layout.astro";
+---
+
+<Layout>
+    <h1>Submit a Sight</h1>
+    <p>
+        Upload images (or a zip) for a sight.
+    </p>
+
+    <form
+        id="sight-form"
+        action="/corp/api/sights"
+        method="post"
+        enctype="multipart/form-data"
+    >
+        <label>
+            Title
+            <input type="text" name="title" required />
+        </label>
+
+        <label>
+            Description
+            <textarea name="description" rows="3" required></textarea>
+        </label>
+
+        <label>
+            Tags (comma separated)
+            <input type="text" name="tags" />
+        </label>
+
+        <label>
+            Images or Zip (1 MB per file)
+            <input
+                type="file"
+                name="assets"
+                accept="image/png,image/jpeg,image/gif,application/zip"
+                multiple
+                required
+            />
+        </label>
+
+        <label class="checkbox">
+            <input type="checkbox" name="pixelated" />
+            Mark as pixel art
+        </label>
+
+        <label class="checkbox">
+            <input type="checkbox" name="colour" checked />
+            Show colour for this sight
+        </label>
+
+        <label class="checkbox">
+            <input type="checkbox" name="confirmInformation" required />
+            I confirm the information is correct
+        </label>
+
+        <label class="checkbox">
+            <input type="checkbox" name="confirmOwnWork" required />
+            This is my own work
+        </label>
+
+        <button type="submit">Submit Sight</button>
+    </form>
+
+    <p id="sight-status" class="status" role="status" aria-live="polite"></p>
+</Layout>
+
+<script type="module">
+    const form = document.getElementById("sight-form");
+    const status = document.getElementById("sight-status");
+
+    async function handleSubmit(event) {
+        event.preventDefault();
+        if (
+            !(form instanceof HTMLFormElement) ||
+            !(status instanceof HTMLElement)
+        )
+            return;
+
+        const assetInputs = form.querySelectorAll('input[name="assets"]');
+        let hasAsset = false;
+        assetInputs.forEach((input) => {
+            if (
+                input instanceof HTMLInputElement &&
+                input.files &&
+                input.files.length > 0
+            )
+                hasAsset = true;
+        });
+
+        if (!hasAsset) {
+            status.textContent = "Please attach at least one image or zip";
+            return;
+        }
+
+        status.textContent = "Submitting…";
+
+        try {
+            const response = await fetch(form.action, {
+                method: "POST",
+                body: new FormData(form),
+            });
+            const text = await response.text();
+            let payload;
+            try {
+                payload = JSON.parse(text);
+            } catch {
+                payload = null;
+            }
+
+            if (!response.ok) {
+                const errorMessage =
+                    payload && typeof payload === "object" && "error" in payload
+                        ? payload.error
+                        : text || "Request failed";
+                status.textContent = String(errorMessage);
+                return;
+            }
+
+            status.textContent = "Uploaded successfully";
+            form.reset();
+        } catch (error) {
+            status.textContent =
+                error instanceof Error ? error.message : "Unknown error";
+        }
+    }
+
+    if (form) form.addEventListener("submit", handleSubmit);
+</script>
+
+<style>
+    form {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    label {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        font-weight: 600;
+    }
+
+    .checkbox {
+        flex-direction: row;
+        align-items: center;
+        font-weight: normal;
+        gap: 0.5rem;
+    }
+
+    button {
+        align-self: flex-start;
+        padding: 0.6rem 1rem;
+        font-weight: 600;
+        background: #ebdf35;
+        border: 2px solid black;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .status {
+        min-height: 1.5rem;
+        font-weight: 600;
+    }
+</style>

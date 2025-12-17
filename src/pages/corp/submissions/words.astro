@@ -1,0 +1,177 @@
+---
+import Layout from "../_Layout.astro";
+
+const markdownLimit = 2 ** 20;
+---
+
+<Layout>
+    <h1>Submit Words</h1>
+    <p>
+        Paste Markdown content for a words post (and optionally include a zip of
+        assets).
+    </p>
+
+    <form
+        id="word-form"
+        action="/corp/api/words"
+        method="post"
+        enctype="multipart/form-data"
+        data-markdown-limit={markdownLimit}
+    >
+        <label>
+            Title
+            <input type="text" name="title" required />
+        </label>
+
+        <label>
+            Markdown
+            <textarea name="md" rows="10" required></textarea>
+        </label>
+
+        <label>
+            Tags (comma separated)
+            <input type="text" name="tags" />
+        </label>
+
+        <label>
+            Optional Assets Zip
+            <input type="file" name="assets" accept="application/zip" />
+        </label>
+
+        <label class="checkbox">
+            <input type="checkbox" name="colour" checked />
+            Show colour for this entry
+        </label>
+
+        <label class="checkbox">
+            <input type="checkbox" name="confirmInformation" required />
+            I confirm the information is correct
+        </label>
+
+        <label class="checkbox">
+            <input type="checkbox" name="confirmOwnWork" required />
+            This is my own work
+        </label>
+
+        <button type="submit">Submit Words</button>
+    </form>
+
+    <p id="word-status" class="status" role="status" aria-live="polite"></p>
+</Layout>
+
+<script type="module">
+    const form = document.getElementById("word-form");
+    const status = document.getElementById("word-status");
+    const markdownLimit =
+        form instanceof HTMLFormElement && form.dataset.markdownLimit
+            ? Number(form.dataset.markdownLimit)
+            : 2 ** 20;
+
+    async function handleSubmit(event) {
+        event.preventDefault();
+        if (
+            !(form instanceof HTMLFormElement) ||
+            !(status instanceof HTMLElement)
+        )
+            return;
+
+        const markdownInput = form.querySelector('textarea[name="md"]');
+        const assetsInput = form.querySelector('input[name="assets"]');
+        if (!(markdownInput instanceof HTMLTextAreaElement)) return;
+
+        const markdown = markdownInput.value;
+        if (!markdown.trim()) {
+            status.textContent = "Markdown content is required";
+            return;
+        }
+
+        if (markdown.length > markdownLimit) {
+            status.textContent = `Markdown must be under ${markdownLimit} characters`;
+            return;
+        }
+
+        if (assetsInput instanceof HTMLInputElement && assetsInput.files?.length) {
+            const file = assetsInput.files[0];
+            const type = file.type.toLowerCase();
+            const name = file.name.toLowerCase();
+            if (type && !type.includes("zip") && !name.endsWith(".zip")) {
+                status.textContent = "Assets must be uploaded as a .zip file";
+                return;
+            }
+        }
+
+        status.textContent = "Submitting…";
+
+        try {
+            const response = await fetch(form.action, {
+                method: "POST",
+                body: new FormData(form),
+            });
+            const text = await response.text();
+            let payload;
+            try {
+                payload = JSON.parse(text);
+            } catch {
+                payload = null;
+            }
+
+            if (!response.ok) {
+                const errorMessage =
+                    payload && typeof payload === "object" && "error" in payload
+                        ? payload.error
+                        : text || "Request failed";
+                status.textContent = String(errorMessage);
+                return;
+            }
+
+            status.textContent = "Uploaded successfully";
+            form.reset();
+        } catch (error) {
+            status.textContent =
+                error instanceof Error ? error.message : "Unknown error";
+        }
+    }
+
+    if (form) form.addEventListener("submit", handleSubmit);
+</script>
+
+<style>
+    form {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    label {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        font-weight: 600;
+    }
+
+    textarea[name="md"] {
+        font-family: monospace;
+    }
+
+    .checkbox {
+        flex-direction: row;
+        align-items: center;
+        font-weight: normal;
+        gap: 0.5rem;
+    }
+
+    button {
+        align-self: flex-start;
+        padding: 0.6rem 1rem;
+        font-weight: 600;
+        background: #ebdf35;
+        border: 2px solid black;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .status {
+        min-height: 1.5rem;
+        font-weight: 600;
+    }
+</style>

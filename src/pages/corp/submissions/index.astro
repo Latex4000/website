@@ -1,0 +1,52 @@
+---
+import Layout from "../_Layout.astro";
+
+const pages = [
+    { href: "/corp/submissions/motions", label: "Motions" },
+    { href: "/corp/submissions/sounds", label: "Sounds" },
+    { href: "/corp/submissions/sights", label: "Sights" },
+    { href: "/corp/submissions/actions", label: "Actions" },
+    { href: "/corp/submissions/words", label: "Words" },
+];
+---
+
+<Layout>
+    <h1>Submissions</h1>
+    <p>Pick the type of submission you would like to add to the site.</p>
+
+    <nav class="submission-links">
+        {pages.map((page) => <a href={page.href}>{page.label}</a>)}
+    </nav>
+
+    <p>
+        Each form mirrors the Discord bot commands. Make sure you are
+        logged into the corp portal before submitting so your Discord
+        information carries through.
+    </p>
+</Layout>
+
+<style>
+    .submission-links {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 12px;
+        margin: 1.5rem 0;
+    }
+
+    .submission-links a {
+        display: block;
+        border: 2px solid black;
+        border-radius: 6px;
+        padding: 0.85rem 1rem;
+        text-align: center;
+        font-weight: 600;
+        color: black;
+        text-decoration: none;
+        background: #ebdf35;
+    }
+
+    .submission-links a:hover,
+    .submission-links a:focus {
+        background: #f7ef83;
+    }
+</style>
