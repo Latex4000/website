@@ -59,7 +59,7 @@ const markdownLimit = 2 ** 20;
     <p id="word-status" class="status" role="status" aria-live="polite"></p>
 </Layout>
 
-<script type="module">
+<script is:inline type="module">
     const form = document.getElementById("word-form");
     const status = document.getElementById("word-status");
     const markdownLimit =
@@ -90,7 +90,10 @@ const markdownLimit = 2 ** 20;
             return;
         }
 
-        if (assetsInput instanceof HTMLInputElement && assetsInput.files?.length) {
+        if (
+            assetsInput instanceof HTMLInputElement &&
+            assetsInput.files?.length
+        ) {
             const file = assetsInput.files[0];
             const type = file.type.toLowerCase();
             const name = file.name.toLowerCase();
