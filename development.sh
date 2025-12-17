@@ -13,7 +13,6 @@ export ANALYTICS_FINGERPRINT_SECRET='dev'
 export CORPORATE_URL=
 export CRAWLER_UA_JSON='dev/crawler-user-agents.json'
 export DATABASE_URL="file:./$database"
-export DISCORD_FEED_WEBHOOK=
 export DIGITALOCEAN_DNS_TOKEN=
 export LATEX_WEB_SYSTEMD_UNIT=
 export SECRET_HMAC_KEY='dev'
