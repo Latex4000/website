@@ -4,7 +4,7 @@
 
 ## Dependencies
 
-- Node.js 22 (or use the provided [`nvm`](https://github.com/nvm-sh/nvm) config)
+- Node.js 22 (or use the provided [mise](https://mise.jdx.dev/) config)
 
 ## Development setup
 
