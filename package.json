@@ -7,8 +7,8 @@
         "lint": "eslint .",
         "build": "./build.sh",
         "deploy": "./deploy.sh",
-        "db:pull": "rsync -pv nonacademic.net:latex-server/latex.db latex.db",
-        "db:push-evil": "rsync -pv latex.db nonacademic.net:latex-server/latex.db"
+        "db:pull": "rsync -pv nonacademic.net:/opt/nonacademic/server/latex.db latex.db",
+        "db:push-evil": "rsync -pv latex.db nonacademic.net:/opt/nonacademic/server/latex.db"
     },
     "dependencies": {
         "@astrojs/check": "^0.9.5",
