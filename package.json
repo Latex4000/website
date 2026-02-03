@@ -8,7 +8,7 @@
         "build": "./build.sh",
         "deploy": "./deploy.sh",
         "db:pull": "rsync -v nonacademic.net:/opt/nonacademic/server/latex.db latex.db",
-        "db:push-evil": "rsync -v latex.db nonacademic.net:/opt/nonacademic/server/latex.db"
+        "db:push-evil": "rsync -v --chmod=ugo=rwX latex.db nonacademic.net:/opt/nonacademic/server/latex.db"
     },
     "dependencies": {
         "@astrojs/check": "^0.9.5",
