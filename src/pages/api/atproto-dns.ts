@@ -16,6 +16,15 @@ export const PUT: APIRoute = async ({ request }) => {
         return jsonError("Invalid body");
     }
 
+    if (
+        process.env.RESERVED_SUBDOMAINS &&
+        process.env.RESERVED_SUBDOMAINS.split(";").includes(params.subdomain)
+    ) {
+        return jsonError(
+            `Subdomain "${params.subdomain}" is reserved and cannot be used as an alias or atproto record`,
+        );
+    }
+
     const wildcardRecords = await getRecords({
         name: "*",
         type: "A",
@@ -42,11 +51,17 @@ export const PUT: APIRoute = async ({ request }) => {
 export const DELETE: APIRoute = async ({ request }) => {
     const params = await request.json();
 
-    if (
-        typeof params.subdomain !== "string" ||
-        !params.subdomain
-    ) {
+    if (typeof params.subdomain !== "string" || !params.subdomain) {
         return jsonError("Invalid body");
+    }
+
+    if (
+        process.env.RESERVED_SUBDOMAINS &&
+        process.env.RESERVED_SUBDOMAINS.split(";").includes(params.subdomain)
+    ) {
+        return jsonError(
+            `Subdomain "${params.subdomain}" is reserved and cannot be deleted`,
+        );
     }
 
     const records = await getRecords({});
