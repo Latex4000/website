@@ -20,7 +20,7 @@ function parseDbDate(value: any) {
 }
 
 function slugify(slugType: string, id: number, title: string): string {
-    return `/${slugType}/${id}-${title.toLowerCase().replaceAll(/[\s_-]+/g, "-")}`;
+    return `/${slugType}s/${id}-${title.toLowerCase().replaceAll(/[\s_-]+/g, "-")}`;
 }
 
 function escapeHtml(value: string) {
