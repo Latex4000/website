@@ -4,7 +4,7 @@ import { Subscriber, SubscriberPreference } from "../database/schema";
 import { sendEmail } from "../components/Newsletter/smtp";
 
 const HOURS = 24;
-const SITE_URL = "https://nonacademic.net";
+const SITE_URL = import.meta.env.PUBLIC_SITE_URL ?? "https://nonacademic.net";
 
 type thingType = "sound" | "motion" | "sight" | "word";
 
