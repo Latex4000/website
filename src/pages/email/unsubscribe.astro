@@ -3,16 +3,13 @@ import Layout from "../../layouts/Layout.astro";
 import db, { retryIfDbBusy } from "../../database/db";
 import { Subscriber } from "../../database/schema";
 import { eq } from "drizzle-orm";
-import { randomBytes } from "node:crypto";
+
+export const prerender = false;
 
 type Status = "missing" | "invalid" | "already" | "success";
 
 const token = Astro.url.searchParams.get("token");
 let status: Status = "missing";
-
-function createToken(): string {
-    return randomBytes(24).toString("hex");
-}
 
 if (!token) {
     status = "missing";
@@ -33,8 +30,7 @@ if (!token) {
                 db
                     .update(Subscriber)
                     .set({
-                        unsubscribeToken: createToken(),
-                        verifyToken: createToken(),
+                        verifiedAt: null,
                         unsubscribedAt: new Date(),
                     })
                     .where(eq(Subscriber.id, subscriber.id))
@@ -79,7 +75,8 @@ if (!token) {
     }
     {
         status === "success" ? (
-            <p>Yo, you have been unsubscribed. Don't die.</p>
+            <p>Yo, you have been unsubscribed. Don't die. Submit the form again
+                if you'd like to rejoin.</p>
         ) : undefined
     }
 </Layout>

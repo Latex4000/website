@@ -3,16 +3,13 @@ import Layout from "../../layouts/Layout.astro";
 import db, { retryIfDbBusy } from "../../database/db";
 import { Subscriber } from "../../database/schema";
 import { eq } from "drizzle-orm";
-import { randomBytes } from "node:crypto";
+
+export const prerender = false;
 
 type Status = "missing" | "invalid" | "already" | "success";
 
 const token = Astro.url.searchParams.get("token");
 let status: Status = "missing";
-
-function createToken(): string {
-    return randomBytes(24).toString("hex");
-}
 
 if (!token) {
     status = "missing";
@@ -36,7 +33,6 @@ if (!token) {
                 db
                     .update(Subscriber)
                     .set({
-                        verifyToken: createToken(),
                         verifiedAt: new Date(),
                         unsubscribedAt: null,
                     })
