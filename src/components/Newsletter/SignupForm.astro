@@ -125,7 +125,7 @@ const categories = [
             }
 
             try {
-                const response = await fetch("/api/subscribers", {
+                const response = await fetch("/subscribe", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ email, categories }),

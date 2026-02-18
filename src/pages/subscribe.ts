@@ -1,10 +1,10 @@
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
 import { randomBytes } from "node:crypto";
-import db, { retryIfDbBusy } from "../../database/db";
-import { Subscriber, SubscriberPreference } from "../../database/schema";
-import { jsonError, jsonResponse } from "../../server/responses";
-import { sendEmail } from "../../components/Newsletter/smtp";
+import db, { retryIfDbBusy } from "../database/db";
+import { Subscriber, SubscriberPreference } from "../database/schema";
+import { jsonError, jsonResponse } from "../server/responses";
+import { sendEmail } from "../components/Newsletter/smtp";
 
 export const prerender = false;
 
