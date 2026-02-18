@@ -194,32 +194,13 @@ export const SubscriberPreference = sqliteTable("SubscriberPreference", {
     index("SubscriberPreference_subscriber_idx").on(table.subscriberId),
 ]);
 
-export const DeliveryLog = sqliteTable("DeliveryLog", {
-    id: integer().primaryKey({ autoIncrement: true }),
-    subscriberId: integer().notNull().references(() => Subscriber.id, { onDelete: "cascade" }),
-    digestDate: text().notNull(),
-    payloadHash: text().notNull(),
-    sentAt: date().default(sql`CURRENT_TIMESTAMP`).notNull(),
-}, (table) => [
-    uniqueIndex("DeliveryLog_subscriber_digest_hash_idx").on(table.subscriberId, table.digestDate, table.payloadHash),
-    index("DeliveryLog_digestDate_idx").on(table.digestDate),
-]);
-
 export const SubscriberRelations = relations(Subscriber, ({ many }) => ({
     preferences: many(SubscriberPreference),
-    deliveries: many(DeliveryLog),
 }));
 
 export const SubscriberPreferenceRelations = relations(SubscriberPreference, ({ one }) => ({
     subscriber: one(Subscriber, {
         fields: [SubscriberPreference.subscriberId],
-        references: [Subscriber.id],
-    }),
-}));
-
-export const DeliveryLogRelations = relations(DeliveryLog, ({ one }) => ({
-    subscriber: one(Subscriber, {
-        fields: [DeliveryLog.subscriberId],
         references: [Subscriber.id],
     }),
 }));
