@@ -15,6 +15,9 @@ const checkHmacForApi = defineMiddleware(async (context, next) => {
         context.request.method === "GET" && (
             context.url.pathname.startsWith("/api/action") ||
             context.url.pathname.startsWith("/api/watcher")
+        ) ||
+        context.request.method === "POST" && (
+            context.url.pathname.startsWith("/api/subscribers")
         )
     ) {
         return next();
