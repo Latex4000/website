@@ -111,7 +111,7 @@ async function sendNewsletter() {
     }
 
     const newsletterDate = new Date().toISOString().slice(0, 10);
-    const subject = `LaTeX 4000 updates for ${newsletterDate}`;
+    const subject = `Updates for ${newsletterDate}`;
     const intro = `New stuff in the last ${HOURS === 24 ? "day" : `${HOURS} hours`}.`
 
     console.log(`[newsletter] Sending newsletter with subject "${subject}" to ${Object.keys(subscribers).length} subscribers...`);
