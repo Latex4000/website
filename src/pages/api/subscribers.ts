@@ -4,6 +4,7 @@ import { randomBytes } from "node:crypto";
 import db, { retryIfDbBusy } from "../../database/db";
 import { Subscriber, SubscriberPreference } from "../../database/schema";
 import { jsonError, jsonResponse } from "../../server/responses";
+import { sendEmail } from "../../components/Newsletter/smtp";
 
 export const prerender = false;
 
@@ -24,47 +25,6 @@ function isValidEmail(email: string): boolean {
 
 function createToken(): string {
     return randomBytes(24).toString("hex");
-}
-
-async function sendEmail(to: string, subject: string, html: string, text: string): Promise<void> {
-    const apiKey = process.env.BREVO_API_KEY;
-    const senderEmail = process.env.BREVO_SENDER_EMAIL;
-    const senderName = process.env.BREVO_SENDER_NAME ?? "LaTeX 4000";
-
-    if (!apiKey || !senderEmail) {
-        if (import.meta.env.DEV) {
-            console.info("[newsletter] Email send skipped (missing Brevo config)", {
-                to,
-                subject,
-                html,
-                text,
-            });
-            return;
-        }
-
-        throw new Error("Email service is not configured");
-    }
-
-    const response = await fetch("https://api.brevo.com/v3/smtp/email", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            accept: "application/json",
-            "api-key": apiKey,
-        },
-        body: JSON.stringify({
-            sender: { email: senderEmail, name: senderName },
-            to: [{ email: to }],
-            subject,
-            htmlContent: html,
-            textContent: text,
-        }),
-    });
-
-    if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Brevo API error: ${response.status} ${errorText}`);
-    }
 }
 
 function buildVerificationEmail(baseUrl: string, token: string, categories: ("sound" | "motion" | "sight" | "word")[]): { subject: string; html: string; text: string } {
@@ -207,7 +167,7 @@ export const POST: APIRoute = async (context) => {
     const { subject, html, text } = buildVerificationEmail(baseUrl, verificationToken!, categories); // eslint-disable-line @typescript-eslint/no-non-null-assertion
 
     try {
-        await sendEmail(email, subject, html, text);
+        await sendEmail(subject, html, text, email);
     } catch (error) {
         return jsonError(error instanceof Error ? error.message : "Failed to send verification email", 500);
     }
