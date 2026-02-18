@@ -173,3 +173,34 @@ export const PageView = sqliteTable("PageView", {
     index("PageView_createdAt_idx").on(table.createdAt),
     index("PageView_path_createdAt_idx").on(table.path, table.createdAt),
 ]);
+
+export const Subscriber = sqliteTable("Subscriber", {
+    id: integer().primaryKey({ autoIncrement: true }),
+    email: text().notNull().unique(),
+    verifyToken: text().notNull().unique(),
+    unsubscribeToken: text().notNull().unique(),
+    createdAt: date().default(sql`CURRENT_TIMESTAMP`).notNull(),
+    verifiedAt: date(),
+    unsubscribedAt: date(),
+});
+
+export const SubscriberPreference = sqliteTable("SubscriberPreference", {
+    id: integer().primaryKey({ autoIncrement: true }),
+    subscriberId: integer().notNull().references(() => Subscriber.id, { onDelete: "cascade" }),
+    thingType: text({ enum: ["sound", "motion", "sight", "word"] }).notNull(),
+    createdAt: date().default(sql`CURRENT_TIMESTAMP`).notNull(),
+}, (table) => [
+    uniqueIndex("SubscriberPreference_subscriber_thing_idx").on(table.subscriberId, table.thingType),
+    index("SubscriberPreference_subscriber_idx").on(table.subscriberId),
+]);
+
+export const SubscriberRelations = relations(Subscriber, ({ many }) => ({
+    preferences: many(SubscriberPreference),
+}));
+
+export const SubscriberPreferenceRelations = relations(SubscriberPreference, ({ one }) => ({
+    subscriber: one(Subscriber, {
+        fields: [SubscriberPreference.subscriberId],
+        references: [Subscriber.id],
+    }),
+}));

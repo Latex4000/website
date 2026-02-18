@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import SignupForm from "../components/Newsletter/SignupForm.astro";
 import db, { wordId } from "../database/db";
 import {
     Action,
@@ -318,6 +319,8 @@ const collectiveFeedStatus = collectiveFeed.length
             }
         </ul>
     </div>
+
+    <SignupForm />
 
     <div>
         <h2>Latest activity</h2>

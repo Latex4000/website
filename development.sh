@@ -25,6 +25,12 @@ export WORDS_RUN_AFTER_UPLOAD=
 export WORDS_UPLOAD_DIRECTORY='dev/words'
 export PUBLIC_DIRECTORY='public'
 
+# If given a command, run it with the dev environment and exit
+if test $# -gt 0; then
+    "$@"
+    exit
+fi
+
 # Clean up files from last run
 rm -rf "$database" "$SIGHTS_UPLOAD_DIRECTORY" "$SOUNDS_UPLOAD_DIRECTORY" "$WORDS_UPLOAD_DIRECTORY"
 

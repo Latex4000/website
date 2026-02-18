@@ -1,0 +1,112 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import db, { retryIfDbBusy } from "../../database/db";
+import { Subscriber } from "../../database/schema";
+import { eq } from "drizzle-orm";
+import { sendEmail } from "../../components/Newsletter/smtp";
+import { randomBytes } from "node:crypto";
+
+export const prerender = false;
+
+type Status = "missing" | "invalid" | "already" | "success";
+
+const token = Astro.url.searchParams.get("token");
+let status: Status = "missing";
+
+if (!token) {
+    status = "missing";
+} else {
+    try {
+        const subscriber = await db
+            .select()
+            .from(Subscriber)
+            .where(eq(Subscriber.verifyToken, token))
+            .get();
+
+        if (!subscriber) {
+            status = "invalid";
+        } else if (
+            subscriber.verifiedAt !== null &&
+            subscriber.unsubscribedAt === null
+        ) {
+            status = "already";
+        } else {
+            const unsubscribeToken = randomBytes(24).toString("hex");
+            await retryIfDbBusy(() =>
+                db
+                    .update(Subscriber)
+                    .set({
+                        verifiedAt: new Date(),
+                        unsubscribeToken,
+                        unsubscribedAt: null,
+                    })
+                    .where(eq(Subscriber.id, subscriber.id))
+            );
+
+            status = "success";
+
+            const baseURL = import.meta.env.PUBLIC_SITE_URL ?? new URL("./", Astro.url).origin
+            await sendEmail(
+                "You have subscribed to LaTeX 4000!",
+                `
+                    <p>Yo TY for verifying your email</p>
+                    <p>You'll start receiving updates based on your saved preferences.</p>
+                    <p>If you want to update your preferences or unsubscribe, you can click the link <a href="${baseURL}/email/unsubscribe?token=${unsubscribeToken}">here</a>.</p>
+                    <p>Enjoy your stay and explore!</p>
+                `,
+                `
+                    Yo TY for verifying your email
+
+                    You'll start receiving updates based on your saved preferences.
+
+                    If you want to update your preferences or unsubscribe, you can click the link here: ${baseURL}/email/unsubscribe?token=${unsubscribeToken}
+
+                    Enjoy your stay and explore!
+                `,
+                subscriber.email,
+            );
+        }
+    } catch (error) {
+        console.error("Failed to verify subscriber", error);
+        status = "invalid";
+    }
+}
+---
+
+<Layout
+    header="Email verification"
+    title="Email verification"
+    description="LaTeX 4000 email verification"
+>
+    {
+        status === "missing" ? (
+            <p>
+                Verification token missing. Please use the link from your email.
+            </p>
+        ) : undefined
+    }
+    {
+        status === "invalid" ? (
+            <p>
+                Invalid verification link. Request a new email update
+                subscription.
+            </p>
+        ) : undefined
+    }
+    {
+        status === "already" ? (
+            <p>
+                Welcome back. Your email is already verified. You will continue
+                to receive updates based on your saved preferences.
+            </p>
+        ) : undefined
+    }
+    {
+        status === "success" ? (
+            <p>
+                Yo, your email is now verified. Soon you will start receiving
+                updates based on your saved preferences.
+            </p>
+        ) : undefined
+    }
+</Layout>
