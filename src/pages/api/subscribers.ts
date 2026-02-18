@@ -134,13 +134,11 @@ export const POST: APIRoute = async (context) => {
 
                     if (existing.unsubscribedAt !== null || existing.verifiedAt === null) {
                         const newVerifyToken = createToken();
-                        const newUnsubscribeToken = createToken();
 
                         await tx
                             .update(Subscriber)
                             .set({
                                 verifyToken: newVerifyToken,
-                                unsubscribeToken: newUnsubscribeToken,
                                 unsubscribedAt: null,
                                 verifiedAt: null,
                             })

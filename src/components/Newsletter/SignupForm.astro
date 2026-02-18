@@ -7,10 +7,10 @@ const categories = [
 ];
 ---
 
-<section class="newsletter-section">
-    <h2>Get Updates</h2>
+<details class="newsletter-section" open>
+    <summary>Get Updates</summary>
     <p>
-        Give Us Your Email to get updated when we upload bullshit here
+        Give Us Your Email to get updated when we upload bullshit here within the hour they are uploaded to the site
         <br><br>
         Examples are below
     </p>
@@ -47,13 +47,13 @@ const categories = [
         >
         </p>
     </form>
-</section>
+</details>
 
 <style>
     .newsletter-section {
         display: grid;
         gap: var(--space-xs, 0.5lh);
-        padding: var(--space-xs, 0.5lh) var(--space-sm, 1lh);
+        padding: var(--space-xs, 0.25lh) var(--space-sm, 1lh);
         border: var(--border-thickness, 1px) solid
             var(--text-color, currentColor);
         max-width: 32rem;

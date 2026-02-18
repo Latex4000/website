@@ -3,6 +3,8 @@ import Layout from "../../layouts/Layout.astro";
 import db, { retryIfDbBusy } from "../../database/db";
 import { Subscriber } from "../../database/schema";
 import { eq } from "drizzle-orm";
+import { sendEmail } from "../../components/Newsletter/smtp";
+import { randomBytes } from "node:crypto";
 
 export const prerender = false;
 
@@ -29,17 +31,40 @@ if (!token) {
         ) {
             status = "already";
         } else {
+            const unsubscribeToken = randomBytes(24).toString("hex");
             await retryIfDbBusy(() =>
                 db
                     .update(Subscriber)
                     .set({
                         verifiedAt: new Date(),
+                        unsubscribeToken,
                         unsubscribedAt: null,
                     })
                     .where(eq(Subscriber.id, subscriber.id))
             );
 
             status = "success";
+
+            const baseURL = import.meta.env.PUBLIC_SITE_URL ?? new URL("./", Astro.url).origin
+            await sendEmail(
+                "You have subscribed to LaTeX 4000!",
+                `
+                    <p>Yo TY for verifying your email</p>
+                    <p>You'll start receiving updates based on your saved preferences.</p>
+                    <p>If you want to update your preferences or unsubscribe, you can click the link <a href="${baseURL}/email/unsubscribe?token=${unsubscribeToken}">here</a>.</p>
+                    <p>Enjoy your stay and explore!</p>
+                `,
+                `
+                    Yo TY for verifying your email
+
+                    You'll start receiving updates based on your saved preferences.
+
+                    If you want to update your preferences or unsubscribe, you can click the link here: ${baseURL}/email/unsubscribe?token=${unsubscribeToken}
+
+                    Enjoy your stay and explore!
+                `,
+                subscriber.email,
+            );
         }
     } catch (error) {
         console.error("Failed to verify subscriber", error);
