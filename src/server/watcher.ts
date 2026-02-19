@@ -11,6 +11,7 @@ import {
     PageView,
     Sight,
     Sound,
+    Subscriber,
     Word,
 } from "../database/schema";
 import {
@@ -57,6 +58,7 @@ export interface TotalsResult {
 
 export interface ContentCounts {
     members: number;
+    subscribers: number;
     actions: number;
     sounds: number;
     motions: number;
@@ -380,11 +382,16 @@ export async function getPageViewTotals(
 }
 
 export async function getContentCounts(): Promise<ContentCounts> {
-    const [members, actions, sounds, motions, sights, words] = await Promise.all([
+    const [members, subscribers, actions, sounds, motions, sights, words] = await Promise.all([
         db
             .select({ count: sql<number>`count(*)` })
             .from(Member)
             .where(eq(Member.deleted, false))
+            .get(),
+        db
+            .select({ count: sql<number>`count(*)` })
+            .from(Subscriber)
+            .where(isNotNull(Subscriber.verifiedAt))
             .get(),
         db
             .select({ count: sql<number>`count(*)` })
@@ -415,6 +422,7 @@ export async function getContentCounts(): Promise<ContentCounts> {
 
     return {
         members: members?.count ?? 0,
+        subscribers: subscribers?.count ?? 0,
         actions: actions?.count ?? 0,
         sounds: sounds?.count ?? 0,
         motions: motions?.count ?? 0,

@@ -22,6 +22,10 @@
                 <p>{numberFormatter.format(props.contentCounts.members)}</p>
             </div>
             <div class="content-card">
+                <h3>Subscribers</h3>
+                <p>{numberFormatter.format(props.contentCounts.subscribers)}</p>
+            </div>
+            <div class="content-card">
                 <h3>Actions</h3>
                 <p>{numberFormatter.format(props.contentCounts.actions)}</p>
             </div>
