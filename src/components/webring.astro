@@ -1,0 +1,29 @@
+<div class="webring">
+    <div>Web ring</div>
+    <div>
+        <a
+            class="webring__prev"
+            href="/ring?action=prev&from=LaTeX 4000"
+            title="Previous"></a>
+        <a href="/ring?action=rand&from=LaTeX 4000">Random</a>
+        <a
+            class="webring__next"
+            href="/ring?action=next&from=LaTeX 4000"
+            title="Next"></a>
+    </div>
+</div>
+
+<style>
+    .webring {
+        margin-bottom: var(--space-sm);
+        text-align: center;
+    }
+
+    .webring__prev::after {
+        content: var(--webring-prev-icon, "<--");
+    }
+
+    .webring__next::after {
+        content: var(--webring-next-icon, "-->");
+    }
+</style>

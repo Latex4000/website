@@ -6,6 +6,7 @@ import { defaultTheme } from "../styles/config";
 import ThemeSelector from "../styles/ThemeSelector.svelte";
 import baseStylesUrl from "../styles/base.css?url";
 import resetStylesUrl from "../styles/reset.css?url";
+import Webring from "../components/webring.astro";
 
 const {
     header,
@@ -166,20 +167,7 @@ const onlineCount = await getOnlineVisitorCount(Astro);
             <slot />
         </main>
         <footer>
-            <div class="webring">
-                <div>Web ring</div>
-                <div>
-                    <a
-                        class="webring__prev"
-                        href="/ring?action=prev&from=LaTeX 4000"
-                        title="Previous"></a>
-                    <a href="/ring?action=rand&from=LaTeX 4000">Random</a>
-                    <a
-                        class="webring__next"
-                        href="/ring?action=next&from=LaTeX 4000"
-                        title="Next"></a>
-                </div>
-            </div>
+            <Webring />
             <div class="footer-info">
                 <div>
                     <div class="latex">
@@ -348,19 +336,6 @@ const onlineCount = await getOnlineVisitorCount(Astro);
         to {
             transform: translateY(-10px);
         }
-    }
-
-    .webring {
-        margin-bottom: var(--space-sm);
-        text-align: center;
-    }
-
-    .webring__prev::after {
-        content: var(--webring-prev-icon, "<--");
-    }
-
-    .webring__next::after {
-        content: var(--webring-next-icon, "-->");
     }
 
     .footer-row {

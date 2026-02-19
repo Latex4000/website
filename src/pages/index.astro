@@ -15,6 +15,7 @@ import { and, desc, eq } from "drizzle-orm";
 import { detectFeedType, linkChanger } from "../server/rss";
 import type { FeedType } from "../server/rss";
 import { thingColourHandler } from "../server/thingUtils";
+import Webring from "../components/webring.astro";
 
 export const prerender = false;
 
@@ -318,6 +319,7 @@ const collectiveFeedStatus = collectiveFeed.length
                 ))
             }
         </ul>
+        <Webring />
     </div>
 
     <SignupForm />
