@@ -4,6 +4,7 @@
         ContentCounts,
         PaginatedResult,
         TotalsResult,
+        ViewBucket,
         WatcherApiResponse,
     } from "../../server/watcher";
     import WatcherContentOverview from "./WatcherContentOverview.svelte";
@@ -180,13 +181,10 @@
             : [host, `www.${host}`];
     }
 
-    type BucketId = WatcherApiResponse["filters"]["bucket"];
-
     interface BucketOption {
-        id: BucketId;
+        id: ViewBucket;
         label: string;
         durationMs: number;
-        minSpanMultiplier: number;
     }
 
     const bucketOptions: BucketOption[] = [
@@ -194,19 +192,21 @@
             id: "hour",
             label: "Hour",
             durationMs: 60 * 60 * 1000,
-            minSpanMultiplier: 2,
         },
         {
             id: "day",
             label: "Day",
             durationMs: 24 * 60 * 60 * 1000,
-            minSpanMultiplier: 2,
         },
         {
             id: "week",
             label: "Week",
             durationMs: 7 * 24 * 60 * 60 * 1000,
-            minSpanMultiplier: 2,
+        },
+        {
+            id: "month",
+            label: "Month",
+            durationMs: 4 * 7 * 24 * 60 * 60 * 1000,
         },
     ];
 
@@ -215,7 +215,7 @@
             accumulator[option.id] = option;
             return accumulator;
         },
-        {} as Record<BucketId, BucketOption>,
+        {} as Record<ViewBucket, BucketOption>,
     );
 
     let internalHostList: string[] = $state([]);
@@ -232,8 +232,8 @@
     let includeEmptyPath = $state(false);
     let includeInternalReferrers = $state(false);
     const initialBucket =
-        (initialData?.filters.bucket as BucketId | undefined) ?? "day";
-    let selectedBucket = $state<BucketId>(initialBucket);
+        (initialData?.filters.bucket as ViewBucket | undefined) ?? "day";
+    let selectedBucket = $state<ViewBucket>(initialBucket);
 
     function computeRangeDurationMs(): number | null {
         const fromIso = fromInput ? dateInputToIso(fromInput) : null;
@@ -255,7 +255,7 @@
         if (spanMs == null) return bucketOptions;
 
         const filtered = bucketOptions.filter(
-            (option) => spanMs >= option.durationMs * option.minSpanMultiplier,
+            (option) => spanMs >= option.durationMs * 2,
         );
 
         return filtered.length ? filtered : [bucketOptions[0]!];
@@ -267,7 +267,7 @@
         selectedBucket = availableBuckets[0]?.id ?? "day";
     });
 
-    function ensureBucketSelection(): BucketId {
+    function ensureBucketSelection(): ViewBucket {
         const options = availableBuckets;
         if (options.some((option) => option.id === selectedBucket))
             return selectedBucket;
@@ -348,7 +348,7 @@
             ? payload.filters.statusCodes.join(", ")
             : "";
         includeEmptyPath = payload.filters.includeEmptyPath ?? false;
-        const responseBucket = payload.filters.bucket as BucketId | undefined;
+        const responseBucket = payload.filters.bucket as ViewBucket | undefined;
         if (responseBucket && bucketConfig[responseBucket]) {
             selectedBucket = responseBucket;
         }
@@ -500,7 +500,7 @@
         presetAnchored = false;
     }
 
-    function handleBucketChange(next: BucketId) {
+    function handleBucketChange(next: ViewBucket) {
         if (next === selectedBucket) return;
         selectedBucket = next;
         fetchAnalytics();

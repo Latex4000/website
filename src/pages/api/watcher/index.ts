@@ -14,6 +14,7 @@ import {
     type PaginationOptions,
     type WatcherApiResponse,
     type ViewBucket,
+    viewBuckets,
 } from "../../../server/watcher";
 import { JsonResponseError, jsonError, jsonResponse } from "../../../server/responses";
 
@@ -91,9 +92,8 @@ function parseBucketParam(params: URLSearchParams): ViewBucket | undefined {
     const raw = params.get("bucket");
     if (!raw) return undefined;
 
-    if (raw === "hour" || raw === "day" || raw === "week") {
-        return raw;
-    }
+    if ((viewBuckets as readonly string[]).includes(raw))
+        return raw as ViewBucket;
 
     throw new JsonResponseError("Invalid bucket value");
 }

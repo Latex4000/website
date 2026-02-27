@@ -1,38 +1,35 @@
 <script lang="ts">
     import { onDestroy } from "svelte";
     import * as d3 from "d3";
-    import type { WatcherApiResponse } from "../../server/watcher";
-
-    type BucketId = WatcherApiResponse["filters"]["bucket"];
+    import type { ViewBucket } from "../../server/watcher";
 
     interface BucketOption {
-        id: BucketId;
+        id: ViewBucket;
         label: string;
         durationMs: number;
-        minSpanMultiplier: number;
     }
 
     const {
         dailyViews = [],
         selectedBucket,
         availableBuckets = [],
-        bucketConfig = {} as Record<BucketId, BucketOption>,
+        bucketConfig = {} as Record<ViewBucket, BucketOption>,
         loading = false,
-        bucketChange = (_next: BucketId) => {},
+        bucketChange = (_next: ViewBucket) => {},
     }: {
         dailyViews: { date: Date; views: number }[];
-        selectedBucket: BucketId;
+        selectedBucket: ViewBucket;
         availableBuckets: BucketOption[];
-        bucketConfig: Record<BucketId, BucketOption>;
+        bucketConfig: Record<ViewBucket, BucketOption>;
         loading: boolean;
-        bucketChange: (next: BucketId) => void;
+        bucketChange: (next: ViewBucket) => void;
     } = $props<{
         dailyViews: { date: Date; views: number }[];
-        selectedBucket: BucketId;
+        selectedBucket: ViewBucket;
         availableBuckets: BucketOption[];
-        bucketConfig: Record<BucketId, BucketOption>;
+        bucketConfig: Record<ViewBucket, BucketOption>;
         loading: boolean;
-        bucketChange: (next: BucketId) => void;
+        bucketChange: (next: ViewBucket) => void;
     }>();
 
     const selectedBucketLabel = $derived(
@@ -40,10 +37,6 @@
     );
 
     const numberFormatter = new Intl.NumberFormat();
-    const shortDateFormatter = new Intl.DateTimeFormat(undefined, {
-        month: "short",
-        day: "numeric",
-    });
     const hourAxisFormatter = new Intl.DateTimeFormat(undefined, {
         month: "short",
         day: "numeric",
@@ -55,10 +48,18 @@
         hour: "numeric",
         minute: "2-digit",
     });
+    const shortDateFormatter = new Intl.DateTimeFormat(undefined, {
+        month: "short",
+        day: "numeric",
+    });
     const weekRangeFormatter = new Intl.DateTimeFormat(undefined, {
         month: "short",
         day: "numeric",
     });
+    const monthRangeFormatter = new Intl.DateTimeFormat(undefined, {
+        month: "short",
+        year: "2-digit",
+    })
 
     let chartContainer = $state<HTMLDivElement | null>(null);
     let canvasElement = $state<HTMLCanvasElement | null>(null);
@@ -74,45 +75,49 @@
 
     const chartMargin = { top: 16, right: 24, bottom: 48, left: 56 };
 
-    function getBucketDurationMs(bucket: BucketId): number {
-        return bucketConfig[bucket]?.durationMs ?? bucketConfig.day.durationMs;
-    }
-
-    function formatTickLabel(date: Date, bucket: BucketId): string {
+    function formatTickLabel(date: Date, bucket: ViewBucket): string {
         switch (bucket) {
-            case "hour":
-                return hourAxisFormatter.format(date);
+            case "month":
+                return monthRangeFormatter.format(date);
             case "week":
                 return weekRangeFormatter.format(date);
             case "day":
-            default:
                 return shortDateFormatter.format(date);
+            case "hour":
+                return hourAxisFormatter.format(date);
+            default:
+                throw Error("Missing tick format for bucket")
         }
     }
 
-    function formatTooltipRange(date: Date, bucket: BucketId): string {
-        const durationMs = getBucketDurationMs(bucket);
-        const endExclusive = new Date(date.getTime() + durationMs);
-
+    function formatTooltipRange(date: Date, bucket: ViewBucket): string {
+        const endDate = new Date(date);
         switch (bucket) {
-            case "hour": {
-                const startLabel = hourTooltipFormatter.format(date);
-                const endLabel = hourTooltipFormatter.format(endExclusive);
-                return startLabel === endLabel
-                    ? startLabel
-                    : `${startLabel} – ${endLabel}`;
-            }
-            case "week": {
-                const startLabel = weekRangeFormatter.format(date);
-                const inclusiveEnd = new Date(endExclusive.getTime() - 1);
-                const endLabel = weekRangeFormatter.format(inclusiveEnd);
-                return startLabel === endLabel
-                    ? startLabel
-                    : `${startLabel} – ${endLabel}`;
-            }
+            case "month":
+                const startMonth = monthRangeFormatter.format(date);
+                endDate.setUTCMonth(endDate.getUTCMonth() + 1);
+                const endMonth = monthRangeFormatter.format(endDate);
+                return startMonth === endMonth
+                    ? startMonth
+                    : `${startMonth} – ${endMonth}`;
+            case "week":
+                const startWeek = weekRangeFormatter.format(date);
+                endDate.setUTCDate(endDate.getUTCDate() + 7);
+                const endWeek = weekRangeFormatter.format(endDate);
+                return startWeek === endWeek
+                    ? startWeek
+                    : `${startWeek} – ${endWeek}`;
             case "day":
-            default:
                 return shortDateFormatter.format(date);
+            case "hour":
+                const startHour = hourTooltipFormatter.format(date);
+                endDate.setUTCHours(endDate.getUTCHours() + 1);
+                const endHour = hourTooltipFormatter.format(endDate);
+                return startHour === endHour
+                    ? startHour
+                    : `${startHour} – ${endHour}`;
+            default:
+                throw Error("Missing Tooltip range format for bucket")
         }
     }
 
@@ -159,7 +164,7 @@
 
     function updateTooltip(
         point: { date: Date; views: number } | null,
-        bucket: BucketId,
+        bucket: ViewBucket,
     ) {
         const tooltipNode = tooltipElement;
         if (!tooltipNode) return;
@@ -183,7 +188,7 @@
         tooltipNode.style.opacity = "1";
     }
 
-    function drawChart(currentBucket: BucketId) {
+    function drawChart(currentBucket: ViewBucket) {
         const context = canvasContext;
         if (!context) return;
 
@@ -385,7 +390,7 @@
         drawChart(selectedBucket);
     }
 
-    function handleBucketClick(next: BucketId) {
+    function handleBucketClick(next: ViewBucket) {
         if (loading || next === selectedBucket) return;
         bucketChange(next);
     }

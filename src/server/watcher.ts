@@ -493,27 +493,38 @@ export async function getLatestPageViews(
     };
 }
 
-export type ViewBucket = "hour" | "day" | "week";
+export const viewBuckets = ["hour", "day", "week", "month"] as const;
+export type ViewBucket = typeof viewBuckets[number];
 
-const viewBucketDurations: Record<ViewBucket, number> = {
-    hour: 60 * 60 * 1000,
-    day: 24 * 60 * 60 * 1000,
-    week: 7 * 24 * 60 * 60 * 1000,
+const viewBucketstrftimes: Record<ViewBucket, string> = {
+    hour: '%Y-%m-%dT%H',
+    day: '%Y-%m-%d',
+    week: '%Y-%W',
+    month: '%Y-%m',
 };
 
 function normalizeViewBucket(candidate: ViewBucket | null | undefined): ViewBucket {
-    if (candidate === "hour" || candidate === "week") return candidate;
+    if (candidate) return candidate;
     return "day";
 }
 
-function getBucketAlignmentSeconds(bucket: ViewBucket): number {
+function getBucketDate(label: string, bucket: ViewBucket, tzSuffix: string): Date {
     switch (bucket) {
-        case "week":
-            return 3 * 24 * 60 * 60; // align buckets to start on Mondays
-        case "hour":
-        case "day":
+        case 'hour':
+            return new Date(`${label}:00${tzSuffix}`);
+        case 'day':
+            return new Date(`${label}T00:00${tzSuffix}`);
+        case 'week':
+            const [year, week] = label.split('-').map(Number); // strftime('%Y-%W') = year - week #
+            const jan1 = new Date(`${year}-01-01T00:00${tzSuffix}`);
+            const jan1Day = jan1.getDay() || 7; // Sunday = 7
+            const daysToFirstMonday = (8 - jan1Day) % 7;
+            const firstMonday = new Date(jan1.getTime() + daysToFirstMonday * 86400000);
+            return new Date(firstMonday.getTime() + (week! - 1) * 7 * 86400000);
+        case 'month':
+            return new Date(`${label}-01T00:00${tzSuffix}`);
         default:
-            return 0;
+            throw Error("Invalid bucket type provided in getBucketDate")
     }
 }
 
@@ -522,46 +533,29 @@ export async function getDailyViews(
     options: { timezoneOffsetMinutes?: number; bucket?: ViewBucket } = {},
 ): Promise<Array<{ date: Date; views: number }>> {
     const condition = buildPageViewWhereClause(filters);
-    const rawOffset = options.timezoneOffsetMinutes ?? 0;
-    const timezoneOffsetMinutes = Number.isFinite(rawOffset)
-        ? Math.trunc(rawOffset)
-        : 0;
     const bucket = normalizeViewBucket(options.bucket);
 
-    const bucketSeconds = Math.floor(viewBucketDurations[bucket] / 1000);
-    const offsetSeconds = timezoneOffsetMinutes * 60;
-    const alignmentSeconds = getBucketAlignmentSeconds(bucket);
+    // Man fuck time
+    const rawOffset = options.timezoneOffsetMinutes ?? 0;
+    const timezoneOffsetMinutes = Number.isFinite(rawOffset) ? Math.trunc(rawOffset) : 0;
+    const offsetSign = timezoneOffsetMinutes <= 0 ? '+' : '-';
+    const absOffset = Math.abs(timezoneOffsetMinutes);
+    const hh = String(Math.floor(absOffset / 60)).padStart(2, '0');
+    const mm = String(absOffset % 60).padStart(2, '0');
+    const tzSuffix = `${offsetSign}${hh}:${mm}`;
 
-    const bucketExpr = sql<number>`CAST(((CAST(strftime('%s', ${PageView.createdAt}) AS INTEGER) - ${offsetSeconds}) + ${alignmentSeconds}) / ${bucketSeconds} AS INTEGER)`;
+    const strftime = viewBucketstrftimes[bucket];
+    const bucketExpr = sql<string>`strftime(${strftime}, datetime(${PageView.createdAt}, ${`${timezoneOffsetMinutes} minutes`}))`;
     const countExpr = sql<number>`count(*)`;
 
-    const baseQuery = db
-        .select({
-            bucket: bucketExpr,
-            views: countExpr,
-        })
-        .from(PageView);
-
+    const baseQuery = db.select({ bucket: bucketExpr, views: countExpr }).from(PageView);
     const rows = await (condition ? baseQuery.where(condition) : baseQuery)
         .groupBy(bucketExpr)
         .orderBy(bucketExpr);
-
-    const timezoneShiftMs = timezoneOffsetMinutes * 60 * 1000;
-    const alignmentMs = alignmentSeconds * 1000;
-    const bucketDurationMs = viewBucketDurations[bucket];
-
-    return rows
-        .map((row) => {
-            const bucketIndex = row.bucket;
-            const localBucketStartMs = bucketIndex * bucketDurationMs - alignmentMs;
-            const utcStartMs = localBucketStartMs + timezoneShiftMs;
-            const shifted = new Date(utcStartMs);
-            return {
-                date: shifted,
-                views: row.views,
-            };
-        })
-        .sort((a, b) => a.date.getTime() - b.date.getTime());
+    return rows.map((row) => ({
+        date: getBucketDate(row.bucket, bucket, tzSuffix),
+        views: row.views,
+    }));
 }
 
 export async function getTopReferrers(
