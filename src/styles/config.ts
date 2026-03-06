@@ -134,8 +134,8 @@ const themeGroups: ThemeGroupDefinition[] = [
                 "#f4f4f4,#dddddd,#c7c7c7,#b0b0b0,#9a9a9a,#848484,#6d6d6d,#575757,#414141,#2c2c2c",
             ],
             "--viz-sequential-ramp": [
-                "hsl(0 0% 82%)|hsl(0 0% 62%)|hsl(0 0% 45%)|hsl(0 0% 30%)|hsl(0 0% 12%)",
-                "hsl(0 0% 88%)|hsl(0 0% 74%)|hsl(0 0% 58%)|hsl(0 0% 42%)|hsl(0 0% 26%)",
+                "hsl(0 0% 12%)|hsl(0 0% 30%)|hsl(0 0% 45%)|hsl(0 0% 62%)|hsl(0 0% 82%)",
+                "hsl(0 0% 12%)|hsl(0 0% 30%)|hsl(0 0% 45%)|hsl(0 0% 62%)|hsl(0 0% 82%)",
             ],
             "--feedback-accent": [
                 "color-mix(in srgb, #272727 72%, var(--background-color) 28%)",
