@@ -318,7 +318,8 @@ export async function recordPageView(context: AstroSharedContext, response: Resp
         context.locals.skipRecordPageView ||
         !validForAnalytics(context) ||
         context.request.method !== "GET" ||
-        context.url.pathname.startsWith("/api/")
+        context.url.pathname.startsWith("/api/") ||
+        context.url.pathname.startsWith("/email/")
     ) {
         return;
     }
