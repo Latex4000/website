@@ -7,6 +7,17 @@ const categories = [
 ];
 ---
 
+<script>
+    import { connect } from "../altcha";
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const form = document.querySelector("form[data-newsletter-form]");
+        if (form instanceof HTMLFormElement) {
+            connect(form);
+        }
+    });
+</script>
+
 <details class="newsletter-section" open>
     <summary>Get Updates</summary>
     <p>
@@ -47,6 +58,17 @@ const categories = [
             <span>Name</span>
             <input type="text" name="hName" required tabindex="-1" />
         </label>
+
+        <altcha-widget
+            configuration={JSON.stringify({
+                display: "invisible",
+                hideLogo: true,
+                hideFooter: true,
+                language: "en",
+                type: "checkbox",
+                challenge: "/altcha-challenge",
+                auto: "off",
+            })}></altcha-widget>
 
         <button type="submit" class="newsletter-form__submit"> Sign up </button>
         <p
@@ -131,6 +153,9 @@ const categories = [
             });
         }
 
+        let email;
+        let categories;
+
         form.addEventListener("submit", async (event) => {
             event.preventDefault();
 
@@ -139,16 +164,16 @@ const categories = [
 
             message.textContent = "";
 
-            const categories = Array.from(
-                form.querySelectorAll('input[name="categories"]:checked')
+            categories = Array.from(
+                form.querySelectorAll('input[name="categories"]:checked'),
             )
                 .map((input) =>
-                    input instanceof HTMLInputElement ? input.value : null
+                    input instanceof HTMLInputElement ? input.value : null,
                 )
                 .filter((value) => Boolean(value));
 
             const emailField = form.querySelector('input[name="email"]');
-            const email =
+            email =
                 emailField instanceof HTMLInputElement ? emailField.value : "";
 
             if (categories.length === 0) {
@@ -158,7 +183,16 @@ const categories = [
                 return;
             }
 
+            form.dispatchEvent(new CustomEvent("verifyaltcha"));
+        });
+
+        form.addEventListener("submitwithaltcha", async (event) => {
             try {
+                if (event.detail == null) {
+                    message.textContent = "Verification failed.";
+                    return;
+                }
+
                 const response = await fetch("/subscribe", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -166,6 +200,7 @@ const categories = [
                         email,
                         categories,
                         h: [honeypotCheckbox.checked, honeypotText.value],
+                        altcha: event.detail,
                     }),
                 });
 

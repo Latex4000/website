@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { randomBytes } from "node:crypto";
 import db, { retryIfDbBusy } from "../database/db";
 import { Subscriber, SubscriberPreference } from "../database/schema";
+import { verifySolution } from "../server/altcha";
 import { jsonError, jsonResponse } from "../server/responses";
 import { sendEmail } from "../components/Newsletter/smtp";
 
@@ -98,6 +99,19 @@ export const POST: APIRoute = async (context) => {
 
     if (categories.length === 0) {
         return jsonError("Select at least one category");
+    }
+
+    const altchaResult = await verifySolution((payload as { altcha?: string }).altcha ?? "");
+    if (altchaResult && altchaResult.expired) {
+        return jsonError("Verification expired, please try again");
+    }
+    if (
+        !altchaResult ||
+        !altchaResult.verified ||
+        altchaResult.invalidSignature ||
+        altchaResult.invalidSolution
+    ) {
+        return jsonError("Unknown error");
     }
 
     const baseUrl = import.meta.env.PUBLIC_SITE_URL ?? new URL("./", context.request.url).origin;

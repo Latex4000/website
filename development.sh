@@ -9,6 +9,8 @@ fi
 
 database='dev/latex.db'
 
+export ALTCHA_HMAC_SIGNATURE_SECRET='dev'
+export ALTCHA_HMAC_KEY_SIGNATURE_SECRET='dev'
 export ANALYTICS_FINGERPRINT_SECRET='dev'
 export CORPORATE_URL=
 export CRAWLER_UA_JSON='dev/crawler-user-agents.json'
