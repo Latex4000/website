@@ -1,4 +1,4 @@
-import { eq, isNotNull, sql } from "drizzle-orm";
+import { and, eq, isNotNull, isNull, sql } from "drizzle-orm";
 import db, { wordId } from "../database/db";
 import { Subscriber, SubscriberPreference } from "../database/schema";
 import { sendEmail } from "../components/Newsletter/smtp";
@@ -77,7 +77,7 @@ async function getSubscribers() {
         })
         .from(Subscriber)
         .leftJoin(SubscriberPreference, eq(Subscriber.id, SubscriberPreference.subscriberId))
-        .where(isNotNull(Subscriber.verifiedAt))
+        .where(and(isNotNull(Subscriber.verifiedAt), isNull(Subscriber.unsubscribedAt)))
         .orderBy(Subscriber.id);
 
     const subscribers: Record<string, { preferences: thingType[], unsubscribeToken: string }> = {};
