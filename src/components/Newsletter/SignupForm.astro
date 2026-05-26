@@ -7,17 +7,6 @@ const categories = [
 ];
 ---
 
-<script>
-    import { connect } from "../altcha";
-
-    document.addEventListener("DOMContentLoaded", () => {
-        const form = document.querySelector("form[data-newsletter-form]");
-        if (form instanceof HTMLFormElement) {
-            connect(form);
-        }
-    });
-</script>
-
 <details class="newsletter-section" open>
     <summary>Get Updates</summary>
     <p>
@@ -49,7 +38,9 @@ const categories = [
             }
         </fieldset>
 
-        {/* Honeypot fields for dumb bots that might fill them in */}
+        {
+            /* Honeypot fields for dumb bots that might fill them in, any non-default value will cause the signup to be rejected. The fields initially appear required, but use JS to make themselves optional upon form submit. CSS and tabindex effectively hides these from regular visitors but it probably messes up screenreaders etc. */
+        }
         <label class="newsletter-checkbox h">
             <input type="checkbox" name="hConfirm" required tabindex="-1" />
             <span>Confirm signup</span>
@@ -125,6 +116,36 @@ const categories = [
         max-width: 300px;
     }
 </style>
+
+<script>
+    import "altcha/external";
+    import "altcha/altcha.css";
+    import type { AltchaWidgetElement } from "altcha/external";
+    import Pbkdf2Worker from "altcha/workers/pbkdf2?worker";
+
+    // eslint-disable-next-line no-undef
+    $altcha.algorithms.set("PBKDF2/SHA-256", () => new Pbkdf2Worker());
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const form = document.querySelector<HTMLFormElement>(
+            "form[data-newsletter-form]",
+        );
+        const widget =
+            form?.querySelector<AltchaWidgetElement>("altcha-widget");
+        if (form == null || widget == null) {
+            return;
+        }
+
+        form.addEventListener("verifyaltcha", async () => {
+            const result = await widget.verify();
+            form.dispatchEvent(
+                new CustomEvent("submitwithaltcha", {
+                    detail: result?.payload,
+                }),
+            );
+        });
+    });
+</script>
 
 <script is:inline>
     const form = document.querySelector("[data-newsletter-form]");
