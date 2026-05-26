@@ -76,6 +76,12 @@ export const POST: APIRoute = async (context) => {
         return jsonError("Email is required");
     }
 
+    const honeypotValues = (payload as {h:[boolean, string]}).h;
+    if (honeypotValues[0] !== false || honeypotValues[1] !== "") {
+        console.log(`Trapped bot newsletter signup: "${email}"`);
+        return jsonResponse({ status: "pendingVerification" });
+    }
+
     if (!isValidEmail(email)) {
         return jsonError("Email looks invalid");
     }

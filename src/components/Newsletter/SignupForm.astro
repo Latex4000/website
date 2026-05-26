@@ -38,6 +38,16 @@ const categories = [
             }
         </fieldset>
 
+        {/* Honeypot fields for dumb bots that might fill them in */}
+        <label class="newsletter-checkbox h">
+            <input type="checkbox" name="hConfirm" required tabindex="-1" />
+            <span>Confirm signup</span>
+        </label>
+        <label class="newsletter-form__field h">
+            <span>Name</span>
+            <input type="text" name="hName" required tabindex="-1" />
+        </label>
+
         <button type="submit" class="newsletter-form__submit"> Sign up </button>
         <p
             class="newsletter-form__status"
@@ -85,21 +95,47 @@ const categories = [
         min-height: 1lh;
         font-size: 0.9em;
     }
+
+    .h {
+        position: fixed;
+        top: 110vh;
+        left: 110vw;
+        max-width: 300px;
+    }
 </style>
 
 <script is:inline>
     const form = document.querySelector("[data-newsletter-form]");
     const message = document.querySelector("[data-newsletter-message]");
+    const submitButton = form.querySelector('button[type="submit"]');
 
-    if (form instanceof HTMLFormElement && message instanceof HTMLElement) {
+    const honeypotCheckbox = form.querySelector('input[name="hConfirm"]');
+    const honeypotText = form.querySelector('input[name="hName"]');
+
+    if (
+        form instanceof HTMLFormElement &&
+        message instanceof HTMLElement &&
+        submitButton instanceof HTMLButtonElement &&
+        honeypotCheckbox instanceof HTMLInputElement &&
+        honeypotText instanceof HTMLInputElement
+    ) {
+        const honeypotInputs = [honeypotCheckbox, honeypotText];
+        for (const honeypotInput of honeypotInputs) {
+            honeypotInput.addEventListener("invalid", (event) => {
+                event.preventDefault();
+
+                honeypotInput.required = false;
+                if (form.checkValidity()) {
+                    setTimeout(() => form.requestSubmit(submitButton), 0);
+                }
+            });
+        }
+
         form.addEventListener("submit", async (event) => {
             event.preventDefault();
 
-            const submitButton = form.querySelector('button[type="submit"]');
-            if (submitButton instanceof HTMLButtonElement) {
-                submitButton.disabled = true;
-                submitButton.textContent = "Sending…";
-            }
+            submitButton.disabled = true;
+            submitButton.textContent = "Sending…";
 
             message.textContent = "";
 
@@ -117,10 +153,8 @@ const categories = [
 
             if (categories.length === 0) {
                 message.textContent = "Select at least one category.";
-                if (submitButton instanceof HTMLButtonElement) {
-                    submitButton.disabled = false;
-                    submitButton.textContent = "Sign up";
-                }
+                submitButton.disabled = false;
+                submitButton.textContent = "Sign up";
                 return;
             }
 
@@ -128,7 +162,11 @@ const categories = [
                 const response = await fetch("/subscribe", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email, categories }),
+                    body: JSON.stringify({
+                        email,
+                        categories,
+                        h: [honeypotCheckbox.checked, honeypotText.value],
+                    }),
                 });
 
                 const data = await response.json().catch(() => ({}));
@@ -148,10 +186,8 @@ const categories = [
                 message.textContent =
                     "Could not submit the form. Try again later.";
             } finally {
-                if (submitButton instanceof HTMLButtonElement) {
-                    submitButton.disabled = false;
-                    submitButton.textContent = "Sign up";
-                }
+                submitButton.disabled = false;
+                submitButton.textContent = "Sign up";
             }
         });
     }
