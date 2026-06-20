@@ -11,6 +11,8 @@ export const prerender = false;
  * Note that because the session cookie is read by middleware as normal, this will only work as intended when the external service is receiving a request at a subdomain of the main site.
  */
 export const GET: APIRoute = async (context) => {
+    context.locals.skipRecordPageView = true;
+
     const discord = context.locals.session.data.memberDiscord;
 
     if (discord == null) {
