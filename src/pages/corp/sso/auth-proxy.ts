@@ -35,6 +35,6 @@ export const GET: APIRoute = async (context) => {
             "X-Nonacademic-Color": member.color,
             "X-Nonacademic-Discord": member.discord,
         },
-        status: 200,
+        status: 204,
     });
 };
