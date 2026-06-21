@@ -34,10 +34,11 @@ const sqliteClient = createClient({ url: `file:${database}` });
 
 async function applyMigration(migrationId, migrationPath) {
     await sqliteClient.executeMultiple(
-        "BEGIN TRANSACTION;\n" +
-            "PRAGMA defer_foreign_keys = 1;\n" +
+        "PRAGMA foreign_keys = off;\n" +
+            "BEGIN TRANSACTION;\n" +
             (await readFile(migrationPath, "utf8")) +
-            "COMMIT;\n",
+            "COMMIT;\n" +
+            "PRAGMA foreign_keys = on;\n",
     );
 
     await sqliteClient.execute(
