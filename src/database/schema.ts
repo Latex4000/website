@@ -49,12 +49,13 @@ export const ActionItemRelations = relations(ActionItem, ({ one }) => ({
 }));
 
 export const Member = sqliteTable("Member", {
-    discord: text().primaryKey(),
+    id: integer().primaryKey({ autoIncrement: true }),
+    discord: text().notNull().unique(),
     alias: text().notNull().unique(),
     site: text().unique(),
     addedRingToSite: integer({ mode: "boolean" }).notNull(),
-    deleted: integer({ mode: "boolean" }).default(false).notNull(),
     color: text().notNull(),
+    deleted: integer({ mode: "boolean" }).default(false).notNull(),
 });
 
 export const MemberRelations = relations(Member, ({ many }) => ({
