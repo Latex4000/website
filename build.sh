@@ -3,6 +3,6 @@
 set -eu
 
 npm run lint
-astro check
+npx astro check
 
-exec astro build
+exec npx astro build

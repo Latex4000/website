@@ -52,4 +52,4 @@ fi
 node db/migrate.mjs "$database"
 
 # Run development environment
-exec astro dev
+exec npx astro dev
