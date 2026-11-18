@@ -2,7 +2,6 @@ import type { AstroSharedContext } from "astro";
 import { createHash } from "node:crypto";
 import { isIP } from "node:net";
 import db, { retryIfDbBusy } from "../database/db";
-import isBlockedReferrerHost from "./isBlockedReferrer";
 import isCrawlerUserAgent from "./isCrawlerUserAgent";
 import {
     Action,
@@ -285,6 +284,10 @@ function validForAnalytics(context: AstroSharedContext): boolean {
     return true;
 }
 
+const skipPageViewReferrerHosts = process.env.ANALYTICS_SKIP_PAGE_VIEW_REFERRER_HOSTS
+    ? process.env.ANALYTICS_SKIP_PAGE_VIEW_REFERRER_HOSTS.split(";")
+    : [];
+
 function shouldSkipPageViewForReferrer(referrer: string | null): boolean {
     if (!referrer)
         return false;
@@ -297,8 +300,11 @@ function shouldSkipPageViewForReferrer(referrer: string | null): boolean {
     if (isIP(host))
         return true;
 
-    if (isBlockedReferrerHost(host))
+    if (skipPageViewReferrerHosts.some(
+        (skipHost) => host === skipHost || host.endsWith(`.${skipHost}`),
+    )) {
         return true;
+    }
 
     // Add checks as we need them here basically
 
